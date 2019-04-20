@@ -1,4 +1,4 @@
-pragma solidity ^0.4.24;
+pragma solidity ^0.5.0;
 
 import "../Interfaces/IERC1594.sol";
 import "./ERC20.sol";
@@ -8,7 +8,6 @@ import "openzeppelin-solidity/contracts/ownership/Ownable.sol";
  * @title Standard implementation of ERC1594 (Subset of ERC1400 https://github.com/ethereum/EIPs/issues/1411)
  */
 contract ERC1594 is IERC1594, ERC20, Ownable {
-
     // Variable which tells whether issuance is ON or OFF forever
     // Implementers need to implement one more function to reset the value of `issuance` variable
     // to false. That function is not a part of the standard (EIP-1594) as it is depend on the various factors
@@ -16,9 +15,7 @@ contract ERC1594 is IERC1594, ERC20, Ownable {
     bool internal issuance = true; //TODO
 
     /// Constructor
-    constructor() public  {
-
-    }
+    constructor() public {}
 
     /**
      * @notice Transfer restrictions can take many forms and typically involve on-chain rules or whitelists.
@@ -31,7 +28,7 @@ contract ERC1594 is IERC1594, ERC20, Ownable {
      * for the token contract to interpret or record. This could be signed data authorising the transfer
      * (e.g. a dynamic whitelist) but is flexible enough to accomadate other use-cases.
      */
-    function transferWithData(address _to, uint256 _value, bytes _data) external {
+    function transferWithData(address _to, uint256 _value, bytes calldata _data) external {
         // Add a function to validate the `_data` parameter
         _transfer(msg.sender, _to, _value);
     }
@@ -49,7 +46,7 @@ contract ERC1594 is IERC1594, ERC20, Ownable {
      * for the token contract to interpret or record. This could be signed data authorising the transfer
      * (e.g. a dynamic whitelist) but is flexible enough to accomadate other use-cases.
      */
-    function transferFromWithData(address _from, address _to, uint256 _value, bytes _data) external {
+    function transferFromWithData(address _from, address _to, uint256 _value, bytes calldata _data) external {
         // Add a function to validate the `_data` parameter
         _transferFrom(msg.sender, _from, _to, _value);
     }
@@ -74,7 +71,7 @@ contract ERC1594 is IERC1594, ERC20, Ownable {
      * @param _value The amount of tokens need to be issued
      * @param _data The `bytes _data` allows arbitrary data to be submitted alongside the transfer.
      */
-    function issue(address _tokenHolder, uint256 _value, bytes _data) external onlyOwner {
+    function issue(address _tokenHolder, uint256 _value, bytes calldata _data) external onlyOwner {
         // Add a function to validate the `_data` parameter
         require(issuance, "Issuance is closed");
         _mint(_tokenHolder, _value);
@@ -88,7 +85,7 @@ contract ERC1594 is IERC1594, ERC20, Ownable {
      * @param _value The amount of tokens need to be redeemed
      * @param _data The `bytes _data` it can be used in the token contract to authenticate the redemption.
      */
-    function redeem(uint256 _value, bytes _data) external {
+    function redeem(uint256 _value, bytes calldata _data) external {
         // Add a function to validate the `_data` parameter
         _burn(msg.sender, _value);
         emit Redeemed(address(0), msg.sender, _value, _data);
@@ -103,7 +100,7 @@ contract ERC1594 is IERC1594, ERC20, Ownable {
      * @param _value The amount of tokens need to be redeemed
      * @param _data The `bytes _data` it can be used in the token contract to authenticate the redemption.
      */
-    function redeemFrom(address _tokenHolder, uint256 _value, bytes _data) external {
+    function redeemFrom(address _tokenHolder, uint256 _value, bytes calldata _data) external {
         // Add a function to validate the `_data` parameter
         _burnFrom(_tokenHolder, _value);
         emit Redeemed(msg.sender, _tokenHolder, _value, _data);
@@ -120,16 +117,11 @@ contract ERC1594 is IERC1594, ERC20, Ownable {
      * @return byte Ethereum status code (ESC)
      * @return bytes32 Application specific reason code
      */
-    function canTransfer(address _to, uint256 _value, bytes _data) external view returns (bool, byte, bytes32) {
+    function canTransfer(address _to, uint256 _value, bytes calldata _data) external view returns (bool, byte, bytes32) {
         // Add a function to validate the `_data` parameter
-        if (_balances[msg.sender] < _value)
-            return (false, 0x52, bytes32(0));
-
-        else if (_to == address(0))
-            return (false, 0x57, bytes32(0));
-
-        else if (!_checkAdd(_balances[_to], _value))
-            return (false, 0x50, bytes32(0));
+        if (_balances[msg.sender] < _value) return (false, 0x52, bytes32(0));
+        else if (_to == address(0)) return (false, 0x57, bytes32(0));
+        else if (!_checkAdd(_balances[_to], _value)) return (false, 0x50, bytes32(0));
         return (true, 0x51, bytes32(0));
     }
 
@@ -145,31 +137,21 @@ contract ERC1594 is IERC1594, ERC20, Ownable {
      * @return byte Ethereum status code (ESC)
      * @return bytes32 Application specific reason code
      */
-    function canTransferFrom(address _from, address _to, uint256 _value, bytes _data) external view returns (bool, byte, bytes32) {
+    function canTransferFrom(address _from, address _to, uint256 _value, bytes calldata _data) external view returns (bool, byte, bytes32) {
         // Add a function to validate the `_data` parameter
-        if (_value > _allowed[_from][msg.sender])
-            return (false, 0x53, bytes32(0));
-
-        else if (_balances[_from] < _value)
-            return (false, 0x52, bytes32(0));
-
-        else if (_to == address(0))
-            return (false, 0x57, bytes32(0));
-
-        else if (!_checkAdd(_balances[_to], _value))
-            return (false, 0x50, bytes32(0));
+        if (_value > _allowed[_from][msg.sender]) return (false, 0x53, bytes32(0));
+        else if (_balances[_from] < _value) return (false, 0x52, bytes32(0));
+        else if (_to == address(0)) return (false, 0x57, bytes32(0));
+        else if (!_checkAdd(_balances[_to], _value)) return (false, 0x50, bytes32(0));
         return (true, 0x51, bytes32(0));
     }
-
 
     /**
    * @dev Adds two numbers, return false on overflow.
    */
     function _checkAdd(uint256 a, uint256 b) private pure returns (bool) {
         uint256 c = a + b;
-        if (c < a)
-            return false;
-        else
-            return true;
+        if (c < a) return false;
+        else return true;
     }
 }

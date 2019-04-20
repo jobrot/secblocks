@@ -1,10 +1,9 @@
-pragma solidity ^0.4.24;
+pragma solidity ^0.5.0;
 
 import "openzeppelin-solidity/contracts/token/ERC20/IERC20.sol";
 import "openzeppelin-solidity/contracts/math/SafeMath.sol";
 
 contract ERC20 is IERC20 { //TODO maybe add functionality from erc20detailed in order to implement names of company etc
-
     using SafeMath for uint256;
 
     mapping(address => uint256) internal _balances;
@@ -35,7 +34,7 @@ contract ERC20 is IERC20 { //TODO maybe add functionality from erc20detailed in 
      * @param spender address The address which will spend the funds.
      * @return A uint256 specifying the amount of tokens still available for the spender.
      */
-    function allowance(address owner, address spender) public view returns (uint256){
+    function allowance(address owner, address spender) public view returns (uint256) {
         return _allowed[owner][spender];
     }
 
@@ -72,7 +71,7 @@ contract ERC20 is IERC20 { //TODO maybe add functionality from erc20detailed in 
     * @param to address The address which you want to transfer to
     * @param value uint256 the amount of tokens to be transferred
     */
-    function transferFrom(address from, address to, uint256 value) public returns (bool){
+    function transferFrom(address from, address to, uint256 value) public returns (bool) {
         _transferFrom(msg.sender, from, to, value);
         return true;
     }
@@ -93,7 +92,7 @@ contract ERC20 is IERC20 { //TODO maybe add functionality from erc20detailed in 
      * @param spender The address which will spend the funds.
      * @param addedValue The amount of tokens to increase the allowance by.
      */
-    function increaseAllowance(address spender, uint256 addedValue) public returns (bool){
+    function increaseAllowance(address spender, uint256 addedValue) public returns (bool) {
         require(spender != address(0));
 
         _allowed[msg.sender][spender] = (_allowed[msg.sender][spender].add(addedValue));
@@ -110,7 +109,7 @@ contract ERC20 is IERC20 { //TODO maybe add functionality from erc20detailed in 
      * @param spender The address which will spend the funds.
      * @param subtractedValue The amount of tokens to decrease the allowance by.
      */
-    function decreaseAllowance(address spender, uint256 subtractedValue) public returns (bool){
+    function decreaseAllowance(address spender, uint256 subtractedValue) public returns (bool) {
         require(spender != address(0));
 
         _allowed[msg.sender][spender] = (_allowed[msg.sender][spender].sub(subtractedValue));
@@ -173,8 +172,7 @@ contract ERC20 is IERC20 { //TODO maybe add functionality from erc20detailed in 
 
         // Should https://github.com/OpenZeppelin/zeppelin-solidity/issues/707 be accepted,
         // this function needs to emit an event with the updated approval.
-        _allowed[account][msg.sender] = _allowed[account][msg.sender].sub(
-            value);
+        _allowed[account][msg.sender] = _allowed[account][msg.sender].sub(value);
         _burn(account, value);
     }
 }
