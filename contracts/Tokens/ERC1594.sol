@@ -1,20 +1,19 @@
 pragma solidity ^0.4.24;
 
-import "./Interfaces/IERC1594.sol";
+import "../Interfaces/IERC1594.sol";
 import "./ERC20.sol";
-//import "openzeppelin-solidity/contracts/math/SafeMath.sol"; If the pull request for checking is added to safemath, this can be used instead of the internal function
 import "openzeppelin-solidity/contracts/ownership/Ownable.sol";
 
 /**
  * @title Standard implementation of ERC1594 (Subset of ERC1400 https://github.com/ethereum/EIPs/issues/1411)
  */
-contract ERC1594 is IERC1594, ERC20Token, Ownable {
+contract ERC1594 is IERC1594, ERC20, Ownable {
 
     // Variable which tells whether issuance is ON or OFF forever
     // Implementers need to implement one more function to reset the value of `issuance` variable
     // to false. That function is not a part of the standard (EIP-1594) as it is depend on the various factors
     // issuer, followed compliance rules etc. So issuers have the choice how they want to close the issuance.
-    bool internal issuance = true;
+    bool internal issuance = true; //TODO
 
     /// Constructor
     constructor() public  {
@@ -129,7 +128,7 @@ contract ERC1594 is IERC1594, ERC20Token, Ownable {
         else if (_to == address(0))
             return (false, 0x57, bytes32(0));
 
-        else if (!checkAdd(_balances[_to], _value))
+        else if (!_checkAdd(_balances[_to], _value))
             return (false, 0x50, bytes32(0));
         return (true, 0x51, bytes32(0));
     }
@@ -157,7 +156,7 @@ contract ERC1594 is IERC1594, ERC20Token, Ownable {
         else if (_to == address(0))
             return (false, 0x57, bytes32(0));
 
-        else if (!checkAdd(_balances[_to], _value))
+        else if (!_checkAdd(_balances[_to], _value))
             return (false, 0x50, bytes32(0));
         return (true, 0x51, bytes32(0));
     }
@@ -166,7 +165,7 @@ contract ERC1594 is IERC1594, ERC20Token, Ownable {
     /**
    * @dev Adds two numbers, return false on overflow.
    */
-    function checkAdd(uint256 a, uint256 b) private pure returns (bool) {
+    function _checkAdd(uint256 a, uint256 b) private pure returns (bool) {
         uint256 c = a + b;
         if (c < a)
             return false;
