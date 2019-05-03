@@ -2,12 +2,14 @@ pragma solidity ^0.5.0;
 
 import "../Interfaces/IERC1594.sol";
 import "./ERC20.sol";
-import "openzeppelin-solidity/contracts/ownership/Ownable.sol";
+import "../Roles/IssuerRole.sol";
+import "../Interfaces/Controlled.sol";
+//import "openzeppelin-solidity/contracts/ownership/Ownable.sol";
 
 /**
  * @title Standard implementation of ERC1594 (Subset of ERC1400 https://github.com/ethereum/EIPs/issues/1411)
  */
-contract ERC1594 is IERC1594, ERC20, Ownable {
+contract ERC1594 is IERC1594, ERC20, Controlled, IssuerRole {
     // Variable which tells whether issuance is ON or OFF forever
     // Implementers need to implement one more function to reset the value of `issuance` variable
     // to false. That function is not a part of the standard (EIP-1594) as it is depend on the various factors
@@ -71,7 +73,7 @@ contract ERC1594 is IERC1594, ERC20, Ownable {
      * @param _value The amount of tokens need to be issued
      * @param _data The `bytes _data` allows arbitrary data to be submitted alongside the transfer.
      */
-    function issue(address _tokenHolder, uint256 _value, bytes calldata _data) external onlyOwner {
+    function issue(address _tokenHolder, uint256 _value, bytes calldata _data) external onlyIssuer {
         // Add a function to validate the `_data` parameter
         require(issuance, "Issuance is closed");
         _mint(_tokenHolder, _value);
@@ -154,4 +156,12 @@ contract ERC1594 is IERC1594, ERC20, Ownable {
         if (c < a) return false;
         else return true;
     }
+
+
+
+    //---- Maybe shift this to a new contract that inherits from this one
+
+
+
+
 }
