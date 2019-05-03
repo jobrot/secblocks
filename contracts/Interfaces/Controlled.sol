@@ -18,7 +18,7 @@ contract Controlled is OrchestratorRole{
     * @notice Links a Controller contract to this contract.
     * @param _controller Controller contract address.
     */
-    function setController(IController _controller) external onlyOrchestrator  { //TODO! nicht onlycontroller, das hier braucht eine neue rolle, administrator, order orchestrator oder so, derjenige, der alle verknüpft (diese rolle ist dann pro vertrag fast wie der owner, also doch vlt eher owner?
+    function setController(IController _controller) external onlyOrchestrator  {
         require(address(controller) != address(0), "Controller address must not be a zero address.");
         require(Address.isContract(address(_controller)), "Address must point to a contract.");
         controller = _controller;

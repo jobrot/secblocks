@@ -5,10 +5,12 @@ import "../Roles/KYCVerifierRole.sol";
 
 //Global controller that stores addresses in a whitelist, TODO enter into registry
 //Allows all actions for all whitelisted addresses (sender and recipient, if applicable)
-contract KYCController is IController, KYCVerifierRole { //TODO Why would we need a role for this? ModeratorRole
+contract KYCController is IController, KYCVerifierRole {
     byte internal constant STATUS_SUCCESS = 0x51; // Uses status codes from ERC-1066
     byte internal constant STATUS_FAIL = 0x50;
 
+    event AddedToWhitelist(address added);
+    event RemovedFromWhitelist(address added);
 
     mapping (address => bool) public whitelist; //TODO eventually store some some struct on what type of kyc is stored
     //TODO copy this for a blacklist Controller
@@ -125,6 +127,7 @@ contract KYCController is IController, KYCVerifierRole { //TODO Why would we nee
     */
     function addAddressToWhitelist(address _addr) external onlyKYCVerifier { //TODO do I have to set my instance of KYCVerifier somewhere central, or are they linked by deploying?
         whitelist[_addr] = true;
+        emit AddedToWhitelist(_addr);
     }
 
     /**
@@ -133,6 +136,7 @@ contract KYCController is IController, KYCVerifierRole { //TODO Why would we nee
     */
     function removeAddressFromWhitelist(address _addr) external onlyKYCVerifier {
         whitelist[_addr] = false;
+        emit RemovedFromWhitelist(_addr);
     }
 
     /**
