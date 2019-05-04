@@ -8,5 +8,5 @@ module.exports = function(callback) {
             console.log("balance: "+balance);
         });
     });
-}
+};
 

@@ -3,7 +3,7 @@ pragma solidity ^0.5.0;
 import "../Interfaces/IERC1594.sol";
 import "./ERC20.sol";
 import "../Roles/IssuerRole.sol";
-import "../Interfaces/Controlled.sol";
+import "../Controlling/Controlled.sol";
 //import "openzeppelin-solidity/contracts/ownership/Ownable.sol";
 
 /**
@@ -17,7 +17,11 @@ contract ERC1594 is IERC1594, ERC20, Controlled, IssuerRole {
     bool internal issuance = true; //TODO
 
     /// Constructor
-    constructor() public {}
+    //constructor() public {} //TODO
+
+    constructor(IController _controller) Controlled(_controller) public { //The super contract is a modifier of sorts of the constructor
+
+    }
 
     /**
      * @notice Transfer restrictions can take many forms and typically involve on-chain rules or whitelists.
