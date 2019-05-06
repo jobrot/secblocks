@@ -14,7 +14,6 @@ contract KYCController is IController, KYCVerifierRole {
 
     mapping (address => bool) public whitelist; //TODO eventually store some some struct on what type of kyc is stored
     //TODO copy this for a blacklist Controller
-    //TODO events
 
     /**
     * @notice Verify if an issuance to an address is allowed

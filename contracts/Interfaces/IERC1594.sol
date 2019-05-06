@@ -10,7 +10,7 @@ interface IERC1594 {
 
     // Token Issuance
     function isIssuable() external view returns (bool);
-    function issue1(address _tokenHolder, uint256 _value, bytes calldata _data) external;
+    function issue(address _tokenHolder, uint256 _value, bytes calldata _data) external;
 
     // Token Redemption
     function redeem(uint256 _value, bytes calldata _data) external;
@@ -21,7 +21,7 @@ interface IERC1594 {
     function canTransferFrom(address _from, address _to, uint256 _value, bytes calldata _data) external view returns (bool, byte, bytes32);
 
     // Issuance / Redemption Events
-    event Issueda(address indexed _operator, address indexed _to, uint256 _value, bytes _data);
+    event Issued(address indexed _operator, address indexed _to, uint256 _value, bytes _data);
     event Redeemed(address indexed _operator, address indexed _from, uint256 _value, bytes _data);
 
 }
