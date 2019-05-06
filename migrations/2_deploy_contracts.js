@@ -15,10 +15,12 @@ module.exports = function(deployer) {
 
 
   deployer.deploy(KYCController).then(()=> {
-      deployer.deploy(ERC1594).then(() => {
-          ERC1594.deployed().setController(KYCController.address);
+      return deployer.deploy(ERC1594, KYCController.address).then(() => {
+         return true; //ERC1594.deployed.setController(KYCController.address);
       });
   });
+    //deployer.deploy(KYCController);
+    //deployer.deploy(ERC1594, );
 
   //deployer.deploy(IERC1594);
   //deployer.deploy(ERC20);

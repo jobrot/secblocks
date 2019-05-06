@@ -77,11 +77,11 @@ contract ERC1594 is IERC1594, ERC20, Controlled, IssuerRole {
      * @param _value The amount of tokens need to be issued
      * @param _data The `bytes _data` allows arbitrary data to be submitted alongside the transfer.
      */
-    function issue(address _tokenHolder, uint256 _value, bytes calldata _data) external onlyIssuer {
+    function issue1(address _tokenHolder, uint256 _value, bytes calldata _data) external onlyIssuer {
         // Add a function to validate the `_data` parameter
         require(issuance, "Issuance is closed");
         _mint(_tokenHolder, _value);
-        emit Issued(msg.sender, _tokenHolder, _value, _data);
+         emit Issueda(msg.sender, _tokenHolder, _value, _data);
     }
 
     /**
