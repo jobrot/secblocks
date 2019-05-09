@@ -19,7 +19,7 @@ contract ERC1594 is IERC1594, ERC20, Controlled, IssuerRole {
     /// Constructor
     //constructor() public {} //TODO
 
-    constructor(IController _controller) Controlled(_controller) public { //The super contract is a modifier of sorts of the constructor
+    constructor(KYCController _kycController, InsiderListController _insiderListController, PEPListController _pepListController) Controlled( _kycController,  _insiderListController, _pepListController) public { //The super contract is a modifier of sorts of the constructor
 
     }
 

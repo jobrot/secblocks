@@ -2,10 +2,12 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="de83b9a3-5f84-46a5-a2c1-73e85c0ffc6e" name="Default Changelist" comment="">
-      <change afterPath="$PROJECT_DIR$/contracts/Controlling/InsiderListController.sol" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/contracts/Roles/InsiderListManagerRole.sol" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/contracts/Controlling/PEPListController.sol" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/contracts/Roles/PEPListManagerRole.sol" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/contracts/Controlling/KYCController.sol" beforeDir="false" afterPath="$PROJECT_DIR$/contracts/Controlling/KYCController.sol" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/contracts/Controlling/Controlled.sol" beforeDir="false" afterPath="$PROJECT_DIR$/contracts/Controlling/Controlled.sol" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/contracts/Controlling/InsiderListController.sol" beforeDir="false" afterPath="$PROJECT_DIR$/contracts/Controlling/InsiderListController.sol" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/contracts/Tokens/ERC1594.sol" beforeDir="false" afterPath="$PROJECT_DIR$/contracts/Tokens/ERC1594.sol" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -28,19 +30,10 @@
         </entry>
       </file>
       <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/test/KYCTests.js">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="2516">
-              <caret line="148" selection-start-line="148" selection-end-line="148" />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/contracts/Tokens/ERC1594.sol">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="272">
-              <caret line="78" column="7" lean-forward="true" selection-start-line="78" selection-start-column="7" selection-end-line="78" selection-end-column="7" />
+            <state relative-caret-position="204">
+              <caret line="21" column="182" selection-start-line="21" selection-start-column="182" selection-end-line="21" selection-end-column="182" />
             </state>
           </provider>
         </entry>
@@ -63,11 +56,38 @@
           </provider>
         </entry>
       </file>
-      <file pinned="false" current-in-tab="true">
+      <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/contracts/Controlling/InsiderListController.sol">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="213">
-              <caret line="147" column="35" selection-start-line="147" selection-start-column="35" selection-end-line="147" selection-end-column="35" />
+            <state relative-caret-position="102">
+              <caret line="6" column="41" lean-forward="true" selection-start-line="6" selection-start-column="41" selection-end-line="6" selection-end-column="41" />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/contracts/Controlling/PEPListController.sol">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="75">
+              <caret line="122" column="7" lean-forward="true" selection-start-line="122" selection-start-column="7" selection-end-line="122" selection-end-column="7" />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/contracts/Controlling/Controlled.sol">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="118">
+              <caret line="9" column="81" lean-forward="true" selection-start-line="9" selection-start-column="81" selection-end-line="9" selection-end-column="81" />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/contracts/Roles/PEPListManagerRole.sol">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="130">
+              <caret line="38" lean-forward="true" selection-start-line="38" selection-end-line="38" />
             </state>
           </provider>
         </entry>
@@ -105,12 +125,6 @@
   </component>
   <component name="FindInProjectRecents">
     <findStrings>
-      <find>function winningProposal\(\) public view\n\	returns \(uint winningProposal_\)\n\	\{\n\	\	uint winningVoteCount \= 0\;\n\	\	for \(uint p \= 0\; p \&lt; proposals\.length\; p\+\+\) \{\n\	\	\	if \(proposals\[p\]\.voteCount \&gt; winningVoteCount\) \{\n\	\	\	\	winningVoteCount \= proposals\[p\]\.voteCount\;\n\	\	\	\	winningProposal_ \= p\;\n\	\	\	\}\n\	\	\}\n\	\}\n\n\	\/\/ Calls winningProposal\(\) function to get the index\n\	\/\/ of the winner contained in the proposals array and then\n\	\/\/ returns the name of the winner\n\	function winnerName\(\) public view\n\	returns \(bytes32 winnerName_\)\n\	\{\n\	\	winnerName_ \= proposals\[winningProposal\(\)\]\.name\;\n\	\}</find>
-      <find>proposals</find>
-      <find>send</find>
-      <find>KindMath</find>
-      <find>_balances</find>
-      <find>parsedContract</find>
       <find>address payable publ</find>
       <find>erc20</find>
       <find>canTransferFrom</find>
@@ -133,6 +147,14 @@
       <find>issue</find>
       <find>KYCVerifier</find>
       <find>false</find>
+      <find>Insider</find>
+      <find>KYC</find>
+      <find>whitelist</find>
+      <find>insider</find>
+      <find>pep</find>
+      <find>kyc</find>
+      <find>Pep</find>
+      <find>onlypep</find>
     </findStrings>
     <replaceStrings>
       <replace>!= address(0)</replace>
@@ -141,6 +163,10 @@
       <replace>Issuer</replace>
       <replace>Orchestrator</replace>
       <replace>InsiderListManager</replace>
+      <replace>Insider</replace>
+      <replace>PEPList</replace>
+      <replace>PEP</replace>
+      <replace>blacklist</replace>
     </replaceStrings>
   </component>
   <component name="Git.Settings">
@@ -172,18 +198,20 @@
         <option value="$PROJECT_DIR$/contracts/Roles/OrchestratorRole.sol" />
         <option value="$PROJECT_DIR$/contracts/Roles/IssuerRole.sol" />
         <option value="$PROJECT_DIR$/contracts/Interfaces/Controlled.sol" />
-        <option value="$PROJECT_DIR$/contracts/Controlling/Controlled.sol" />
         <option value="$PROJECT_DIR$/run.js" />
         <option value="$PROJECT_DIR$/migrations/2_deploy_contracts.js" />
         <option value="$PROJECT_DIR$/test/KYCControllerTest.sol" />
         <option value="$PROJECT_DIR$/test/misc/trycatch.js" />
         <option value="$PROJECT_DIR$/contracts/Interfaces/IERC1594.sol" />
-        <option value="$PROJECT_DIR$/contracts/Tokens/ERC1594.sol" />
         <option value="$PROJECT_DIR$/test/KYCControllerTest.js" />
         <option value="$PROJECT_DIR$/test/KYCTests.js" />
         <option value="$PROJECT_DIR$/contracts/Roles/InsiderListManagerRole.sol" />
         <option value="$PROJECT_DIR$/contracts/Controlling/KYCController.sol" />
         <option value="$PROJECT_DIR$/contracts/Controlling/InsiderListController.sol" />
+        <option value="$PROJECT_DIR$/contracts/Tokens/ERC1594.sol" />
+        <option value="$PROJECT_DIR$/contracts/Roles/PEPListManagerRole.sol" />
+        <option value="$PROJECT_DIR$/contracts/Controlling/PEPListController.sol" />
+        <option value="$PROJECT_DIR$/contracts/Controlling/Controlled.sol" />
       </list>
     </option>
   </component>
@@ -269,7 +297,7 @@
     <property name="WebServerToolWindowFactoryState" value="false" />
     <property name="add_unversioned_files" value="true" />
     <property name="aspect.path.notification.shown" value="true" />
-    <property name="com.android.tools.idea.instantapp.provision.ProvisionBeforeRunTaskProvider.myTimeStamp" value="1557398337994" />
+    <property name="com.android.tools.idea.instantapp.provision.ProvisionBeforeRunTaskProvider.myTimeStamp" value="1557414734665" />
     <property name="last_opened_file_path" value="$PROJECT_DIR$" />
     <property name="nodejs_interpreter_path.stuck_in_default_project" value="undefined stuck path" />
     <property name="nodejs_npm_path_reset_for_default_project" value="true" />
@@ -367,18 +395,18 @@
       <workItem from="1556476130412" duration="4985000" />
       <workItem from="1556824557594" duration="18027000" />
       <workItem from="1556957706175" duration="49029000" />
-      <workItem from="1557342975801" duration="7235000" />
+      <workItem from="1557342975801" duration="16312000" />
     </task>
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="160286000" />
+    <option name="totallyTimeSpent" value="169363000" />
   </component>
   <component name="ToolWindowManager">
     <frame x="-8" y="-8" width="1382" height="744" extended-state="6" />
     <editor active="true" />
     <layout>
-      <window_info active="true" content_ui="combo" id="Project" order="0" sideWeight="0.4989011" visible="true" weight="0.33585477" />
+      <window_info content_ui="combo" id="Project" order="0" sideWeight="0.4989011" visible="true" weight="0.33585477" />
       <window_info id="Structure" order="1" sideWeight="0.50109893" side_tool="true" weight="0.33055976" />
       <window_info id="Designer" order="2" />
       <window_info id="Image Layers" order="3" />
@@ -396,7 +424,7 @@
       <window_info anchor="bottom" id="Version Control" order="8" show_stripe_button="false" />
       <window_info anchor="bottom" id="Database Changes" order="9" show_stripe_button="false" />
       <window_info anchor="bottom" id="Statistic" order="10" weight="0.3289689" />
-      <window_info anchor="bottom" id="Terminal" order="11" sideWeight="0.4969743" visible="true" weight="0.33224222" />
+      <window_info active="true" anchor="bottom" id="Terminal" order="11" sideWeight="0.4969743" visible="true" weight="0.33224222" />
       <window_info anchor="bottom" id="Event Log" order="12" sideWeight="0.5030257" side_tool="true" weight="0.25531915" />
       <window_info anchor="bottom" id="Inspection Results" order="13" weight="0.3289689" />
       <window_info anchor="right" id="Commander" order="0" weight="0.4" />
@@ -468,13 +496,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/contracts/Controlling/Controlled.sol">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="2">
-          <caret line="7" column="9" selection-start-line="7" selection-start-column="9" selection-end-line="7" selection-end-column="9" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/test/KYCControllerTest.sol" />
     <entry file="file://$PROJECT_DIR$/contracts/Tokens/ERC20.sol">
       <provider selected="true" editor-type-id="text-editor">
@@ -508,31 +529,10 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/contracts/Interfaces/IController.sol">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="204">
-          <caret line="12" selection-start-line="12" selection-end-line="12" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/test/KYCTests.js">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="2516">
           <caret line="148" selection-start-line="148" selection-end-line="148" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/contracts/Tokens/ERC1594.sol">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="272">
-          <caret line="78" column="7" lean-forward="true" selection-start-line="78" selection-start-column="7" selection-end-line="78" selection-end-column="7" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/contracts/Interfaces/IERC1594.sol">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="145">
-          <caret line="11" column="28" selection-start-line="11" selection-start-column="28" selection-end-line="11" selection-end-column="28" />
         </state>
       </provider>
     </entry>
@@ -553,6 +553,20 @@
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/contracts/Interfaces/IERC1594.sol">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="145">
+          <caret line="11" column="28" selection-start-line="11" selection-start-column="28" selection-end-line="11" selection-end-column="28" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/contracts/Interfaces/IController.sol">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="204">
+          <caret line="12" selection-start-line="12" selection-end-line="12" />
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/contracts/Controlling/KYCController.sol">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="272">
@@ -562,8 +576,36 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/contracts/Controlling/InsiderListController.sol">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="213">
-          <caret line="147" column="35" selection-start-line="147" selection-start-column="35" selection-end-line="147" selection-end-column="35" />
+        <state relative-caret-position="102">
+          <caret line="6" column="41" lean-forward="true" selection-start-line="6" selection-start-column="41" selection-end-line="6" selection-end-column="41" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/contracts/Tokens/ERC1594.sol">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="204">
+          <caret line="21" column="182" selection-start-line="21" selection-start-column="182" selection-end-line="21" selection-end-column="182" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/contracts/Roles/PEPListManagerRole.sol">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="130">
+          <caret line="38" lean-forward="true" selection-start-line="38" selection-end-line="38" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/contracts/Controlling/PEPListController.sol">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="75">
+          <caret line="122" column="7" lean-forward="true" selection-start-line="122" selection-start-column="7" selection-end-line="122" selection-end-column="7" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/contracts/Controlling/Controlled.sol">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="118">
+          <caret line="9" column="81" lean-forward="true" selection-start-line="9" selection-start-column="81" selection-end-line="9" selection-end-column="81" />
         </state>
       </provider>
     </entry>
