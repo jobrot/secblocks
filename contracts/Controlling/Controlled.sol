@@ -90,7 +90,7 @@ contract Controlled is OrchestratorRole {
     /**
         @dev removes a single controller from the list of general controllers in the contract
     */
-    function remove(IController _controllerToRemove) internal {//TODO test this
+    function remove(IController _controllerToRemove) internal {//TODO test this, also with empty list
         uint i = 0;
         while (controllers[i] != _controllerToRemove) {
             i++;

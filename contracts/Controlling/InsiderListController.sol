@@ -3,7 +3,7 @@ pragma solidity ^0.5.4;
 import "../Interfaces/IController.sol";
 import "../Roles/InsiderListManagerRole.sol";
 
-//Controller that stores addresses in a blacklist, corresponds to a single token (one company normally)
+//TOKEN SPECIFIC Controller that stores addresses in a blacklist, corresponds to a single token (one company normally)
 //Forbids no actions for all blacklisted addresses (sender and recipient, if applicable)
 //may be overwritten if the controlling entity signs a transaction
 // This contract in combination with the stored customer information from the decentralized data storage of customers

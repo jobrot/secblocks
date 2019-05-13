@@ -6,7 +6,7 @@ import "openzeppelin-solidity/contracts/math/SafeMath.sol";
 contract ERC20 is IERC20 { //TODO maybe add functionality from erc20detailed in order to implement names of company etc
     using SafeMath for uint256;
 
-
+                                        //TODO consistent underscore convention
     mapping(address => uint256) internal _balances;
 
     mapping(address => mapping(address => uint256)) internal _allowed;

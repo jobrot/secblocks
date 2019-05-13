@@ -7,7 +7,7 @@ import "../Controlling/Controlled.sol";
 //import "openzeppelin-solidity/contracts/ownership/Ownable.sol";
 
 /**
- * @title Standard implementation of ERC1594 (Subset of ERC1400 https://github.com/ethereum/EIPs/issues/1411)
+ * @title AML aware implementation of ERC1594 (Subset of ERC1400 https://github.com/ethereum/EIPs/issues/1411)
  */
 contract ERC1594 is IERC1594, ERC20, Controlled, IssuerRole {
     // Variable which tells whether issuance is ON or OFF forever
@@ -16,9 +16,26 @@ contract ERC1594 is IERC1594, ERC20, Controlled, IssuerRole {
     // issuer, followed compliance rules etc. So issuers have the choice how they want to close the issuance.
     bool internal issuance = true; //TODO
 
-    /// Constructor
-    //constructor() public {} //TODO
+    struct TimestampedTransfer{
+        uint timestamp;
+        uint amount;
+        //TODO if necessary, add receiver
+    }
 
+    // Variable that stores stores a mapping of the last transfers of the account
+    // in order to comply with AML regulations
+    // @dev maps each address to an array of dynamic length, that consists a struct of the timestamp and
+    // the value of the outbound funds (counted in number of tokens, value must be determined on check (todo or not, check immediately at entering?)
+    mapping (address => TimestampedTransfer[]) lastTransfers;
+
+
+    // Constant that defines how long the last Transfers of each sender are considered for AML checks
+    uint constant TRANSFER_RETENTION_TIME = 604800; //604800 == 1 Week in Seconds
+    // Constant that defines the maximum value that may be traded within the retention time
+    //TODO currently is used as token number, but should in future be implemented using a pricing oracle to represent euros
+    uint constant SPEND_CEILING = 15000;
+
+    // Constructor
     constructor(KYCController _kycController, InsiderListController _insiderListController, PEPListController _pepListController) Controlled( _kycController,  _insiderListController, _pepListController) public { //The super contract is a modifier of sorts of the constructor
 
     }
@@ -35,6 +52,23 @@ contract ERC1594 is IERC1594, ERC20, Controlled, IssuerRole {
      * (e.g. a dynamic whitelist) but is flexible enough to accomadate other use-cases.
      */
     function transferWithData(address _to, uint256 _value, bytes calldata _data) external {
+        bool verified;
+        byte statusCode;
+        (verified, statusCode) = kycController.verifyTransfer(msg.sender, _to, _value, _data);
+        require(verified, "The transfer is not allowed by the KYCController!");
+        //TODO possibly more information, like who was denied, from statuscode? If so, we have to log them via events, as solidity does not feature print statements
+        (verified, statusCode) = insiderListController.verifyTransfer(msg.sender, _to, _value, _data);
+        require(verified, "The transfer is not allowed by the InsiderListController!");
+        (verified, statusCode) = pepListController.verifyTransfer(msg.sender, _to, _value, _data);
+        require(verified, "The transfer is not allowed by the PoliticallyExposedPersonController!");
+
+        //TODO if >15000 you must consult with bank? actually, you only have to be identified, which
+        //in our case, is always the case... so what is it? just implement a flagging service?
+        //if anything is done, it surely must also be stored, (alle ausgänge innerhalb einer woche oder so)
+        //kein ausgang x anderer, sondern generell ausgang, einfach zweite map
+
+        _updateTransferListAndCalculateSum(msg.sender,_to,_value);
+
         // Add a function to validate the `_data` parameter
         _transfer(msg.sender, _to, _value);
     }
@@ -155,10 +189,49 @@ contract ERC1594 is IERC1594, ERC20, Controlled, IssuerRole {
     /**
    * @dev Adds two numbers, return false on overflow.
    */
-    function _checkAdd(uint256 a, uint256 b) private pure returns (bool) {
-        uint256 c = a + b;
-        if (c < a) return false;
+    function _checkAdd(uint256 _a, uint256 _b) private pure returns (bool) {
+        uint256 c = _a + _b;
+        if (c < _a) return false;
         else return true;
+    }
+
+
+    /**
+   * @dev Adds two numbers, return false on overflow, keeps transfer list ordered
+   */
+    function _updateTransferListAndCalculateSum(address _from, address _to, uint256 _value) private
+        returns (uint) { //TODO test
+        TimestampedTransfer[] storage senderTransfers = lastTransfers[_from]; //Storage pointer, not actual new storage allocated
+        uint sumOfTransfers=0;
+
+
+
+        for (uint i=senderTransfers.length-1; i>=0; i--) {
+            // delete all transfers older than @TRANSFER_RETENTION_TIME
+            if(senderTransfers[i].timestamp <= now - TRANSFER_RETENTION_TIME){
+                senderTransfers.pop();
+            }
+            // sum up all other transfer sums
+            else{
+                sumOfTransfers+=senderTransfers[i].amount;
+            }
+        }
+        //TODO check here for > 15000, revert if so
+        require(sumOfTransfers+_value <= SPEND_CEILING,"The transfer exceeds the allowed quota within the retention period, and must be cosigned by an operator."); //TODO naming of operator with role
+
+
+        //enter element at first index, move others //TODO might also be implemented as queue with shifting index, see https://github.com/chriseth/solidity-examples/blob/master/queue.sol
+        TimestampedTransfer memory h = senderTransfers[0];
+        senderTransfers[0]= TimestampedTransfer(now,_value);
+        //TODO check edge cases
+        for(uint j = 1; j<senderTransfers.length; j++){
+            senderTransfers[j] = h;
+            h = senderTransfers[j+1];
+        }
+        senderTransfers.push(h);
+
+        return sumOfTransfers;
+
     }
 
 

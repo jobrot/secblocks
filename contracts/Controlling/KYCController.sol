@@ -3,7 +3,7 @@ pragma solidity ^0.5.4;
 import "../Interfaces/IController.sol";
 import "../Roles/KYCVerifierRole.sol";
 
-//Global controller that stores addresses in a whitelist, TODO enter into registry
+//CENTRAL controller that stores addresses in a whitelist, TODO enter into registry
 //Allows all actions for all whitelisted addresses (sender and recipient, if applicable)
 //TODO include some kind of link to the decentralized information
 contract KYCController is IController, KYCVerifierRole {
