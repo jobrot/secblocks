@@ -9,7 +9,7 @@ import "../Controlling/Controlled.sol";
 /**
  * @title AML aware implementation of ERC1594 (Subset of ERC1400 https://github.com/ethereum/EIPs/issues/1411)
  */
-contract ERC1594 is IERC1594, ERC20, Controlled, IssuerRole {
+contract ERC1594 is IERC1594, ERC20, Controlled, IssuerRole { //TODO erc20mintable? //TODO pausable, mintable
     // Variable which tells whether issuance is ON or OFF forever
     // Implementers need to implement one more function to reset the value of `issuance` variable
     // to false. That function is not a part of the standard (EIP-1594) as it is depend on the various factors
@@ -51,7 +51,7 @@ contract ERC1594 is IERC1594, ERC20, Controlled, IssuerRole {
      * for the token contract to interpret or record. This could be signed data authorising the transfer
      * (e.g. a dynamic whitelist) but is flexible enough to accomadate other use-cases.
      */
-    function transferWithData(address _to, uint256 _value, bytes calldata _data) external {
+    function transferWithData(address _to, uint256 _value, bytes memory  _data) public {
         bool verified;
         byte statusCode;
         (verified, statusCode) = kycController.verifyTransfer(msg.sender, _to, _value, _data);
@@ -86,7 +86,7 @@ contract ERC1594 is IERC1594, ERC20, Controlled, IssuerRole {
      * for the token contract to interpret or record. This could be signed data authorising the transfer
      * (e.g. a dynamic whitelist) but is flexible enough to accomadate other use-cases.
      */
-    function transferFromWithData(address _from, address _to, uint256 _value, bytes calldata _data) external {
+    function transferFromWithData(address _from, address _to, uint256 _value, bytes memory  _data) public {
         // Add a function to validate the `_data` parameter
         _transferFrom(msg.sender, _from, _to, _value);
     }
@@ -111,36 +111,49 @@ contract ERC1594 is IERC1594, ERC20, Controlled, IssuerRole {
      * @param _value The amount of tokens need to be issued
      * @param _data The `bytes _data` allows arbitrary data to be submitted alongside the transfer.
      */
-    function issue(address _tokenHolder, uint256 _value, bytes calldata _data) external onlyIssuer {
+    function issue(address _tokenHolder, uint256 _value, bytes memory _data) public onlyIssuer {
         // Add a function to validate the `_data` parameter
         require(issuance, "Issuance is closed");
         _mint(_tokenHolder, _value);
-         emit Issued(msg.sender, _tokenHolder, _value, _data);
+        emit Issued(msg.sender, _tokenHolder, _value, _data);
     }
 
     /**
-     * @notice This function redeem an amount of the token of a msg.sender. For doing so msg.sender may incentivize
+     * @notice This function redeems an amount of the token of a msg.sender. For doing so msg.sender may incentivize
      * using different ways that could be implemented with in the `redeem` function definition. But those implementations
      * are out of the scope of the ERC1594.
-     * @param _value The amount of tokens need to be redeemed
+     * @param _value The amount of tokens to be redeemed
      * @param _data The `bytes _data` it can be used in the token contract to authenticate the redemption.
      */
-    function redeem(uint256 _value, bytes calldata _data) external {
+    function redeem(uint256 _value, bytes memory  _data) public { //public instead of external so that subcontracts can call
         // Add a function to validate the `_data` parameter
         _burn(msg.sender, _value);
         emit Redeemed(address(0), msg.sender, _value, _data);
     }
 
     /**
-     * @notice This function redeem an amount of the token of a msg.sender. For doing so msg.sender may incentivize
+     * @notice This function redeems an amount of the token of a msg.sender from a subcontract.
+     * @dev internal function only to be called by derived contracts, for subcontracts that can verify msg.sender
+     * @param _value The amount of tokens to be redeemed
+     * @param _data The `bytes _data` it can be used in the token contract to authenticate the redemption.
+   NOT NEEDED probably
+    function _redeemInternal(address _originalSender, uint256 _value, bytes calldata _data) internal {
+        // Add a function to validate the `_data` parameter
+        _burn(_originalSender, _value);
+        emit Redeemed(address(0), msg.sender, _value, _data);
+    }
+  */
+
+    /**
+     * @notice This function redeems an amount of the token of a msg.sender. For doing so msg.sender may incentivize
      * using different ways that could be implemented with in the `redeem` function definition. But those implementations
      * are out of the scope of the ERC1594.
-     * @dev It is analogy to `transferFrom`
+     * @dev analogous to `transferFrom`
      * @param _tokenHolder The account whose tokens gets redeemed.
-     * @param _value The amount of tokens need to be redeemed
+     * @param _value The amount of tokens to be redeemed
      * @param _data The `bytes _data` it can be used in the token contract to authenticate the redemption.
      */
-    function redeemFrom(address _tokenHolder, uint256 _value, bytes calldata _data) external {
+    function redeemFrom(address _tokenHolder, uint256 _value, bytes memory  _data) public {
         // Add a function to validate the `_data` parameter
         _burnFrom(_tokenHolder, _value);
         emit Redeemed(msg.sender, _tokenHolder, _value, _data);
@@ -213,10 +226,10 @@ contract ERC1594 is IERC1594, ERC20, Controlled, IssuerRole {
             }
             // sum up all other transfer sums
             else{
-                sumOfTransfers+=senderTransfers[i].amount;
+                sumOfTransfers+=senderTransfers[i].amount; //todo use safe math
             }
         }
-        //TODO check here for > 15000, revert if so
+
         require(sumOfTransfers+_value <= SPEND_CEILING,"The transfer exceeds the allowed quota within the retention period, and must be cosigned by an operator."); //TODO naming of operator with role
 
 
