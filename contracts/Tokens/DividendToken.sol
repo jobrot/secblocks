@@ -8,7 +8,7 @@ import "./ERC1594.sol";
 import "../Libraries/UIntConverterLib.sol";
 import "../Libraries/SafeMathInt.sol";
 
-
+/// @notice this Token corresponds to preferred Securities, that do not allow voting but gather more regular dividends
 /// @dev A mintable ERC20 token that allows anyone to pay and distribute ether
 ///  to token holders as dividends and allows token holders to withdraw their dividends.
 ///  Reference: the source code of PoWH3D: https://etherscan.io/address/0xB3775fB83F7D12A36E0475aBdD1FCA35c091efBe#code

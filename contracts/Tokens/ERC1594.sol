@@ -67,7 +67,7 @@ contract ERC1594 is IERC1594, ERC20, Controlled, IssuerRole { //TODO erc20mintab
         //if anything is done, it surely must also be stored, (alle ausgänge innerhalb einer woche oder so)
         //kein ausgang x anderer, sondern generell ausgang, einfach zweite map
 
-        _updateTransferListAndCalculateSum(msg.sender,_to,_value);
+        _updateTransferListAndCalculateSum(msg.sender,_value);
 
         // Add a function to validate the `_data` parameter
         _transfer(msg.sender, _to, _value);
@@ -172,9 +172,9 @@ contract ERC1594 is IERC1594, ERC20, Controlled, IssuerRole { //TODO erc20mintab
      */
     function canTransfer(address _to, uint256 _value, bytes calldata _data) external view returns (bool, byte, bytes32) {
         // Add a function to validate the `_data` parameter
-        if (_balances[msg.sender] < _value) return (false, 0x52, bytes32(0));
+        if (balanceOf(msg.sender) < _value) return (false, 0x52, bytes32(0));
         else if (_to == address(0)) return (false, 0x57, bytes32(0));
-        else if (!_checkAdd(_balances[_to], _value)) return (false, 0x50, bytes32(0));
+        else if (!_checkAdd(balanceOf(_to), _value)) return (false, 0x50, bytes32(0));
         return (true, 0x51, bytes32(0));
     }
 
@@ -193,9 +193,9 @@ contract ERC1594 is IERC1594, ERC20, Controlled, IssuerRole { //TODO erc20mintab
     function canTransferFrom(address _from, address _to, uint256 _value, bytes calldata _data) external view returns (bool, byte, bytes32) {
         // Add a function to validate the `_data` parameter
         if (_value > _allowed[_from][msg.sender]) return (false, 0x53, bytes32(0));
-        else if (_balances[_from] < _value) return (false, 0x52, bytes32(0));
+        else if (balanceOf(_from) < _value) return (false, 0x52, bytes32(0));
         else if (_to == address(0)) return (false, 0x57, bytes32(0));
-        else if (!_checkAdd(_balances[_to], _value)) return (false, 0x50, bytes32(0));
+        else if (!_checkAdd(balanceOf(_to), _value)) return (false, 0x50, bytes32(0));
         return (true, 0x51, bytes32(0));
     }
 
@@ -212,7 +212,7 @@ contract ERC1594 is IERC1594, ERC20, Controlled, IssuerRole { //TODO erc20mintab
     /**
    * @dev Adds two numbers, return false on overflow, keeps transfer list ordered
    */
-    function _updateTransferListAndCalculateSum(address _from, address _to, uint256 _value) private
+    function _updateTransferListAndCalculateSum(address _from, uint256 _value) private
         returns (uint) { //TODO test
         TimestampedTransfer[] storage senderTransfers = lastTransfers[_from]; //Storage pointer, not actual new storage allocated
         uint sumOfTransfers=0;
