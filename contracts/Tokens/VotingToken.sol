@@ -46,6 +46,10 @@ contract VotingToken is DividendToken{
     bytes32[] proposals;
 
 
+    constructor(KYCController _kycController, InsiderListController _insiderListController, PEPListController _pepListController) DividendToken( _kycController,  _insiderListController, _pepListController) public { //The super contract is a modifier of sorts of the constructor
+
+    }
+
 
     //we dont need issue, because the underlying function _mint is edited
     /*function issue(address _tokenHolder, uint _value, bytes memory _data) public onlyIssuer {
@@ -85,11 +89,10 @@ contract VotingToken is DividendToken{
     /// @return True if the transfer was successful
     function _transfer(address _from, address _to, uint _amount
     ) internal {
-
         require(_amount!=0, "Empty Transfers are not allowed.");
 
         // Do not allow transfer to 0x0 or the token contract itself
-        require((_to != address(0)) && (_to != address(this)), "Self Transfers and Transfers to 0x are not allowed.");
+        require((_to != address(0)) && (_to != address(this)), "Transfers to 0x and Token Contract are not allowed.");
 
         uint previousBalanceFrom = balanceOfAt(_from, block.number);
 
@@ -115,7 +118,7 @@ contract VotingToken is DividendToken{
     /// @dev overrides the function from ERC20
     /// @param _owner The address that's balance is being requested
     /// @return The balance of `_owner` at the current block
-    function balanceOf(address _owner) public view returns (uint256 balance) {
+    function balanceOf(address _owner) public view returns (uint256) {
         return balanceOfAt(_owner, block.number);
     }
 
@@ -203,12 +206,26 @@ contract VotingToken is DividendToken{
     }
 
 
-    //TODO _burn is missing!!!
+    /// @notice Burns `_amount` tokens from `_owner`
+    /// @param _owner The address that will lose the tokens
+    /// @param _amount The quantity of tokens to burn
+    /// @return True if the tokens are burned correctly
+    function _burn(address _account, uint _value  //TODO burnfrom, todo unedited
+    )  internal  {
+        uint curTotalSupply = totalSupply();
+        require(curTotalSupply >= _value);
+        uint previousBalanceFrom = balanceOf(_account);
+        require(previousBalanceFrom >= _value);
+        updateValueAtNow(totalSupplyHistory, curTotalSupply - _value);
+        updateValueAtNow(_balances[_account], previousBalanceFrom - _value);
+        emit Transfer(address(0), _account, _value);
+    }
 
 
     /// @dev This function makes it easy to get the total number of tokens
     /// @return The total number of tokens
     function totalSupply() public view returns (uint) {
+
         return totalSupplyAt(block.number);
     }
 
@@ -280,9 +297,9 @@ contract VotingToken is DividendToken{
     /// @notice The fallback function: If the contract's controller has not been
     ///  set to 0, then the `proxyPayment` method is called which relays the
     ///  ether and creates tokens as described in the token controller contract
-    function () external payable {
+  /*  function () external payable {
 
     }
-
+*/
 
 }

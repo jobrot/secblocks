@@ -1,7 +1,11 @@
 pragma solidity ^0.5.0;
 
-import "openzeppelin-solidity/contracts/token/ERC20/IERC20.sol";
-import "openzeppelin-solidity/contracts/math/SafeMath.sol";
+import "../Openzeppelin/SafeMath.sol";
+import "../Openzeppelin/IERC20.sol";
+
+//import "openzeppelin-solidity/contracts/token/ERC20/IERC20.sol";
+//import "openzeppelin-solidity/contracts/math/SafeMath.sol";
+
 
 contract ERC20 is IERC20 { //TODO maybe add functionality from erc20detailed in order to implement names of company etc
     using SafeMath for uint256;
@@ -22,11 +26,11 @@ contract ERC20 is IERC20 { //TODO maybe add functionality from erc20detailed in 
 
     /**
      * @dev Gets the balance of the specified address.
-     * @param owner The address to query the balance of.
+     * @param _owner The address to query the balance of.
      * @return An uint256 representing the amount owned by the passed address.
      */
-    function balanceOf(address owner) public view returns (uint256) {
-        return _balances[owner];
+    function balanceOf(address _owner) public view returns (uint256) {
+        return _balances[_owner];
     }
 
     /**

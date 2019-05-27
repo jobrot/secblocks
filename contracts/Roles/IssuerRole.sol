@@ -1,6 +1,7 @@
 pragma solidity ^0.5.0;
 
-import "openzeppelin-solidity/contracts/access/Roles.sol";
+//import "openzeppelin-solidity/contracts/access/Roles.sol";
+import "../Openzeppelin/Roles.sol";
 
 // A role for the Issuer of a token
 contract IssuerRole {

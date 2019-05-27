@@ -1,8 +1,9 @@
 pragma solidity ^0.5.0;
 
-import "openzeppelin-solidity/contracts/math/SafeMath.sol";
+//import "openzeppelin-solidity/contracts/math/SafeMath.sol";
 //import "openzeppelin-solidity/contracts/math/SafeMathUint.sol";
 //import "openzeppelin-solidity/contracts/math/SafeMathInt.sol";
+import "../Openzeppelin/SafeMath.sol";
 
 import "./ERC1594.sol";
 import "../Libraries/UIntConverterLib.sol";
@@ -55,6 +56,12 @@ contract DividendToken is ERC1594 { //TODO comments
     // So now `dividendOf(_user)` returns the same value before and after `balanceOf(_user)` is changed.
     mapping(address => int) internal magnifiedDividendCorrections;
     mapping(address => uint) internal withdrawnDividends;
+
+
+    constructor(KYCController _kycController, InsiderListController _insiderListController, PEPListController _pepListController) ERC1594( _kycController,  _insiderListController, _pepListController) public { //The super contract is a modifier of sorts of the constructor
+
+    }
+
 
     /// @dev Distributes dividends whenever ether is paid to this contract.
     function() external payable {
@@ -135,7 +142,11 @@ contract DividendToken is ERC1594 { //TODO comments
     /// @param _value The amount to be transferred.
     /// @param _data The `bytes _data` allows arbitrary data to be submitted alongside the transfer.
     function transferWithData(address _to, uint256 _value, bytes memory _data) public {
+        //require(false,"hierr");
+
         super.transferWithData( _to, _value, _data); //TODO DOES THIS WORK WITH MSG.SENDER!!
+
+
 
         int magCorrection = magnifiedDividendPerShare.mul(_value).toIntSafe();
         magnifiedDividendCorrections[msg.sender] = magnifiedDividendCorrections[msg.sender].add(magCorrection);

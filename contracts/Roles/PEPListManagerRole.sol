@@ -1,6 +1,8 @@
 pragma solidity ^0.5.0;
 
-import "openzeppelin-solidity/contracts/access/Roles.sol";
+//import "openzeppelin-solidity/contracts/access/Roles.sol";
+import "../Openzeppelin/Roles.sol";
+
 
 // A role for the global Verifiers for KYC information, who are allowed to enter
 contract PEPListManagerRole {

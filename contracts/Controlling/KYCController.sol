@@ -48,6 +48,7 @@ contract KYCController is IController, KYCVerifierRole {
     function verifyTransfer(address _from, address _to, uint256 _amount, bytes calldata _data) external view
     returns (bool allowed, byte statusCode)
     {
+
         if(_onWhitelist(_from) && _onWhitelist(_to)){ //TODO application specific more detailed Status codes?
             allowed = true;
             statusCode = STATUS_SUCCESS;
