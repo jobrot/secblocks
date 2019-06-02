@@ -91,13 +91,13 @@ contract VotingToken is DividendToken{
 
         // First update the balance array with the new value for the address
         //  sending the tokens
-        updateValueAtNow(_balances[_from], previousBalanceFrom - _amount);
+        updateValueAtNow(_balances[_from], previousBalanceFrom.sub(_amount));
 
         // Then update the balance array with the new value for the address
         //  receiving the tokens
         uint previousBalanceTo = balanceOfAt(_to, block.number);
-        require(previousBalanceTo + _amount >= previousBalanceTo); // Check for overflow
-        updateValueAtNow(_balances[_to], previousBalanceTo + _amount);
+        require(previousBalanceTo.add(_amount) >= previousBalanceTo); // Check for overflow
+        updateValueAtNow(_balances[_to], previousBalanceTo.add(_amount));
 
         // An event to make the transfer easy to find on the blockchain
         emit Transfer(_from, _to, _amount);
@@ -166,7 +166,7 @@ contract VotingToken is DividendToken{
         for(int j = UIntConverterLib.toIntSafe(ballot.optionNames.length); j>0; j--){
             if(ballot.optionNames[SafeMathInt.toUintSafe(j-1)]==optionName){
                 ballot.voted[msg.sender]=true;
-                ballot.optionVoteCounts[SafeMathInt.toUintSafe(j-1)]+=senderBalance;  //TODO replace with safe functions
+                ballot.optionVoteCounts[SafeMathInt.toUintSafe(j-1)]=ballot.optionVoteCounts[SafeMathInt.toUintSafe(j-1)].add(senderBalance);  //TODO replace with safe functions
                 return;
             }
         }
@@ -245,11 +245,11 @@ contract VotingToken is DividendToken{
         require(_account != address(0));
         //TODO use checks and safemath as it is used in other token contracts
         uint curTotalSupply = totalSupply();
-        require(curTotalSupply + _value >= curTotalSupply); // Check for overflowgenerateTokens
+        require(curTotalSupply.add(_value) >= curTotalSupply); // Check for overflowgenerateTokens
         uint previousBalanceTo = balanceOf(_account);
-        require(previousBalanceTo + _value >= previousBalanceTo); // Check for overflow
-        updateValueAtNow(totalSupplyHistory, curTotalSupply + _value);
-        updateValueAtNow(_balances[_account], previousBalanceTo + _value);
+        require(previousBalanceTo.add(_value) >= previousBalanceTo); // Check for overflow
+        updateValueAtNow(totalSupplyHistory, curTotalSupply.add(_value));
+        updateValueAtNow(_balances[_account], previousBalanceTo.add(_value));
         emit Transfer(address(0), _account, _value);
     }
 
