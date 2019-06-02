@@ -1,4 +1,5 @@
 pragma solidity ^0.5.0;
+//pragma experimental ABIEncoderV2; // for array of strings (as this i a 3 dimensional array) TODO find other way
 
 
 import "./DividendToken.sol";
@@ -24,12 +25,28 @@ contract VotingToken is DividendToken{
         uint128 value;
     }
 
+    // an option is a single possible result for a ballot that can be voted for
+    struct Option{
+        bytes32 name;
+        uint voteCount;
+    }
+
+    // a ballot is a structure that corresponds to a single descision that can be
+    // voted upon by token holders, each with a weight corresponding to their
+    // owned tokens at the cutoff date
+    struct Ballot{
+        bytes32 name; // name of the current ballot / asked question
+        Option[] options; //list of all voteable options
+        mapping (address => bool) voted; // record on which addresses already voted
+        uint cutoffBlockNumber; // block number of the block, where the balances are counted for voting weight
+    }
+
 
     // `balances` is the map that tracks the balance of each address, in this
     //  contract when the balance changes the block number that the change
     //  occurred is also included in the map
     mapping (address => Checkpoint[]) private _balances; //TODO if i do it like this, all transfer function etc. have to use this
-//TODO or i just need to overwrite _burn _mint _transfer and _balances + new get balance methoden TODO HIER STEHENGEBLIEBEN
+
 
     // `allowed` tracks any extra transfer rights as in all ERC20 tokens
     mapping (address => mapping (address => uint256)) allowed;
@@ -37,14 +54,13 @@ contract VotingToken is DividendToken{
     // Tracks the history of the `totalSupply` of the token
     Checkpoint[] totalSupplyHistory;
 
+    // TODO temporary storage of Options while creating a new Ballot
+    Option[] tempOptions;
+    Ballot tempBallot;
 
-    uint creationBlock;
-
-
-    // List of all Proposals by the Issuer/dude
-
-    bytes32[] proposals;
-
+    // all ballots that can be voted upon by token holders
+    Ballot[]  ballots;
+    //TODO maybe make it a list of keys (names), + a map of ballots
 
     constructor(KYCController _kycController, InsiderListController _insiderListController, PEPListController _pepListController) DividendToken( _kycController,  _insiderListController, _pepListController) public { //The super contract is a modifier of sorts of the constructor
 
@@ -61,25 +77,6 @@ contract VotingToken is DividendToken{
     // ERC20 Methods
     ///////////////////
 
-    /// @notice Send `_amount` tokens to `_to` from `msg.sender`
-    /// @param _to The address of the recipient
-    /// @param _amount The amount of tokens to be transferred
-    /// @return Whether the transfer was successful or not
- /*   function transfer(address _to, uint256 _amount) public returns (bool success) {
-         _transfer(msg.sender, _to, _amount);
-    }*/
-
-    /// @notice Send `_amount` tokens to `_to` from `_from` on the condition it
-    ///  is approved by `_from`
-    /// @param _from The address holding the tokens being transferred
-    /// @param _to The address of the recipient
-    /// @param _amount The amount of tokens to be transferred
-    /// @return True if the transfer was successful
-   /* function transferFrom(address _from, address _to, uint256 _amount
-    ) public {
-        _transfer(_from, _to, _amount);
-    }
-*/
     /// @dev This is the actual transfer function in the token contract, it can
     ///  only be called by other functions in this contract.
     ///  Overwrites the ERC-20 function in order to enable interacting with
@@ -154,8 +151,123 @@ contract VotingToken is DividendToken{
     }*/
 
 
+    ////////////////
+    // Voting Functions
+    ////////////////
 
 
+    /// @dev creates a new ballot and appends it to 'ballots'
+    /// @param ballotName The name of the ballot resp. the asked Question
+    /// @param optionNames List of possible choices / answers to the question
+    function createBallot(bytes32 ballotName, bytes32[] memory optionNames) public {
+        //The memory keyword is important here, or else the Ballot would be
+        //made a storage variable, as structs are as a standard
+        // https://solidity.readthedocs.io/en/latest/types.html#reference-types
+//        Ballot storage ballot;
+//
+//        ballot.name = ballotName;
+//        ballot.cutoffBlockNumber = block.number; //set the current Blocknumber as cutoff, the current balance distribution is stored
+        //TODO require name not empty and optionNames notEmpty
+
+       // Option[] storage options;// = bytes32[optionNames.length];
+
+        Ballot memory ballot = Ballot({name: ballotName, cutoffBlockNumber: block.number, options: new Option[](0)});
+        ballots.push(ballot);
+        //ballots[ballots.length-1].players.push(msg.sender);
+
+
+        delete tempOptions;
+
+
+        // add all optionNames from memory to the storage struct
+        for (uint i = 0; i < optionNames.length; i++) {
+            ballots[ballots.length-1].options.push(Option({ //TODO maybe split options in two
+            name: optionNames[i],
+            voteCount: 0
+            }));
+        }
+
+        //tempBallot = Ballot({name: ballotName, cutoffBlockNumber: block.number, options: tempOptions});
+
+        //ballots.push(Ballot({name: ballotName, cutoffBlockNumber: block.number, options: tempOptions}));
+//TODO event
+    }
+
+    /// @info casts votes equal to the senders tokens at the cutoff time of the newest ballot designated
+    /// by @ballotName to the option designated by @optionName
+    /// @ballotName Ballot to vote in
+    /// @optionName option to vote for
+    /// @dev rolls back on unfound ballot or option, if sender already voted, or does not own tokens at cutoff
+    function vote(bytes32 ballotName, bytes32 optionName) public { //TODO IF THIS DOES NOT WORK, try storage
+        //Ballot storage tempballot; //TODO may be the changes to this ballot object are not persistet
+        //Search through all Ballots backwards, so that the recent ones are found first
+        int found = -1;
+
+        for(int i = UIntConverterLib.toIntSafe(ballots.length); i>0; i--){ //TODO could be optimized for gas
+            if(ballots[SafeMathInt.toUintSafe(i-1)].name == ballotName){
+                found=i-1;
+                break;
+            }
+        }
+        require(found >= 0, "Ballot not found!"); //TODO test
+
+        Ballot storage ballot = ballots[SafeMathInt.toUintSafe(found)];
+
+        //check if User had tokens at the time of the ballot start == right to vote
+        uint senderBalance = this.balanceOfAt(msg.sender, ballot.cutoffBlockNumber);
+        require(senderBalance >0, "Sender did not own tokens at the Cutoff Time!");
+
+        //check if User already voted
+        require(ballot.voted[msg.sender]==false,"Sender already voted");
+
+        //Search for the voted option in the ballot
+
+        for(int j = UIntConverterLib.toIntSafe(ballot.options.length); j>0; j--){
+            if(ballot.options[SafeMathInt.toUintSafe(j-1)].name==optionName){
+                ballot.voted[msg.sender]=true;
+                ballot.options[SafeMathInt.toUintSafe(j-1)].voteCount+=senderBalance;  //TODO replace with safe functions
+                return;
+            }
+        }
+        require(false, "Chosen option does not exist in chosen Ballot.");
+    }
+
+    /// @info Computes the winning proposal taking all votes up until now into account, exact tallying can be gotten from
+    /// the function getBallot(bytes32 ballotName)
+    /// @dev does not change state or close the voting intentionally, is public so that everybody
+    /// can look at the current winner, and to allow for maximum flexibility (company can decide
+    /// a time when to decide the winners, as the time may change due to not all voters being on chain
+    /// ATTENTION: does not deal with votes where two options are equal, this must be decided by the user via getBallot(bytes32 ballotName)
+    /// @ballotName ballot to be queried
+    /// @return name of the winning option and resp. vote count
+    function currentlyWinningOption(bytes32 ballotName) public view returns (bytes32 winningOptionName, uint winningOptionVoteCount){
+        Ballot memory ballot;
+        //Search through all Ballots backwards, so that the recent ones are found first
+        for(int i = UIntConverterLib.toIntSafe(ballots.length); i>0; i--){
+            if(ballots[SafeMathInt.toUintSafe(i-1)].name==ballotName){
+                ballot = ballots[SafeMathInt.toUintSafe(i-1)];
+            }
+        }
+        require(ballot.name.length > 0, "Ballot not found!"); //TODO test this
+
+        uint winningVoteCount = 0;
+        int winningOptionIndex = -1;
+        for (uint p = 0; p < ballot.options.length; p++) {
+            if (ballot.options[p].voteCount > winningVoteCount) {
+                winningVoteCount = ballot.options[p].voteCount;
+                winningOptionIndex = UIntConverterLib.toIntSafe(p);
+            }
+        }
+        require(winningOptionIndex !=-1,"No votes yet!");
+
+
+        winningOptionName=ballot.options[SafeMathInt.toUintSafe(winningOptionIndex)].name;
+        winningOptionVoteCount=ballot.options[SafeMathInt.toUintSafe(winningOptionIndex)].voteCount;
+    }
+
+
+
+    //TODO!! get ballot methode!!!!!!!!!
 
 
     ////////////////
@@ -184,9 +296,7 @@ contract VotingToken is DividendToken{
 
 
 
-    ////////////////
-    // Generate and destroy tokens
-    ////////////////
+
 
     /// @dev overwrite erc20 function
     /// @notice Generates `_value` tokens that are assigned to `_owner`
@@ -277,22 +387,6 @@ contract VotingToken is DividendToken{
         }
     }
 
-    /// @dev Internal function to determine if an address is a contract
-    /// @param _addr The address being queried
-    /// @return True if `_addr` is a contract
-    function isContract(address _addr) view internal returns(bool) {
-        uint size;
-        if (_addr == address(0)) return false;
-        assembly {
-            size := extcodesize(_addr)
-        }
-        return size>0;
-    }
-
-    /// @dev Helper function to return a min betwen the two uints
-    function min(uint a, uint b) pure internal returns (uint) { //TODO library?
-        return a < b ? a : b;
-    }
 
     /// @notice The fallback function: If the contract's controller has not been
     ///  set to 0, then the `proxyPayment` method is called which relays the
@@ -301,5 +395,25 @@ contract VotingToken is DividendToken{
 
     }
 */
+    //@dev utility string search function
+    //@array array to search
+    //@searchstring string to search for in array
+    //@return first index if found, -1 if not found
+    /*function searchStringArrayBackwards(string[] array, string searchstring) private returns (int) {
+        for(uint i = ballots.length; i>0; i--){
+            if(compareStrings(ballots[i-1],ballotName)){
+                return i-1;
+            }
+        }
+        return -1;
+    }
+*/
+
+    //@dev utility string comparison function TODO doc
+   /* function compareStrings (bytes32 a, bytes32 b) public view
+        returns (bool) {
+        return (keccak256(abi.encodePacked((a))) == keccak256(abi.encodePacked((b))) );
+
+    }*/
 
 }
