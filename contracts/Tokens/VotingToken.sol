@@ -1,15 +1,16 @@
 pragma solidity ^0.5.0;
-//pragma experimental ABIEncoderV2; // for array of strings (as this i a 3 dimensional array) TODO find other way
+
 
 
 import "./DividendToken.sol";
+import "../Roles/VotingOfficialRole.sol";
 
 //Original: https://github.com/Giveth/minime/blob/master/contracts/MiniMeToken.sol
 //Other: https://github.com/validitylabs/token-voting-system/blob/master/src/contracts/voting/LoggedToken.sol
 
 
 /// @dev draws some inspiration from Jordi Baylina's MiniMeToken to record historical balances
-contract VotingToken is DividendToken{
+contract VotingToken is DividendToken, VotingOfficialRole{
 
 
     event BallotCreated(
@@ -37,7 +38,7 @@ contract VotingToken is DividendToken{
     // owned tokens at the cutoff date
     struct Ballot{
         bytes32 name; // name of the current ballot / asked question
-        bytes32[] optionNames; //list of all voteable options  //TODO check if these are public and can be changed
+        bytes32[] optionNames; //list of all voteable options
         uint[] optionVoteCounts; //list of all resp. vote counts
         mapping (address => bool) voted; // record on which addresses already voted
         uint cutoffBlockNumber; // block number of the block, where the balances are counted for voting weight
@@ -47,7 +48,7 @@ contract VotingToken is DividendToken{
     // `balances` is the map that tracks the balance of each address, in this
     //  contract when the balance changes the block number that the change
     //  occurred is also included in the map
-    mapping (address => Checkpoint[]) private _balances; //TODO if i do it like this, all transfer function etc. have to use this
+    mapping (address => Checkpoint[]) private _balances;
 
 
     // `allowed` tracks any extra transfer rights as in all ERC20 tokens
@@ -62,7 +63,6 @@ contract VotingToken is DividendToken{
     constructor(KYCController _kycController, InsiderListController _insiderListController, PEPListController _pepListController) DividendToken( _kycController,  _insiderListController, _pepListController) public { //The super contract is a modifier of sorts of the constructor
 
     }
-
 
 
     ///////////////////
@@ -112,7 +112,6 @@ contract VotingToken is DividendToken{
     }
 
 
-
     ////////////////
     // Voting Functions
     ////////////////
@@ -121,7 +120,7 @@ contract VotingToken is DividendToken{
     /// @dev creates a new ballot and appends it to 'ballots'
     /// @param ballotName The name of the ballot resp. the asked Question
     /// @param optionNames List of possible choices / answers to the question
-    function createBallot(bytes32 ballotName, bytes32[] memory optionNames) public { //TODO only votingofficial
+    function createBallot(bytes32 ballotName, bytes32[] memory optionNames) public onlyVotingOfficial{
 
         //Check the arguments for validity
         require(ballotName[0] != 0, "The ballotName must not be empty!");
@@ -227,12 +226,8 @@ contract VotingToken is DividendToken{
     /// @param _blockNumber The block number when the totalSupply is queried
     /// @return The total amount of tokens at `_blockNumber`
     function totalSupplyAt(uint _blockNumber) public view returns(uint) {
-
         return getValueAt(totalSupplyHistory, _blockNumber);
-
     }
-
-
 
 
 
@@ -243,7 +238,6 @@ contract VotingToken is DividendToken{
     /// @return True if the tokens are generated correctly
     function  _mint(address _account, uint256 _value) internal {
         require(_account != address(0));
-        //TODO use checks and safemath as it is used in other token contracts
         uint curTotalSupply = totalSupply();
         require(curTotalSupply.add(_value) >= curTotalSupply); // Check for overflowgenerateTokens
         uint previousBalanceTo = balanceOf(_account);
