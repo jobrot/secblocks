@@ -2,6 +2,7 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="de83b9a3-5f84-46a5-a2c1-73e85c0ffc6e" name="Default Changelist" comment="">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/contracts/Tokens/VotingToken.sol" beforeDir="false" afterPath="$PROJECT_DIR$/contracts/Tokens/VotingToken.sol" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
@@ -54,7 +55,7 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/contracts/Tokens/DividendToken.sol">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="2516">
+            <state relative-caret-position="2261">
               <caret line="148" selection-start-line="148" selection-end-line="148" />
             </state>
           </provider>
@@ -63,8 +64,17 @@
       <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/contracts/Tokens/VotingToken.sol">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="178">
-              <caret line="183" column="93" selection-start-line="183" selection-start-column="93" selection-end-line="183" selection-end-column="93" />
+            <state relative-caret-position="200">
+              <caret line="272" column="77" selection-start-line="272" selection-start-column="77" selection-end-line="272" selection-end-column="77" />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/contracts/Openzeppelin/SafeMath.sol">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="234">
+              <caret line="41" column="13" selection-start-line="41" selection-start-column="13" selection-end-line="41" selection-end-column="13" />
             </state>
           </provider>
         </entry>
@@ -72,8 +82,8 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/contracts/Tokens/ERC20.sol">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="81">
-              <caret line="130" column="74" selection-start-line="130" selection-start-column="74" selection-end-line="130" selection-end-column="74" />
+            <state relative-caret-position="867">
+              <caret line="173" column="7" selection-start-line="173" selection-start-column="7" selection-end-line="173" selection-end-column="7" />
             </state>
           </provider>
         </entry>
@@ -108,11 +118,9 @@
   </component>
   <component name="FindInProjectRecents">
     <findStrings>
-      <find>address</find>
       <find>openzeppelin-solidity</find>
       <find>balanceOf</find>
       <find>require(false, &quot;hier&quot;)</find>
-      <find>_burn</find>
       <find>_transfer</find>
       <find>balance</find>
       <find>balanceof</find>
@@ -131,13 +139,15 @@
       <find>bytes32 memory</find>
       <find>bytes(</find>
       <find>touint</find>
-      <find>transferwithdata</find>
       <find>safemathint</find>
       <find>comparestring</find>
       <find>comparestrings</find>
       <find>uint i</find>
       <find>name.equals</find>
       <find>if(ballot.</find>
+      <find>transferwithdata</find>
+      <find>account !=</find>
+      <find>_burn</find>
     </findStrings>
     <replaceStrings>
       <replace>!= address(0)</replace>
@@ -152,8 +162,8 @@
       <replace>PEP</replace>
       <replace>uint</replace>
       <replace>int</replace>
-      <replace>_balances</replace>
       <replace>bytes32</replace>
+      <replace>_balances</replace>
     </replaceStrings>
   </component>
   <component name="Git.Settings">
@@ -296,7 +306,7 @@
     <property name="WebServerToolWindowFactoryState" value="false" />
     <property name="add_unversioned_files" value="true" />
     <property name="aspect.path.notification.shown" value="true" />
-    <property name="com.android.tools.idea.instantapp.provision.ProvisionBeforeRunTaskProvider.myTimeStamp" value="1559498281537" />
+    <property name="com.android.tools.idea.instantapp.provision.ProvisionBeforeRunTaskProvider.myTimeStamp" value="1559507609377" />
     <property name="last_opened_file_path" value="$PROJECT_DIR$" />
     <property name="nodejs_interpreter_path.stuck_in_default_project" value="undefined stuck path" />
     <property name="nodejs_npm_path_reset_for_default_project" value="true" />
@@ -398,12 +408,12 @@
       <workItem from="1557342975801" duration="45417000" />
       <workItem from="1558107877904" duration="23348000" />
       <workItem from="1558249126854" duration="3305000" />
-      <workItem from="1558455187187" duration="108256000" />
+      <workItem from="1558455187187" duration="115751000" />
     </task>
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="333377000" />
+    <option name="totallyTimeSpent" value="340872000" />
   </component>
   <component name="ToolWindowManager">
     <frame x="-8" y="-8" width="1382" height="744" extended-state="6" />
@@ -541,13 +551,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/contracts/Openzeppelin/SafeMath.sol">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="234">
-          <caret line="106" column="1" selection-start-line="106" selection-start-column="1" selection-end-line="106" selection-end-column="1" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/contracts/Openzeppelin/Roles.sol">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="234">
@@ -611,13 +614,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/contracts/Tokens/ERC20.sol">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="81">
-          <caret line="130" column="74" selection-start-line="130" selection-start-column="74" selection-end-line="130" selection-end-column="74" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/contracts/Roles/InsiderListManagerRole.sol">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="153">
@@ -646,13 +642,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/contracts/Tokens/DividendToken.sol">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="2516">
-          <caret line="148" selection-start-line="148" selection-end-line="148" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/contracts/Libraries/SafeMathInt.sol">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="204">
@@ -667,10 +656,31 @@
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/contracts/Tokens/DividendToken.sol">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="2261">
+          <caret line="148" selection-start-line="148" selection-end-line="148" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/contracts/Tokens/ERC20.sol">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="867">
+          <caret line="173" column="7" selection-start-line="173" selection-start-column="7" selection-end-line="173" selection-end-column="7" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/contracts/Openzeppelin/SafeMath.sol">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="234">
+          <caret line="41" column="13" selection-start-line="41" selection-start-column="13" selection-end-line="41" selection-end-column="13" />
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/contracts/Tokens/VotingToken.sol">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="178">
-          <caret line="183" column="93" selection-start-line="183" selection-start-column="93" selection-end-line="183" selection-end-column="93" />
+        <state relative-caret-position="200">
+          <caret line="272" column="77" selection-start-line="272" selection-start-column="77" selection-end-line="272" selection-end-column="77" />
         </state>
       </provider>
     </entry>
