@@ -236,7 +236,7 @@ contract VotingToken is DividendToken, VotingOfficialRole{
     /// @param _owner The address that will be assigned the new tokens
     /// @param _value The quantity of tokens generated
     /// @return True if the tokens are generated correctly
-    function  _mint(address _account, uint256 _value) internal {
+    function  _mint(address _account, uint256 _value) internal { //TODO fix require error messages
         require(_account != address(0));
         uint curTotalSupply = totalSupply();
         require(curTotalSupply.add(_value) >= curTotalSupply); // Check for overflowgenerateTokens
