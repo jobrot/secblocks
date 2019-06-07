@@ -26,15 +26,15 @@ contract InsiderListController is IController, InsiderListManagerRole {
     }
     */
     function verifyIssue(address _tokenHolder, uint256 _value, bytes calldata _data) external view
-    returns (bool allowed, byte statusCode)
+    returns (bool allowed)
     {
         if(_onBlacklist(_tokenHolder)){
             allowed = false;
-            statusCode = STATUS_FAIL;
+            
         }
         else{
             allowed = true;
-            statusCode = STATUS_SUCCESS;
+            
         }
     }
 
@@ -47,15 +47,15 @@ contract InsiderListController is IController, InsiderListManagerRole {
     }
     */
     function verifyTransfer(address _from, address _to, uint256 _amount, bytes calldata _data) external view
-    returns (bool allowed, byte statusCode)
+    returns (bool allowed)
     {
         if(_onBlacklist(_from) && _onBlacklist(_to)){ //TODO application specific more detailed Status codes?
             allowed = false;
-            statusCode = STATUS_FAIL;
+            
         }
         else{
             allowed = true;
-            statusCode = STATUS_SUCCESS;
+            
         }
     }
 
@@ -68,15 +68,15 @@ contract InsiderListController is IController, InsiderListManagerRole {
     }
     */
     function verifyTransferFrom(address _from, address _to, address _forwarder, uint256 _amount, bytes calldata _data) external view
-    returns (bool allowed, byte statusCode)
+    returns (bool allowed)
     {
         if(_onBlacklist(_from) && _onBlacklist(_to) && _onBlacklist(_forwarder)){
             allowed = false;
-            statusCode = STATUS_FAIL;
+            
         }
         else{
             allowed = true;
-            statusCode = STATUS_SUCCESS;
+            
         }
     }
 
@@ -89,15 +89,15 @@ contract InsiderListController is IController, InsiderListManagerRole {
     }
     */
     function verifyRedeem(address _sender, uint256 _amount, bytes calldata _data) external view
-    returns (bool allowed, byte statusCode)
+    returns (bool allowed)
     {
         if(_onBlacklist(_sender)){
             allowed = false;
-            statusCode = STATUS_FAIL;
+            
         }
         else{
             allowed = true;
-            statusCode = STATUS_SUCCESS;
+            
         }
     }
 
@@ -110,15 +110,15 @@ contract InsiderListController is IController, InsiderListManagerRole {
     }
     */
     function verifyRedeemFrom(address _sender, address _tokenHolder, uint256 _amount, bytes calldata _data) external view
-    returns (bool allowed, byte statusCode)
+    returns (bool allowed)
     {
         if(_onBlacklist(_sender) && _onBlacklist(_tokenHolder)){
             allowed = false;
-            statusCode = STATUS_FAIL;
+            
         }
         else{
             allowed = true;
-            statusCode = STATUS_SUCCESS;
+            
         }
     }
 

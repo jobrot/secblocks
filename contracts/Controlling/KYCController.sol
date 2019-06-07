@@ -25,15 +25,15 @@ contract KYCController is IController, KYCVerifierRole {
     }
     */
     function verifyIssue(address _tokenHolder, uint256 _value, bytes calldata _data) external view
-    returns (bool allowed, byte statusCode)
+    returns (bool allowed)
     {
         if(_onWhitelist(_tokenHolder)){
             allowed = true;
-            statusCode = STATUS_SUCCESS;
+            
         }
         else{
             allowed = false;
-            statusCode = STATUS_FAIL;
+            
         }
     }
 
@@ -46,16 +46,16 @@ contract KYCController is IController, KYCVerifierRole {
     }
     */
     function verifyTransfer(address _from, address _to, uint256 _amount, bytes calldata _data) external view
-    returns (bool allowed, byte statusCode)
+    returns (bool allowed)
     {
 
         if(_onWhitelist(_from) && _onWhitelist(_to)){ //TODO application specific more detailed Status codes?
             allowed = true;
-            statusCode = STATUS_SUCCESS;
+            
         }
         else{
             allowed = false;
-            statusCode = STATUS_FAIL;
+            
         }
     }
 
@@ -68,15 +68,15 @@ contract KYCController is IController, KYCVerifierRole {
     }
     */
     function verifyTransferFrom(address _from, address _to, address _forwarder, uint256 _amount, bytes calldata _data) external view
-    returns (bool allowed, byte statusCode)
+    returns (bool allowed)
     {
         if(_onWhitelist(_from) && _onWhitelist(_to) && _onWhitelist(_forwarder)){
             allowed = true;
-            statusCode = STATUS_SUCCESS;
+            
         }
         else{
             allowed = false;
-            statusCode = STATUS_FAIL;
+            
         }
     }
 
@@ -89,15 +89,15 @@ contract KYCController is IController, KYCVerifierRole {
     }
     */
     function verifyRedeem(address _sender, uint256 _amount, bytes calldata _data) external view
-    returns (bool allowed, byte statusCode)
+    returns (bool allowed)
     {
         if(_onWhitelist(_sender)){
             allowed = true;
-            statusCode = STATUS_SUCCESS;
+            
         }
         else{
             allowed = false;
-            statusCode = STATUS_FAIL;
+            
         }
     }
 
@@ -110,15 +110,15 @@ contract KYCController is IController, KYCVerifierRole {
     }
     */
     function verifyRedeemFrom(address _sender, address _tokenHolder, uint256 _amount, bytes calldata _data) external view
-    returns (bool allowed, byte statusCode)
+    returns (bool allowed)
     {
         if(_onWhitelist(_sender) && _onWhitelist(_tokenHolder)){
             allowed = true;
-            statusCode = STATUS_SUCCESS;
+            
         }
         else{
             allowed = false;
-            statusCode = STATUS_FAIL;
+            
         }
     }
 
