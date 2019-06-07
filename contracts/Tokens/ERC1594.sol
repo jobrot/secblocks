@@ -8,6 +8,7 @@ import "../Controlling/Controlled.sol";
 
 /**
  * @title AML aware implementation of ERC1594 (Subset of ERC1400 https://github.com/ethereum/EIPs/issues/1411)
+ * adapted from the standard implementation of the spec: https://github.com/SecurityTokenStandard/EIP-Spec
  */
 contract ERC1594 is IERC1594, ERC20, Controlled, IssuerRole { //TODO erc20mintable? //TODO pausable, mintable
     // Variable which tells whether issuance is ON or OFF forever
@@ -56,22 +57,19 @@ contract ERC1594 is IERC1594, ERC20, Controlled, IssuerRole { //TODO erc20mintab
         byte statusCode;
         verified = kycController.verifyTransfer(msg.sender, _to, _value, _data);
         require(verified, "ERC1594: The transfer is not allowed by the KYCController!");
-        //TODO possibly more information, like who was denied, from statuscode? If so, we have to log them via events, as solidity does not feature print statements
-/*
         verified = insiderListController.verifyTransfer(msg.sender, _to, _value, _data);
-        require(verified, "The transfer is not allowed by the InsiderListController!");
+        require(verified, "ERC1594: The transfer is not allowed by the InsiderListController!");
         verified = pepListController.verifyTransfer(msg.sender, _to, _value, _data);
-        require(verified, "The transfer is not allowed by the PoliticallyExposedPersonController!");
-*/
+        require(verified, "ERC1594: The transfer is not allowed by the PoliticallyExposedPersonController!");
+
 
         //TODO if >15000 you must consult with bank? actually, you only have to be identified, which
         //in our case, is always the case... so what is it? just implement a flagging service?
         //if anything is done, it surely must also be stored, (alle ausgänge innerhalb einer woche oder so)
         //kein ausgang x anderer, sondern generell ausgang, einfach zweite map
 
-        //_updateTransferListAndCalculateSum(msg.sender,_value); TODO
+        _updateTransferListAndCalculateSum(msg.sender,_value); TODO
 
-        //require(false, "hierooooo")  ; //TODO XXX
 
         // Add a function to validate the `_data` parameter
         _transfer(msg.sender, _to, _value);
@@ -234,7 +232,7 @@ contract ERC1594 is IERC1594, ERC20, Controlled, IssuerRole { //TODO erc20mintab
             }
         }
 
-        require(sumOfTransfers+_value <= SPEND_CEILING,"The transfer exceeds the allowed quota within the retention period, and must be cosigned by an operator."); //TODO naming of operator with role
+        require(sumOfTransfers+_value <= SPEND_CEILING,"ERC1594: The transfer exceeds the allowed quota within the retention period, and must be cosigned by an operator."); //TODO naming of operator with role
 
 
         //enter element at first index, move others //TODO might also be implemented as queue with shifting index, see https://github.com/chriseth/solidity-examples/blob/master/queue.sol
