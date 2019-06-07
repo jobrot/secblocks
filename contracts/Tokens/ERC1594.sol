@@ -54,14 +54,16 @@ contract ERC1594 is IERC1594, ERC20, Controlled, IssuerRole { //TODO erc20mintab
     function transferWithData(address _to, uint256 _value, bytes memory  _data) public {
         bool verified;
         byte statusCode;
-        //(verified, statusCode) = kycController.verifyTransfer(msg.sender, _to, _value, _data);
-        //require(verified, "The transfer is not allowed by the KYCController!");
+        verified = kycController.verifyTransfer(msg.sender, _to, _value, _data);
+        require(verified, "ERC1594: The transfer is not allowed by the KYCController!");
         //TODO possibly more information, like who was denied, from statuscode? If so, we have to log them via events, as solidity does not feature print statements
-       /* (verified, statusCode) = insiderListController.verifyTransfer(msg.sender, _to, _value, _data);
+/*
+        verified = insiderListController.verifyTransfer(msg.sender, _to, _value, _data);
         require(verified, "The transfer is not allowed by the InsiderListController!");
-        (verified, statusCode) = pepListController.verifyTransfer(msg.sender, _to, _value, _data);
+        verified = pepListController.verifyTransfer(msg.sender, _to, _value, _data);
         require(verified, "The transfer is not allowed by the PoliticallyExposedPersonController!");
 */
+
         //TODO if >15000 you must consult with bank? actually, you only have to be identified, which
         //in our case, is always the case... so what is it? just implement a flagging service?
         //if anything is done, it surely must also be stored, (alle ausgänge innerhalb einer woche oder so)

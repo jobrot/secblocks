@@ -151,7 +151,7 @@ contract ERC20 is IERC20 { //TODO maybe add functionality from erc20detailed in 
     function _transfer(address from, address to, uint256 value) internal {
         require(from != address(0), "ERC20: transfer from the zero address");
         require(to != address(0), "ERC20: transfer to the zero address");
-        _balances[from] = _balances[from].sub(value);
+        _balances[from] = _balances[from].sub(value); //TODO should i add more meaningful error messages instead of subtraction overflow in case of too little funds?
         _balances[to] = _balances[to].add(value);
         emit Transfer(from, to, value);
     }

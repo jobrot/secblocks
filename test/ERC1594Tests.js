@@ -1,6 +1,13 @@
 const { BN, constants, expectEvent, expectRevert } = require('openzeppelin-test-helpers');
 const { ZERO_ADDRESS } = constants;
 const should = require('chai').should();
+const abi = require('ethereumjs-abi');
+//import Doppelganger from 'ethereum-doppelganger';
+//const Doppelganger = require('ethereum-doppelganger').default;
+//const Doppelganger = require('ethereum-doppelganger');
+
+
+const MockContract = artifacts.require("../contracts/Mocks/MockContract.sol"); //Gnosis Mock contract framework
 
 const ERC1594 = artifacts.require("../contracts/Tokens/ERC1594.sol");
 const VotingToken = artifacts.require("../contracts/Tokens/VotingToken.sol");
@@ -18,31 +25,85 @@ const {
 
 const ERC1594Mock = artifacts.require('ERC1594Mock');
 
+const STATUS_SUCCESS = 0x51; // Uses status codes from ERC-1066
+const STATUS_FAIL = 0x50;
+
 
 contract('ERC1594', function ([deployer, initialHolder, recipient, anotherAccount]) {
     const initialSupply = new BN(100);
 
-    beforeEach(async function () {
-        this.kycController = await KYCController.new();
-        this.insiderListController = await InsiderListController.new();
-        this.pepListController = await  await PEPListController.new();
 
-        //this.token = await ERC1594.new(this.kycController, this.insiderListController, this.pepListController);
-        this.token = await ERC1594Mock.new(this.kycController.address, this.insiderListController.address, this.pepListController.address, initialHolder, initialSupply);
+
+
+    beforeEach(async function () {
+        //this.kycController = await KYCController.new();
+        //this.kycControllerDG = new Doppelganger(this.kycController.abi);
+
+        this.kycMock = await MockContract.new();
+        this.insiderMock = await MockContract.new();
+        this.pepListMock = await MockContract.new();
+
+        //Let the mocks of all Controllers return Success by default, except if defined differently for tests
+        //await this.kycMock.givenAnyReturnBool(false);
+        await this.kycMock.givenAnyReturnBool(true);//(abi.rawEncode(['bool','bytes'], ['false','0x51']));
+        //const verifyTransfer = this.kycController.contract.methods.verifyTransfer(0, 0, 0,0).encodeABI();
+        //await this.kycMock.givenMethodReturn(verifyTransfer,abi.rawEncode(['bool','bytes'], ['true','0x51']))
+        //await this.insiderMock.givenAnyReturn(abi.rawEncode(['bool','bytes'], ['true','0x51']));
+        //await this.pepListMock.givenAnyReturn(abi.rawEncode(['bool','bytes'], ['true','0x51']));
+
+        //console.log(await this.kycMock.test("x"));
+
+        /*console.log("kycController:");
+        console.log(this.kycController);
+        console.log("DG:");
+        console.log(this.kycControllerDG);
+        await this.kycControllerDG.deploy(deployer);*/
+        //this.insiderListController = await InsiderListController.new();
+        //this.pepListController =  await PEPListController.new();
+
+
+
+        //this.token = await ERC1594Mock.new(this.kycMock.address, this.insiderMock.address, this.pepListMock.address, initialHolder, initialSupply);
+
+        this.token = await ERC1594.new(this.kycMock.address, this.insiderMock.address, this.pepListMock.address);
+
+        await this.token.issue(initialHolder, initialSupply, abi.rawEncode(['bytes'],['']));//mint(initialHolder,initialSupply);
     });
 
     //shouldBehaveLikeERC20(kycController,insiderListController,pepListController,  'ERC20', initialSupply, initialHolder, recipient, anotherAccount);
 
     describe('transferWithData', function () {
-        shouldBehaveLikeERC20Transfer('ERC20', initialHolder, recipient, initialSupply, function (from, to, amount) {
-            return this.token.transferInternal(from, to, amount);
-        });
 
-        describe('when the sender is the zero address', function () {
+/*        shouldBehaveLikeERC20Transfer('ERC20', initialHolder, recipient, initialSupply, function (from, to, amount) {
+            return this.token.transferInternal(from, to, amount);
+        });TODO*/
+
+        /*describe('when the sender is the zero address', function () {
             it('reverts', async function () {
+                //await this.kycControllerDG.verifyTransfer.returns({verified: true,statusCode: STATUS_SUCCESS});
                 await expectRevert(this.token.transferInternal(ZERO_ADDRESS, recipient, initialSupply),
                     'ERC20: transfer from the zero address'
                 );
+            });
+        });*/
+
+        describe('when the sender is not kycd', function () {
+            it('reverts', async function () {
+                await this.kycMock.givenAnyReturnBool(false);//(abi.rawEncode(['bool','bytes'], ['false','0x52']));
+
+                await expectRevert(this.token.transferWithData( recipient,1,abi.rawEncode(['bytes'],['']),{from: initialHolder}),
+                    'ERC1594: The transfer is not allowed by the KYCController!'
+                );
+            });
+        });
+
+        describe('when the sender is kycd', function () {
+            it('transfers correctly', async function () {
+                await this.token.transferWithData( recipient,1,abi.rawEncode(['bytes'],['']),{from: initialHolder});
+
+                (await this.token.balanceOf(initialHolder)).should.be.bignumber.equal('99');
+
+                (await this.token.balanceOf(recipient)).should.be.bignumber.equal('1');
             });
         });
     });
