@@ -23,6 +23,8 @@ contract ERC1594 is IERC1594, ERC20, Controlled, IssuerRole { //TODO erc20mintab
         //TODO if necessary, add receiver
     }
 
+    event Test(string word,uint number);
+
     // Variable that stores stores a mapping of the last transfers of the account
     // in order to comply with AML regulations
     // @dev maps each address to an array of dynamic length, that consists a struct of the timestamp and
@@ -68,7 +70,8 @@ contract ERC1594 is IERC1594, ERC20, Controlled, IssuerRole { //TODO erc20mintab
         //if anything is done, it surely must also be stored, (alle ausgänge innerhalb einer woche oder so)
         //kein ausgang x anderer, sondern generell ausgang, einfach zweite map
 
-        _updateTransferListAndCalculateSum(msg.sender,_value); TODO
+
+        _updateTransferListAndCalculateSum(msg.sender,_value);
 
 
         // Add a function to validate the `_data` parameter
@@ -215,15 +218,21 @@ contract ERC1594 is IERC1594, ERC20, Controlled, IssuerRole { //TODO erc20mintab
    * @dev Adds two numbers, return false on overflow, keeps transfer list ordered
    */
     function _updateTransferListAndCalculateSum(address _from, uint256 _value) private
-        returns (uint) { //TODO test
+         { //TODO test TODO do something with return value
+
+
+
         TimestampedTransfer[] storage senderTransfers = lastTransfers[_from]; //Storage pointer, not actual new storage allocated
+
         uint sumOfTransfers=0;
 
 
 
-        for (uint i=senderTransfers.length-1; i>=0; i--) {
+        for (uint i=senderTransfers.length; i>0; ) {
+            i--;
             // delete all transfers older than @TRANSFER_RETENTION_TIME
             if(senderTransfers[i].timestamp <= now - TRANSFER_RETENTION_TIME){
+
                 senderTransfers.pop();
             }
             // sum up all other transfer sums
@@ -231,21 +240,25 @@ contract ERC1594 is IERC1594, ERC20, Controlled, IssuerRole { //TODO erc20mintab
                 sumOfTransfers+=senderTransfers[i].amount; //todo use safe math
             }
         }
+        //TODO safemath
 
-        require(sumOfTransfers+_value <= SPEND_CEILING,"ERC1594: The transfer exceeds the allowed quota within the retention period, and must be cosigned by an operator."); //TODO naming of operator with role
+
+        require(sumOfTransfers+_value < SPEND_CEILING,"ERC1594: The transfer exceeds the allowed quota within the retention period, and must be cosigned by an operator."); //TODO naming of operator with role
 
 
         //enter element at first index, move others //TODO might also be implemented as queue with shifting index, see https://github.com/chriseth/solidity-examples/blob/master/queue.sol
-        TimestampedTransfer memory h = senderTransfers[0];
-        senderTransfers[0]= TimestampedTransfer(now,_value);
-        //TODO check edge cases
-        for(uint j = 1; j<senderTransfers.length; j++){
-            senderTransfers[j] = h;
-            h = senderTransfers[j+1];
+        if(senderTransfers.length > 0){
+            TimestampedTransfer memory h = senderTransfers[0];
+            senderTransfers[0]= TimestampedTransfer(now,_value);
+            //TODO check edge cases
+            for(uint j = 1; j<senderTransfers.length; j++){
+                senderTransfers[j] = h;
+                h = senderTransfers[j+1];
+            }
+            senderTransfers.push(h);
         }
-        senderTransfers.push(h);
+        else senderTransfers.push(TimestampedTransfer(now,_value));
 
-        return sumOfTransfers;
 
     }
 

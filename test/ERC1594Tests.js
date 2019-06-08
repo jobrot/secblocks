@@ -30,9 +30,10 @@ const STATUS_FAIL = 0x50;
 
 
 contract('ERC1594', function ([deployer, initialHolder, recipient, anotherAccount]) {
-    const initialSupply = new BN(100);
-
-
+const initialSupply = new BN(100);
+const AMLLimit = new BN(15000);
+const UnderAMLLimit = AMLLimit.sub(new BN(1));
+const HalfAMLLimit = AMLLimit.div(new BN(2));
 
 
     beforeEach(async function () {
@@ -78,12 +79,12 @@ contract('ERC1594', function ([deployer, initialHolder, recipient, anotherAccoun
 
     describe('transferWithData', function () {
 
-        shouldBehaveLikeERC20Transfer('ERC20', initialHolder, recipient, initialSupply, function (from, to, amount) {
+        /*shouldBehaveLikeERC20Transfer('ERC20', initialHolder, recipient, initialSupply, function (from, to, amount) {
             return this.token.transferInternal(from, to, amount);
-        });
+        });*/
 
         //kyc
-        describe('when the sender or recipient is not kycd', function () {
+        /*describe('when the sender or recipient is not kycd', function () {
             it('reverts', async function () {
                 const transferFromInitialHolder = this.kycController.contract.methods.verifyTransfer(initialHolder, recipient, 1, abi.rawEncode(['bytes'],[''])).encodeABI();
                 await this.kycMock.givenMethodReturnBool(transferFromInitialHolder,false);
@@ -148,12 +149,63 @@ contract('ERC1594', function ([deployer, initialHolder, recipient, anotherAccoun
 
                 (await this.token.balanceOf(recipient)).should.be.bignumber.equal('1');
             });
+        });*/
+
+
+
+        // AML
+
+
+        describe('when the amount of a single transfer is just beyond the AML Limit', function () {
+            it('transfers correctly', async function () {
+                await this.token.issue(initialHolder, AMLLimit, abi.rawEncode(['bytes'],['']));
+
+                await this.token.transferWithData( recipient,UnderAMLLimit,abi.rawEncode(['bytes'],['']),{from: initialHolder});
+
+                (await this.token.balanceOf(initialHolder)).should.be.bignumber.equal('101');
+
+                (await this.token.balanceOf(recipient)).should.be.bignumber.equal(UnderAMLLimit);
+            });
         });
 
 
+       describe('when the amount of a single transfer is at the AML Limit', function () {
+            it('reverts', async function () {
+                await this.token.issue(initialHolder, AMLLimit, abi.rawEncode(['bytes'],['']));
 
-        
-        
+                await expectRevert(this.token.transferWithData( recipient,AMLLimit,abi.rawEncode(['bytes'],['']),{from: initialHolder}),
+                    'ERC1594: The transfer exceeds the allowed quota within the retention period, and must be cosigned by an operator.'
+                );
+            });
+        });
+
+
+       describe('when the amount of two concurrent transfers to a single recipient is at the AML Limit', function () {
+            it('reverts', async function () {
+                await this.token.issue(initialHolder, AMLLimit, abi.rawEncode(['bytes'],['']));
+
+                this.token.transferWithData( recipient,HalfAMLLimit,abi.rawEncode(['bytes'],['']),{from: initialHolder})
+
+                await expectRevert(this.token.transferWithData( recipient,HalfAMLLimit ,abi.rawEncode(['bytes'],['']),{from: initialHolder}),
+                    'ERC1594: The transfer exceeds the allowed quota within the retention period, and must be cosigned by an operator.'
+                );
+            });
+        });
+
+        describe('when the amount of two concurrent transfers to multiple recipient is at the AML Limit', function () {
+            it('reverts', async function () {
+                await this.token.issue(initialHolder, AMLLimit, abi.rawEncode(['bytes'],['']));
+
+                this.token.transferWithData( recipient,HalfAMLLimit,abi.rawEncode(['bytes'],['']),{from: initialHolder})
+
+                await expectRevert(this.token.transferWithData( anotherAccount,HalfAMLLimit,abi.rawEncode(['bytes'],['']),{from: initialHolder}),
+                    'ERC1594: The transfer exceeds the allowed quota within the retention period, and must be cosigned by an operator.'
+                );
+            });
+        });
+
+        //TODO check retention time
+
     });
 
 });
