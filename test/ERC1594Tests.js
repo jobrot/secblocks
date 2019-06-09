@@ -5,7 +5,8 @@ const abi = require('ethereumjs-abi');
 //import Doppelganger from 'ethereum-doppelganger';
 //const Doppelganger = require('ethereum-doppelganger').default;
 //const Doppelganger = require('ethereum-doppelganger');
-
+// const Web3 = require('web3');
+// const web3 = new Web3(new Web3.providers.HttpProvider('http://localhost:8545'));
 
 const MockContract = artifacts.require("../contracts/Mocks/MockContract.sol"); //Gnosis Mock contract framework
 
@@ -25,15 +26,16 @@ const {
 
 const ERC1594Mock = artifacts.require('ERC1594Mock');
 
-const STATUS_SUCCESS = 0x51; // Uses status codes from ERC-1066
-const STATUS_FAIL = 0x50;
+const TRANSFER_RETENTION_TIME = 604800; //604800 == 1 Week in Seconds
+const AMLLimit = new BN(15000);
+const initialSupply = AMLLimit;
+const UnderAMLLimit = AMLLimit.sub(new BN(1));
+const HalfAMLLimit = AMLLimit.div(new BN(2));
+
 
 
 contract('ERC1594', function ([deployer, initialHolder, recipient, anotherAccount]) {
-const initialSupply = new BN(100);
-const AMLLimit = new BN(15000);
-const UnderAMLLimit = AMLLimit.sub(new BN(1));
-const HalfAMLLimit = AMLLimit.div(new BN(2));
+
 
 
     beforeEach(async function () {
@@ -158,11 +160,11 @@ const HalfAMLLimit = AMLLimit.div(new BN(2));
 
         describe('when the amount of a single transfer is just beyond the AML Limit', function () {
             it('transfers correctly', async function () {
-                await this.token.issue(initialHolder, AMLLimit, abi.rawEncode(['bytes'],['']));
+                //await this.token.issue(initialHolder, AMLLimit, abi.rawEncode(['bytes'],['']));
 
                 await this.token.transferWithData( recipient,UnderAMLLimit,abi.rawEncode(['bytes'],['']),{from: initialHolder});
 
-                (await this.token.balanceOf(initialHolder)).should.be.bignumber.equal('101');
+                (await this.token.balanceOf(initialHolder)).should.be.bignumber.equal('1');
 
                 (await this.token.balanceOf(recipient)).should.be.bignumber.equal(UnderAMLLimit);
             });
@@ -171,7 +173,7 @@ const HalfAMLLimit = AMLLimit.div(new BN(2));
 
        describe('when the amount of a single transfer is at the AML Limit', function () {
             it('reverts', async function () {
-                await this.token.issue(initialHolder, AMLLimit, abi.rawEncode(['bytes'],['']));
+                //await this.token.issue(initialHolder, AMLLimit, abi.rawEncode(['bytes'],['']));
 
                 await expectRevert(this.token.transferWithData( recipient,AMLLimit,abi.rawEncode(['bytes'],['']),{from: initialHolder}),
                     'ERC1594: The transfer exceeds the allowed quota within the retention period, and must be cosigned by an operator.'
@@ -182,9 +184,9 @@ const HalfAMLLimit = AMLLimit.div(new BN(2));
 
        describe('when the amount of two concurrent transfers to a single recipient is at the AML Limit', function () {
             it('reverts', async function () {
-                await this.token.issue(initialHolder, AMLLimit, abi.rawEncode(['bytes'],['']));
+                //await this.token.issue(initialHolder, AMLLimit, abi.rawEncode(['bytes'],['']));
 
-                this.token.transferWithData( recipient,HalfAMLLimit,abi.rawEncode(['bytes'],['']),{from: initialHolder})
+                await this.token.transferWithData( recipient,HalfAMLLimit,abi.rawEncode(['bytes'],['']),{from: initialHolder})
 
                 await expectRevert(this.token.transferWithData( recipient,HalfAMLLimit ,abi.rawEncode(['bytes'],['']),{from: initialHolder}),
                     'ERC1594: The transfer exceeds the allowed quota within the retention period, and must be cosigned by an operator.'
@@ -194,9 +196,9 @@ const HalfAMLLimit = AMLLimit.div(new BN(2));
 
         describe('when the amount of two concurrent transfers to multiple recipient is at the AML Limit', function () {
             it('reverts', async function () {
-                await this.token.issue(initialHolder, AMLLimit, abi.rawEncode(['bytes'],['']));
+                //await this.token.issue(initialHolder, AMLLimit, abi.rawEncode(['bytes'],['']));
 
-                this.token.transferWithData( recipient,HalfAMLLimit,abi.rawEncode(['bytes'],['']),{from: initialHolder})
+                await this.token.transferWithData( recipient,HalfAMLLimit,abi.rawEncode(['bytes'],['']),{from: initialHolder})
 
                 await expectRevert(this.token.transferWithData( anotherAccount,HalfAMLLimit,abi.rawEncode(['bytes'],['']),{from: initialHolder}),
                     'ERC1594: The transfer exceeds the allowed quota within the retention period, and must be cosigned by an operator.'
@@ -204,8 +206,142 @@ const HalfAMLLimit = AMLLimit.div(new BN(2));
             });
         });
 
-        //TODO check retention time
+
+
+        //this test should run last, as it changes time
+        describe('when the amount of two transfers more than RETENTION_TIME apart to a single recipient are under the AML Limit', function () {
+            it('transfers correctly', async function () {
+                await this.token.issue(initialHolder, AMLLimit, abi.rawEncode(['bytes'],['']));
+
+                await this.token.transferWithData( recipient,UnderAMLLimit,abi.rawEncode(['bytes'],['']),{from: initialHolder});
+
+                await advanceTime(TRANSFER_RETENTION_TIME+1000);
+                await advanceBlock();
+
+                await this.token.transferWithData( recipient,UnderAMLLimit,abi.rawEncode(['bytes'],['']),{from: initialHolder});
+
+                (await this.token.balanceOf(initialHolder)).should.be.bignumber.equal('2');
+
+                (await this.token.balanceOf(recipient)).should.be.bignumber.equal(UnderAMLLimit.add(UnderAMLLimit));
+
+            });
+        });
+
+        describe('when the amount of two transfers more than RETENTION_TIME apart to multiple recipients are exactly the AML Limit', function () {
+            it('transfers correctly', async function () {
+
+                await this.token.transferWithData( recipient,HalfAMLLimit,abi.rawEncode(['bytes'],['']),{from: initialHolder});
+
+                await advanceTime(TRANSFER_RETENTION_TIME+1000);
+                await advanceBlock();
+
+                this.token.transferWithData( anotherAccount,HalfAMLLimit,abi.rawEncode(['bytes'],['']),{from: initialHolder});
+
+                (await this.token.balanceOf(initialHolder)).should.be.bignumber.equal('0');
+
+                (await this.token.balanceOf(recipient)).should.be.bignumber.equal(HalfAMLLimit);
+                (await this.token.balanceOf(anotherAccount)).should.be.bignumber.equal(HalfAMLLimit);
+            });
+        });
+
+        //this test should run last, as it changes time
+        describe('when the amount of multiple transfers less than RETENTION_TIME apart to a single recipient are under the AML Limit', function () {
+            it('transfers correctly', async function () {
+
+                await this.token.transferWithData( recipient,AMLLimit.div(new BN(4)),abi.rawEncode(['bytes'],['']),{from: initialHolder});
+
+                await advanceTime(1000);
+                await advanceBlock();
+
+                await this.token.transferWithData( recipient,AMLLimit.div(new BN(4)),abi.rawEncode(['bytes'],['']),{from: initialHolder});
+
+                await advanceTime(1000);
+                await advanceBlock();
+
+                await this.token.transferWithData( recipient,AMLLimit.div(new BN(4)),abi.rawEncode(['bytes'],['']),{from: initialHolder});
+
+                await advanceTime(1000);
+                await advanceBlock();
+
+                await this.token.transferWithData( recipient,AMLLimit.div(new BN(4)).sub(new BN(1)),abi.rawEncode(['bytes'],['']),{from: initialHolder});
+
+
+                (await this.token.balanceOf(initialHolder)).should.be.bignumber.equal('1');
+
+                (await this.token.balanceOf(recipient)).should.be.bignumber.equal(UnderAMLLimit);
+
+
+            });
+        });
+
+
+
+
+
+        //this test should run last, as it changes time
+        describe('when the amount of two transfers more than RETENTION_TIME apart to a single recipient are under the AML Limit', function () {
+            it('transfers correctly', async function () {
+                await this.token.transferWithData( recipient,AMLLimit.div(new BN(4)),abi.rawEncode(['bytes'],['']),{from: initialHolder});
+
+                await advanceTime(1000);
+                await advanceBlock();
+
+                await this.token.transferWithData( recipient,AMLLimit.div(new BN(4)),abi.rawEncode(['bytes'],['']),{from: initialHolder});
+
+                await advanceTime(1000);
+                await advanceBlock();
+
+                await this.token.transferWithData( recipient,AMLLimit.div(new BN(4)),abi.rawEncode(['bytes'],['']),{from: initialHolder});
+
+                (await this.token.balanceOf(initialHolder)).should.be.bignumber.equal(AMLLimit.div(new BN(4)));
+
+                (await this.token.balanceOf(recipient)).should.be.bignumber.equal(AMLLimit.div(new BN(4)).mul(new BN(3)));
+
+                await advanceTime(1000);
+                await advanceBlock();
+
+                await expectRevert(this.token.transferWithData( recipient,AMLLimit.div(new BN(4)),abi.rawEncode(['bytes'],['']),{from: initialHolder}),
+                    'ERC1594: The transfer exceeds the allowed quota within the retention period, and must be cosigned by an operator.'
+                );
+
+            });
+        });
+
+
+
+
 
     });
 
 });
+
+// Source for helper functions: https://medium.com/fluidity/standing-the-time-of-test-b906fcc374a9
+
+advanceTime = (time) => {
+    return new Promise((resolve, reject) => {
+        web3.currentProvider.send({
+            jsonrpc: '2.0',
+            method: 'evm_increaseTime',
+            params: [time],
+            id: new Date().getTime()
+        }, (err, result) => {
+            if (err) { return reject(err) }
+            return resolve(result)
+        })
+    })
+}
+
+advanceBlock = () => {
+    return new Promise((resolve, reject) => {
+        web3.currentProvider.send({
+            jsonrpc: '2.0',
+            method: 'evm_mine',
+            id: new Date().getTime()
+        }, (err, result) => {
+            if (err) { return reject(err) }
+            const newBlockHash = web3.eth.getBlock('latest').hash
+
+            return resolve(newBlockHash)
+        })
+    })
+}

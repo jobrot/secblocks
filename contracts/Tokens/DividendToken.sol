@@ -188,7 +188,7 @@ contract DividendToken is ERC1594 { //TODO comments
      * @param _value The amount of tokens to be redeemed
      * @param _data The `bytes _data` it can be used in the token contract to authenticate the redemption.
      */
-    //XXX this is overriden in order to hide the non dividend respecting functions when implementing a dividendtoken
+    //TODO XXX this is overriden in order to hide the non dividend respecting functions when implementing a dividendtoken
     function redeem(uint _value, bytes memory _data) public {
         super.redeem(_value, _data); //TODO check if the super contract function is really uncallable
 

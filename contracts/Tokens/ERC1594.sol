@@ -218,7 +218,7 @@ contract ERC1594 is IERC1594, ERC20, Controlled, IssuerRole { //TODO erc20mintab
    * @dev Adds two numbers, return false on overflow, keeps transfer list ordered
    */
     function _updateTransferListAndCalculateSum(address _from, uint256 _value) private
-         { //TODO test TODO do something with return value
+         {
 
 
 
@@ -233,6 +233,8 @@ contract ERC1594 is IERC1594, ERC20, Controlled, IssuerRole { //TODO erc20mintab
             // delete all transfers older than @TRANSFER_RETENTION_TIME
             if(senderTransfers[i].timestamp <= now - TRANSFER_RETENTION_TIME){
 
+
+                emit Test("popping timestamp", senderTransfers[i].timestamp);
                 senderTransfers.pop();
             }
             // sum up all other transfer sums
@@ -241,24 +243,25 @@ contract ERC1594 is IERC1594, ERC20, Controlled, IssuerRole { //TODO erc20mintab
             }
         }
         //TODO safemath
-
+        emit Test("sumofTransfers before check", sumOfTransfers);
 
         require(sumOfTransfers+_value < SPEND_CEILING,"ERC1594: The transfer exceeds the allowed quota within the retention period, and must be cosigned by an operator."); //TODO naming of operator with role
 
 
         //enter element at first index, move others //TODO might also be implemented as queue with shifting index, see https://github.com/chriseth/solidity-examples/blob/master/queue.sol
         if(senderTransfers.length > 0){
-            TimestampedTransfer memory h = senderTransfers[0];
+            TimestampedTransfer storage h = senderTransfers[0];
             senderTransfers[0]= TimestampedTransfer(now,_value);
             //TODO check edge cases
-            for(uint j = 1; j<senderTransfers.length; j++){
-                senderTransfers[j] = h;
-                h = senderTransfers[j+1];
-            }
+//            for(uint j = 1; j<senderTransfers.length; j++){
+//                senderTransfers[j] = h;
+//                h = senderTransfers[j+1];
+//            }
             senderTransfers.push(h);
         }
         else senderTransfers.push(TimestampedTransfer(now,_value));
 
+             //https://programtheblockchain.com/posts/2018/03/23/storage-patterns-stacks-queues-and-deques/ -> interesting idea
 
     }
 
