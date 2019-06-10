@@ -15,6 +15,7 @@ const VotingToken = artifacts.require("../contracts/Tokens/VotingToken.sol");
 const KYCController = artifacts.require("../contracts/Controlling/KYCController.sol");
 const InsiderListController = artifacts.require("../contracts/Controlling/InsiderListController.sol");
 const PEPListController = artifacts.require("../contracts/Controlling/PEPListController.sol");
+const TransferQueues = artifacts.require("../contracts/AML/TransferQueues.sol");
 
 
 const {
@@ -34,7 +35,7 @@ const HalfAMLLimit = AMLLimit.div(new BN(2));
 
 
 
-contract('ERC1594', function ([deployer, initialHolder, recipient, anotherAccount]) {
+contract('ERC1594, TransferQueues', function ([deployer, initialHolder, recipient, anotherAccount]) {
 
 
 
@@ -49,7 +50,6 @@ contract('ERC1594', function ([deployer, initialHolder, recipient, anotherAccoun
         this.pepListMock = await MockContract.new();
 
         //Let the mocks of all Controllers return Success by default, except if defined differently for tests
-
         await this.kycMock.givenAnyReturnBool(true);
         await this.insiderListMock.givenAnyReturnBool(true);
         await this.pepListMock.givenAnyReturnBool(true);
@@ -68,9 +68,9 @@ contract('ERC1594', function ([deployer, initialHolder, recipient, anotherAccoun
         //this.insiderListController = await InsiderListController.new();
         //this.pepListController =  await PEPListController.new();
 
-
-
-        this.token = await ERC1594Mock.new(this.kycMock.address, this.insiderListMock.address, this.pepListMock.address, initialHolder, initialSupply);
+        //create SUT
+        this.transferQueues = await TransferQueues.new();
+        this.token = await ERC1594Mock.new(this.kycMock.address, this.insiderListMock.address, this.pepListMock.address, this.transferQueues.address, initialHolder, initialSupply);
 
         //this.token = await ERC1594.new(this.kycMock.address, this.insiderMock.address, this.pepListMock.address);
 
@@ -81,12 +81,12 @@ contract('ERC1594', function ([deployer, initialHolder, recipient, anotherAccoun
 
     describe('transferWithData', function () {
 
-        /*shouldBehaveLikeERC20Transfer('ERC20', initialHolder, recipient, initialSupply, function (from, to, amount) {
+        shouldBehaveLikeERC20Transfer('ERC20', initialHolder, recipient, initialSupply, function (from, to, amount) {
             return this.token.transferInternal(from, to, amount);
-        });*/
+        });
 
         //kyc
-        /*describe('when the sender or recipient is not kycd', function () {
+        describe('when the sender or recipient is not kycd', function () {
             it('reverts', async function () {
                 const transferFromInitialHolder = this.kycController.contract.methods.verifyTransfer(initialHolder, recipient, 1, abi.rawEncode(['bytes'],[''])).encodeABI();
                 await this.kycMock.givenMethodReturnBool(transferFromInitialHolder,false);
@@ -101,7 +101,7 @@ contract('ERC1594', function ([deployer, initialHolder, recipient, anotherAccoun
             it('transfers correctly', async function () {
                 await this.token.transferWithData( recipient,1,abi.rawEncode(['bytes'],['']),{from: initialHolder});
 
-                (await this.token.balanceOf(initialHolder)).should.be.bignumber.equal('99');
+                (await this.token.balanceOf(initialHolder)).should.be.bignumber.equal(initialSupply.sub(new BN(1)));
 
                 (await this.token.balanceOf(recipient)).should.be.bignumber.equal('1');
             });
@@ -124,7 +124,7 @@ contract('ERC1594', function ([deployer, initialHolder, recipient, anotherAccoun
             it('transfers correctly', async function () {
                 await this.token.transferWithData( recipient,1,abi.rawEncode(['bytes'],['']),{from: initialHolder});
 
-                (await this.token.balanceOf(initialHolder)).should.be.bignumber.equal('99');
+                (await this.token.balanceOf(initialHolder)).should.be.bignumber.equal(initialSupply.sub(new BN(1)));
 
                 (await this.token.balanceOf(recipient)).should.be.bignumber.equal('1');
             });
@@ -147,11 +147,11 @@ contract('ERC1594', function ([deployer, initialHolder, recipient, anotherAccoun
             it('transfers correctly', async function () {
                 await this.token.transferWithData( recipient,1,abi.rawEncode(['bytes'],['']),{from: initialHolder});
 
-                (await this.token.balanceOf(initialHolder)).should.be.bignumber.equal('99');
+                (await this.token.balanceOf(initialHolder)).should.be.bignumber.equal(initialSupply.sub(new BN(1)));
 
                 (await this.token.balanceOf(recipient)).should.be.bignumber.equal('1');
             });
-        });*/
+        });
 
 
 
@@ -181,7 +181,7 @@ contract('ERC1594', function ([deployer, initialHolder, recipient, anotherAccoun
             });
         });
 
-/*
+
        describe('when the amount of two concurrent transfers to a single recipient is at the AML Limit', function () {
             it('reverts', async function () {
                 //await this.token.issue(initialHolder, AMLLimit, abi.rawEncode(['bytes'],['']));
@@ -235,7 +235,7 @@ contract('ERC1594', function ([deployer, initialHolder, recipient, anotherAccoun
                 await advanceTime(TRANSFER_RETENTION_TIME+1000);
                 await advanceBlock();
 
-                this.token.transferWithData( anotherAccount,HalfAMLLimit,abi.rawEncode(['bytes'],['']),{from: initialHolder});
+                await this.token.transferWithData( anotherAccount,HalfAMLLimit,abi.rawEncode(['bytes'],['']),{from: initialHolder});
 
                 (await this.token.balanceOf(initialHolder)).should.be.bignumber.equal('0');
 
@@ -244,7 +244,7 @@ contract('ERC1594', function ([deployer, initialHolder, recipient, anotherAccoun
             });
         });
 
-        //this test should run last, as it changes time
+
         describe('when the amount of multiple transfers less than RETENTION_TIME apart to a single recipient are under the AML Limit', function () {
             it('transfers correctly', async function () {
 
@@ -307,9 +307,56 @@ contract('ERC1594', function ([deployer, initialHolder, recipient, anotherAccoun
             });
         });
 
-        //TODO test with big amount that gets cleared out over time
 
-*/
+        describe('when the amount of multiple transfers less than RETENTION_TIME apart to a single recipient are at the AML Limit only when taking order into account', function () {
+            it('reverts before time is over, and transfers correctly afterwards', async function () {
+                await this.token.issue(initialHolder, AMLLimit, abi.rawEncode(['bytes'],['']));
+
+
+                await this.token.transferWithData( recipient,HalfAMLLimit,abi.rawEncode(['bytes'],['']),{from: initialHolder});
+
+                await advanceTime(TRANSFER_RETENTION_TIME/4);
+                await advanceBlock();
+
+                //Reverts, as retention time is not yet over
+                await expectRevert(this.token.transferWithData( recipient,HalfAMLLimit,abi.rawEncode(['bytes'],['']),{from: initialHolder}),
+                    'ERC1594: The transfer exceeds the allowed quota within the retention period, and must be cosigned by an operator.'
+                );
+                await advanceTime(TRANSFER_RETENTION_TIME/4);
+                await advanceBlock();
+
+                //smaller amounts to fill up queue
+                await this.token.transferWithData( recipient,new BN(1),abi.rawEncode(['bytes'],['']),{from: initialHolder});
+                await this.token.transferWithData( recipient,new BN(1),abi.rawEncode(['bytes'],['']),{from: initialHolder});
+
+
+                await advanceTime(TRANSFER_RETENTION_TIME/2);
+                await advanceBlock();
+
+                //this should now work, as the first transfer is cleared
+                await this.token.transferWithData( recipient,AMLLimit.sub(new BN(3)),abi.rawEncode(['bytes'],['']),{from: initialHolder});
+
+                (await this.token.balanceOf(recipient)).should.be.bignumber.equal(UnderAMLLimit.add(HalfAMLLimit));
+
+                await advanceTime(TRANSFER_RETENTION_TIME/2);
+                await advanceBlock();
+
+                //small transfers should be cleared out by now, so a transfer of 2 should work, but not a transfer of 3
+                await expectRevert(this.token.transferWithData( recipient,new BN(3),abi.rawEncode(['bytes'],['']),{from: initialHolder}),
+                    'ERC1594: The transfer exceeds the allowed quota within the retention period, and must be cosigned by an operator.'
+                );
+
+                await this.token.transferWithData( recipient,new BN(2),abi.rawEncode(['bytes'],['']),{from: initialHolder});
+
+                (await this.token.balanceOf(initialHolder)).should.be.bignumber.equal(UnderAMLLimit.sub(HalfAMLLimit));
+
+                (await this.token.balanceOf(recipient)).should.be.bignumber.equal(UnderAMLLimit.add(HalfAMLLimit).add(new BN(2)));
+
+
+            });
+        });
+
+
 
     });
 

@@ -4,7 +4,7 @@ import "../Tokens/ERC1594.sol";
 
 // mock class using ERC20, in order for the test class to be able to access internal functions
 contract ERC1594Mock is ERC1594 {
-    constructor(KYCController _kycController, InsiderListController _insiderListController, PEPListController _pepListController, address initialAccount, uint256 initialBalance) ERC1594( _kycController,  _insiderListController, _pepListController) public {
+    constructor(KYCController _kycController, InsiderListController _insiderListController, PEPListController _pepListController, TransferQueues _queues,  address initialAccount, uint256 initialBalance) ERC1594( _kycController,  _insiderListController, _pepListController,_queues) public {
         _mint(initialAccount, initialBalance);
     }
 

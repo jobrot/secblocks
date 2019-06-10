@@ -60,7 +60,7 @@ contract VotingToken is DividendToken, VotingOfficialRole{
     // all ballots that can be voted upon by token holders
     Ballot[] public ballots;
 
-    constructor(KYCController _kycController, InsiderListController _insiderListController, PEPListController _pepListController) DividendToken( _kycController,  _insiderListController, _pepListController) public { //The super contract is a modifier of sorts of the constructor
+    constructor(KYCController _kycController, InsiderListController _insiderListController, PEPListController _pepListController, TransferQueues _queues) DividendToken( _kycController,  _insiderListController, _pepListController, _queues) public { //The super contract is a modifier of sorts of the constructor
 
     }
 

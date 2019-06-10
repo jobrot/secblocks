@@ -4,7 +4,7 @@ import "../Interfaces/IERC1594.sol";
 import "./ERC20.sol";
 import "../Roles/IssuerRole.sol";
 import "../Controlling/Controlled.sol";
-import "../AML/TransferQueue.sol"; //TODO does this add to the size of the contract?
+import "../AML/TransferQueues.sol";
 //import "openzeppelin-solidity/contracts/ownership/Ownable.sol";
 
 /**
@@ -26,8 +26,8 @@ contract ERC1594 is IERC1594, ERC20, Controlled, IssuerRole { //TODO erc20mintab
     // in order to comply with AML regulations
     // @dev maps each address to an array of dynamic length, that consists a struct of the timestamp and
     // the value of the outbound funds (counted in number of tokens, value must be determined on check (todo or not, check immediately at entering?)
-    mapping (address => TransferQueue) lastTransfers;
-
+    //mapping (address => TransferQueue) lastTransfers;
+    TransferQueues queues;
 
     // Constant that defines how long the last Transfers of each sender are considered for AML checks
     uint constant TRANSFER_RETENTION_TIME = 604800; //604800 == 1 Week in Seconds
@@ -36,8 +36,8 @@ contract ERC1594 is IERC1594, ERC20, Controlled, IssuerRole { //TODO erc20mintab
     uint constant SPEND_CEILING = 15000;
 
     // Constructor
-    constructor(KYCController _kycController, InsiderListController _insiderListController, PEPListController _pepListController) Controlled( _kycController,  _insiderListController, _pepListController) public { //The super contract is a modifier of sorts of the constructor
-
+    constructor(KYCController _kycController, InsiderListController _insiderListController, PEPListController _pepListController, TransferQueues _queues) Controlled( _kycController,  _insiderListController, _pepListController) public { //The super contract is a modifier of sorts of the constructor
+        queues = _queues;
     }
 
     /**
@@ -66,10 +66,8 @@ contract ERC1594 is IERC1594, ERC20, Controlled, IssuerRole { //TODO erc20mintab
         //in our case, is always the case... so what is it? just implement a flagging service?
         //if anything is done, it surely must also be stored, (alle ausgänge innerhalb einer woche oder so)
         //kein ausgang x anderer, sondern generell ausgang, einfach zweite map
-
          require(_updateTransferListAndCalculateSum(msg.sender,_value) < SPEND_CEILING,"ERC1594: The transfer exceeds the allowed quota within the retention period, and must be cosigned by an operator."); //TODO naming of operator with role
 
-        //_updateTransferListAndCalculateSum(msg.sender,_value);
 
 
         // Add a function to validate the `_data` parameter
@@ -217,13 +215,9 @@ contract ERC1594 is IERC1594, ERC20, Controlled, IssuerRole { //TODO erc20mintab
    */
     function _updateTransferListAndCalculateSum(address _from, uint256 _value) private returns(uint sum) {
 
-        TransferQueue senderTransfers = lastTransfers[_from];
+        //TransferQueue senderTransfers = lastTransfers[_from];
 
-        if (senderTransfers == null){
-            emit Test("creating Transferqueue", 0);
-            senderTransfers = new TransferQueue();
-            lastTransfers[_from] = senderTransfers;
-        }
+
 
         // TimestampedTransfer[] storage senderTransfers = lastTransfers[_from]; //Storage pointer, not actual new storage allocated
 
@@ -231,16 +225,17 @@ contract ERC1594 is IERC1594, ERC20, Controlled, IssuerRole { //TODO erc20mintab
         uint timestamp;
 
 
-        while(!senderTransfers.empty()){
-            (timestamp, )= senderTransfers.peek();
+        while(!queues.empty(_from)){
+            (timestamp, )= queues.peek(_from);
             if(timestamp <= now - TRANSFER_RETENTION_TIME){
-                senderTransfers.dequeue();
+                queues.dequeue(_from);
             }
+            else break;
         }
 
-        senderTransfers.enqueue(now, _value);
+        queues.enqueue(_from, now, _value);
 
-        return senderTransfers.sumOfTransfers();
+        return queues.sumOfTransfers(_from);
 
 
 //        for (uint i=senderTransfers.length; i>0; ) {
