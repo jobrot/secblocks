@@ -4,6 +4,7 @@ import "../Interfaces/IERC1594.sol";
 import "./ERC20.sol";
 import "../Roles/IssuerRole.sol";
 import "../Controlling/Controlled.sol";
+import "../AML/TransferQueue.sol"; //TODO does this add to the size of the contract?
 //import "openzeppelin-solidity/contracts/ownership/Ownable.sol";
 
 /**
@@ -17,19 +18,15 @@ contract ERC1594 is IERC1594, ERC20, Controlled, IssuerRole { //TODO erc20mintab
     // issuer, followed compliance rules etc. So issuers have the choice how they want to close the issuance.
     bool internal issuance = true; //TODO
 
-    struct TimestampedTransfer{
-        uint timestamp;
-        uint amount;
-        //TODO if necessary, add receiver
-    }
 
-    event Test(string word,uint number);
+
+    event Test(string word,uint number); //TODO remove this
 
     // Variable that stores stores a mapping of the last transfers of the account
     // in order to comply with AML regulations
     // @dev maps each address to an array of dynamic length, that consists a struct of the timestamp and
     // the value of the outbound funds (counted in number of tokens, value must be determined on check (todo or not, check immediately at entering?)
-    mapping (address => TimestampedTransfer[]) lastTransfers;
+    mapping (address => TransferQueue) lastTransfers;
 
 
     // Constant that defines how long the last Transfers of each sender are considered for AML checks
@@ -70,8 +67,9 @@ contract ERC1594 is IERC1594, ERC20, Controlled, IssuerRole { //TODO erc20mintab
         //if anything is done, it surely must also be stored, (alle ausgänge innerhalb einer woche oder so)
         //kein ausgang x anderer, sondern generell ausgang, einfach zweite map
 
+         require(_updateTransferListAndCalculateSum(msg.sender,_value) < SPEND_CEILING,"ERC1594: The transfer exceeds the allowed quota within the retention period, and must be cosigned by an operator."); //TODO naming of operator with role
 
-        _updateTransferListAndCalculateSum(msg.sender,_value);
+        //_updateTransferListAndCalculateSum(msg.sender,_value);
 
 
         // Add a function to validate the `_data` parameter
@@ -217,49 +215,66 @@ contract ERC1594 is IERC1594, ERC20, Controlled, IssuerRole { //TODO erc20mintab
     /**
    * @dev Adds two numbers, return false on overflow, keeps transfer list ordered
    */
-    function _updateTransferListAndCalculateSum(address _from, uint256 _value) private
-         {
+    function _updateTransferListAndCalculateSum(address _from, uint256 _value) private returns(uint sum) {
 
+        TransferQueue senderTransfers = lastTransfers[_from];
 
+        if (senderTransfers == null){
+            emit Test("creating Transferqueue", 0);
+            senderTransfers = new TransferQueue();
+            lastTransfers[_from] = senderTransfers;
+        }
 
-        TimestampedTransfer[] storage senderTransfers = lastTransfers[_from]; //Storage pointer, not actual new storage allocated
+        // TimestampedTransfer[] storage senderTransfers = lastTransfers[_from]; //Storage pointer, not actual new storage allocated
 
         uint sumOfTransfers=0;
+        uint timestamp;
 
 
-
-        for (uint i=senderTransfers.length; i>0; ) {
-            i--;
-            // delete all transfers older than @TRANSFER_RETENTION_TIME
-            if(senderTransfers[i].timestamp <= now - TRANSFER_RETENTION_TIME){
-
-
-                emit Test("popping timestamp", senderTransfers[i].timestamp);
-                senderTransfers.pop();
-            }
-            // sum up all other transfer sums
-            else{
-                sumOfTransfers+=senderTransfers[i].amount; //todo use safe math
+        while(!senderTransfers.empty()){
+            (timestamp, )= senderTransfers.peek();
+            if(timestamp <= now - TRANSFER_RETENTION_TIME){
+                senderTransfers.dequeue();
             }
         }
-        //TODO safemath
-        emit Test("sumofTransfers before check", sumOfTransfers);
 
-        require(sumOfTransfers+_value < SPEND_CEILING,"ERC1594: The transfer exceeds the allowed quota within the retention period, and must be cosigned by an operator."); //TODO naming of operator with role
+        senderTransfers.enqueue(now, _value);
+
+        return senderTransfers.sumOfTransfers();
 
 
-        //enter element at first index, move others //TODO might also be implemented as queue with shifting index, see https://github.com/chriseth/solidity-examples/blob/master/queue.sol
-        if(senderTransfers.length > 0){
-            TimestampedTransfer storage h = senderTransfers[0];
-            senderTransfers[0]= TimestampedTransfer(now,_value);
-            //TODO check edge cases
-//            for(uint j = 1; j<senderTransfers.length; j++){
-//                senderTransfers[j] = h;
-//                h = senderTransfers[j+1];
+//        for (uint i=senderTransfers.length; i>0; ) {
+//            i--;
+//            // delete all transfers older than @TRANSFER_RETENTION_TIME
+//            if(senderTransfers[i].timestamp <= now - TRANSFER_RETENTION_TIME){
+//
+//
+//                emit Test("popping timestamp", senderTransfers[i].timestamp);
+//                senderTransfers.pop();
 //            }
-            senderTransfers.push(h);
-        }
-        else senderTransfers.push(TimestampedTransfer(now,_value));
+//            // sum up all other transfer sums
+//            else{
+//                sumOfTransfers+=senderTransfers[i].amount; //todo use safe math
+//            }
+//        }
+//        //TODO safemath
+//        emit Test("sumofTransfers before check", sumOfTransfers);
+//
+//        require(sumOfTransfers+_value < SPEND_CEILING,"ERC1594: The transfer exceeds the allowed quota within the retention period, and must be cosigned by an operator."); //TODO naming of operator with role
+//
+//
+//        //enter element at first index, move others //TODO might also be implemented as queue with shifting index, see https://github.com/chriseth/solidity-examples/blob/master/queue.sol
+//        if(senderTransfers.length > 0){
+//            TimestampedTransfer storage h = senderTransfers[0];
+//            senderTransfers[0]= TimestampedTransfer(now,_value);
+//            //TODO check edge cases
+////            for(uint j = 1; j<senderTransfers.length; j++){
+////                senderTransfers[j] = h;
+////                h = senderTransfers[j+1];
+////            }
+//            senderTransfers.push(h);
+//        }
+//        else senderTransfers.push(TimestampedTransfer(now,_value));
 
              //https://programtheblockchain.com/posts/2018/03/23/storage-patterns-stacks-queues-and-deques/ -> interesting idea
 

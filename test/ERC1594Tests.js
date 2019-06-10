@@ -181,7 +181,7 @@ contract('ERC1594', function ([deployer, initialHolder, recipient, anotherAccoun
             });
         });
 
-
+/*
        describe('when the amount of two concurrent transfers to a single recipient is at the AML Limit', function () {
             it('reverts', async function () {
                 //await this.token.issue(initialHolder, AMLLimit, abi.rawEncode(['bytes'],['']));
@@ -307,9 +307,9 @@ contract('ERC1594', function ([deployer, initialHolder, recipient, anotherAccoun
             });
         });
 
+        //TODO test with big amount that gets cleared out over time
 
-
-
+*/
 
     });
 
