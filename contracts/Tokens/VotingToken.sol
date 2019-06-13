@@ -10,7 +10,7 @@ import "../Roles/VotingOfficialRole.sol";
 
 
 /// @dev draws some inspiration from Jordi Baylina's MiniMeToken to record historical balances
-contract VotingToken is DividendToken, VotingOfficialRole{
+contract VotingToken is DividendToken{
 
 
     event BallotCreated(
@@ -60,7 +60,7 @@ contract VotingToken is DividendToken, VotingOfficialRole{
     // all ballots that can be voted upon by token holders
     Ballot[] public ballots;
 
-    constructor(KYCController _kycController, InsiderListController _insiderListController, PEPListController _pepListController, TransferQueues _queues) DividendToken( _kycController,  _insiderListController, _pepListController, _queues) public { //The super contract is a modifier of sorts of the constructor
+    constructor(Controller _controller, TransferQueues _queues) DividendToken( _controller, _queues) public { //The super contract is a modifier of sorts of the constructor
 
     }
 
@@ -120,7 +120,7 @@ contract VotingToken is DividendToken, VotingOfficialRole{
     /// @dev creates a new ballot and appends it to 'ballots'
     /// @param ballotName The name of the ballot resp. the asked Question
     /// @param optionNames List of possible choices / answers to the question
-    function createBallot(bytes32 ballotName, bytes32[] memory optionNames) public onlyVotingOfficial{
+    function createBallot(bytes32 ballotName, bytes32[] memory optionNames) public { //TODO   onlyVotingOfficial
 
         //Check the arguments for validity
         require(ballotName[0] != 0, "The ballotName must not be empty!");

@@ -3,15 +3,15 @@ pragma solidity ^0.5.0;
 import "../Interfaces/IERC1594.sol";
 import "./ERC20.sol";
 import "../Roles/IssuerRole.sol";
-import "../Controlling/Controlled.sol";
 import "../AML/TransferQueues.sol";
+import "../Controlling/Controller.sol";
 //import "openzeppelin-solidity/contracts/ownership/Ownable.sol";
 
 /**
  * @title AML aware implementation of ERC1594 (Subset of ERC1400 https://github.com/ethereum/EIPs/issues/1411)
  * adapted from the standard implementation of the spec: https://github.com/SecurityTokenStandard/EIP-Spec
  */
-contract ERC1594 is IERC1594, ERC20, Controlled, IssuerRole { //TODO erc20mintable? //TODO pausable, mintable
+contract ERC1594 is IERC1594, ERC20, IssuerRole { //TODO erc20mintable? //TODO pausable, mintable
     // Variable which tells whether issuance is ON or OFF forever
     // Implementers need to implement one more function to reset the value of `issuance` variable
     // to false. That function is not a part of the standard (EIP-1594) as it is depend on the various factors
@@ -29,6 +29,8 @@ contract ERC1594 is IERC1594, ERC20, Controlled, IssuerRole { //TODO erc20mintab
     //mapping (address => TransferQueue) lastTransfers;
     TransferQueues queues;
 
+    Controller controller;
+
     // Constant that defines how long the last Transfers of each sender are considered for AML checks
     uint constant TRANSFER_RETENTION_TIME = 604800; //604800 == 1 Week in Seconds
     // Constant that defines the maximum value that may be traded within the retention time
@@ -36,8 +38,9 @@ contract ERC1594 is IERC1594, ERC20, Controlled, IssuerRole { //TODO erc20mintab
     uint constant SPEND_CEILING = 15000;
 
     // Constructor
-    constructor(KYCController _kycController, InsiderListController _insiderListController, PEPListController _pepListController, TransferQueues _queues) Controlled( _kycController,  _insiderListController, _pepListController) public { //The super contract is a modifier of sorts of the constructor
+    constructor(Controller _controller, TransferQueues _queues)  public { //The super contract is a modifier of sorts of the constructor
         queues = _queues;
+        controller = _controller;
     }
 
     /**
@@ -53,13 +56,8 @@ contract ERC1594 is IERC1594, ERC20, Controlled, IssuerRole { //TODO erc20mintab
      */
     function transferWithData(address _to, uint256 _value, bytes memory  _data) public {
         bool verified;
-        byte statusCode;
-        verified = kycController.verifyTransfer(msg.sender, _to, _value, _data);
-        require(verified, "ERC1594: The transfer is not allowed by the KYCController!");
-        verified = insiderListController.verifyTransfer(msg.sender, _to, _value, _data);
-        require(verified, "ERC1594: The transfer is not allowed by the InsiderListController!");
-        verified = pepListController.verifyTransfer(msg.sender, _to, _value, _data);
-        require(verified, "ERC1594: The transfer is not allowed by the PoliticallyExposedPersonController!");
+        controller.verifyAll(msg.sender, _to, _value, _data);
+
 
 
         //TODO if >15000 you must consult with bank? actually, you only have to be identified, which
@@ -217,8 +215,6 @@ contract ERC1594 is IERC1594, ERC20, Controlled, IssuerRole { //TODO erc20mintab
 
         //TransferQueue senderTransfers = lastTransfers[_from];
 
-
-
         // TimestampedTransfer[] storage senderTransfers = lastTransfers[_from]; //Storage pointer, not actual new storage allocated
 
         uint sumOfTransfers=0;
@@ -237,49 +233,6 @@ contract ERC1594 is IERC1594, ERC20, Controlled, IssuerRole { //TODO erc20mintab
 
         return queues.sumOfTransfers(_from);
 
-
-//        for (uint i=senderTransfers.length; i>0; ) {
-//            i--;
-//            // delete all transfers older than @TRANSFER_RETENTION_TIME
-//            if(senderTransfers[i].timestamp <= now - TRANSFER_RETENTION_TIME){
-//
-//
-//                emit Test("popping timestamp", senderTransfers[i].timestamp);
-//                senderTransfers.pop();
-//            }
-//            // sum up all other transfer sums
-//            else{
-//                sumOfTransfers+=senderTransfers[i].amount; //todo use safe math
-//            }
-//        }
-//        //TODO safemath
-//        emit Test("sumofTransfers before check", sumOfTransfers);
-//
-//        require(sumOfTransfers+_value < SPEND_CEILING,"ERC1594: The transfer exceeds the allowed quota within the retention period, and must be cosigned by an operator."); //TODO naming of operator with role
-//
-//
-//        //enter element at first index, move others //TODO might also be implemented as queue with shifting index, see https://github.com/chriseth/solidity-examples/blob/master/queue.sol
-//        if(senderTransfers.length > 0){
-//            TimestampedTransfer storage h = senderTransfers[0];
-//            senderTransfers[0]= TimestampedTransfer(now,_value);
-//            //TODO check edge cases
-////            for(uint j = 1; j<senderTransfers.length; j++){
-////                senderTransfers[j] = h;
-////                h = senderTransfers[j+1];
-////            }
-//            senderTransfers.push(h);
-//        }
-//        else senderTransfers.push(TimestampedTransfer(now,_value));
-
-             //https://programtheblockchain.com/posts/2018/03/23/storage-patterns-stacks-queues-and-deques/ -> interesting idea
-
     }
-
-
-
-    //---- Maybe shift this to a new contract that inherits from this one
-
-
-
 
 }

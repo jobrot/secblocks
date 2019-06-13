@@ -14,8 +14,8 @@ import "./InsiderListController.sol";
   by law, and might have an arbitrary number of additional controllers, that are consulted sequentially on
   all operations. (This has to be done by the implementing Contract)
 */
-contract Controlled is OrchestratorRole {
-    IController[] public controllers; // External controller contract //TODO make multiple
+contract Controller is OrchestratorRole {
+    IController[] public controllers; // External controller contract
     KYCController public kycController;
     InsiderListController public insiderListController;
     PEPListController public pepListController;
@@ -32,6 +32,7 @@ contract Controlled is OrchestratorRole {
         insiderListController = _insiderListController;
         pepListController = _pepListController;
     }
+
 
     /**
     * @notice Adds a Controller contract to this contract.
@@ -104,6 +105,18 @@ contract Controlled is OrchestratorRole {
         }
         delete controllers[controllers.length - 1];
         controllers.length--;
+    }
+
+
+    function verifyAll(address _from, address _to, uint _value, bytes memory _data) public{ //TODO rename verifyalltransfer
+        bool verified;
+        verified = kycController.verifyTransfer(_from, _to, _value, _data);
+        require(verified, "The transfer is not allowed by the KYCController!");
+        verified = insiderListController.verifyTransfer(_from, _to, _value, _data);
+        require(verified, "The transfer is not allowed by the InsiderListController!");
+        verified = pepListController.verifyTransfer(_from, _to, _value, _data);
+        require(verified, "The transfer is not allowed by the PoliticallyExposedPersonController!");
+        //TODO verify list of controllers
     }
 
 

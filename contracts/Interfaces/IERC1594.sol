@@ -17,7 +17,7 @@ interface IERC1594 {
     function redeemFrom(address _tokenHolder, uint256 _value, bytes calldata _data) external;
 
     // Transfer Validity
-    function canTransfer(address _to, uint256 _value, bytes calldata _data) external view returns (bool, byte, bytes32);
+   function canTransfer(address _to, uint256 _value, bytes calldata _data) external view returns (bool, byte, bytes32);
     function canTransferFrom(address _from, address _to, uint256 _value, bytes calldata _data) external view returns (bool, byte, bytes32);
 
     // Issuance / Redemption Events

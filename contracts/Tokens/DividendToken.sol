@@ -58,7 +58,7 @@ contract DividendToken is ERC1594 { //TODO comments
     mapping(address => uint) internal withdrawnDividends;
 
 
-    constructor(KYCController _kycController, InsiderListController _insiderListController, PEPListController _pepListController, TransferQueues _queues) ERC1594( _kycController,  _insiderListController, _pepListController, _queues) public { //The super contract is a modifier of sorts of the constructor
+    constructor(Controller _controller, TransferQueues _queues) ERC1594( _controller, _queues) public { //The super contract is a modifier of sorts of the constructor
 
     }
 

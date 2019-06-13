@@ -95,7 +95,7 @@ contract ERC20 is IERC20 { //TODO maybe add functionality from erc20detailed in 
     * @param to address The address which you want to transfer to
     * @param value uint256 the amount of tokens to be transferred
     */
-    function transferFrom(address from, address to, uint256 value) public returns (bool) {
+    function transferFrom(address from, address to, uint256 value) public returns (bool) { //TODO these methods must be private!!!
         _transferFrom(msg.sender, from, to, value);
         return true;
     }

@@ -6,6 +6,7 @@ const PEPListController = artifacts.require("../contracts/Controlling/PEPListCon
 const TransferQueues = artifacts.require("../contracts/AML/TransferQueues.sol");
 
 const DividendToken = artifacts.require("../contracts/Tokens/DividendToken.sol");
+const Controller = artifacts.require("../contracts/Controlling/Controller.sol");
 
 
 module.exports = function (deployer) {
@@ -16,8 +17,10 @@ module.exports = function (deployer) {
         return deployer.deploy(InsiderListController).then(() => {
             return deployer.deploy(PEPListController).then(() => {
                 return deployer.deploy(TransferQueues).then(() => {
-                    return deployer.deploy(ERC1594, KYCController.address, InsiderListController.address, PEPListController.address, TransferQueues.address).then(() => {
-                        return true; //ERC1594.deployed.setController(KYCController.address);
+                    return deployer.deploy(Controller, KYCController.address, InsiderListController.address, PEPListController.address,).then(() => {
+                        return deployer.deploy(VotingToken, Controller.address,  TransferQueues.address).then(() => {
+                            return true; //ERC1594.deployed.setController(KYCController.address);
+                        });
                     });
                 });
             });

@@ -16,6 +16,7 @@ const KYCController = artifacts.require("../contracts/Controlling/KYCController.
 const InsiderListController = artifacts.require("../contracts/Controlling/InsiderListController.sol");
 const PEPListController = artifacts.require("../contracts/Controlling/PEPListController.sol");
 const TransferQueues = artifacts.require("../contracts/AML/TransferQueues.sol");
+const Controller = artifacts.require("../contracts/Controlling/Controller.sol");
 
 
 const {
@@ -24,6 +25,7 @@ const {
     shouldBehaveLikeERC20Approve,
 } = require('./ERC20BehaviourTests.js');
 
+//TODO use other tests, tests for mint etc? or only really important tests
 
 const ERC1594Mock = artifacts.require('ERC1594Mock');
 
@@ -35,7 +37,7 @@ const HalfAMLLimit = AMLLimit.div(new BN(2));
 
 
 
-contract('ERC1594, TransferQueues', function ([deployer, initialHolder, recipient, anotherAccount]) {
+contract('ERC1594, TransferQueues, Controller', function ([deployer, initialHolder, recipient, anotherAccount]) {
 
 
 
@@ -70,7 +72,8 @@ contract('ERC1594, TransferQueues', function ([deployer, initialHolder, recipien
 
         //create SUT
         this.transferQueues = await TransferQueues.new();
-        this.token = await ERC1594Mock.new(this.kycMock.address, this.insiderListMock.address, this.pepListMock.address, this.transferQueues.address, initialHolder, initialSupply);
+        this.controller = await Controller.new(this.kycMock.address, this.insiderListMock.address, this.pepListMock.address);
+        this.token = await ERC1594Mock.new(this.controller.address, this.transferQueues.address, initialHolder, initialSupply);
 
         //this.token = await ERC1594.new(this.kycMock.address, this.insiderMock.address, this.pepListMock.address);
 
@@ -92,7 +95,7 @@ contract('ERC1594, TransferQueues', function ([deployer, initialHolder, recipien
                 await this.kycMock.givenMethodReturnBool(transferFromInitialHolder,false);
 
                 await expectRevert(this.token.transferWithData( recipient,1,abi.rawEncode(['bytes'],['']),{from: initialHolder}),
-                    'ERC1594: The transfer is not allowed by the KYCController!'
+                    'The transfer is not allowed by the KYCController!'
                 );
             });
         });
@@ -115,7 +118,7 @@ contract('ERC1594, TransferQueues', function ([deployer, initialHolder, recipien
                 await this.insiderListMock.givenMethodReturnBool(transferFromInitialHolder,false);
 
                 await expectRevert(this.token.transferWithData( recipient,1,abi.rawEncode(['bytes'],['']),{from: initialHolder}),
-                    'ERC1594: The transfer is not allowed by the InsiderListController!'
+                    'The transfer is not allowed by the InsiderListController!'
                 );
             });
         });
@@ -138,7 +141,7 @@ contract('ERC1594, TransferQueues', function ([deployer, initialHolder, recipien
                 await this.pepListMock.givenMethodReturnBool(transferFromInitialHolder,false);
 
                 await expectRevert(this.token.transferWithData( recipient,1,abi.rawEncode(['bytes'],['']),{from: initialHolder}),
-                    'ERC1594: The transfer is not allowed by the PoliticallyExposedPersonController!'
+                    'The transfer is not allowed by the PoliticallyExposedPersonController!'
                 );
             });
         });

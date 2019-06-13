@@ -6,7 +6,7 @@ module.exports = {
             host: "127.0.0.1",
             port: 8545, //7545 truffle dev,  8545 ganache-cli, 9545 ganache-gui
             network_id: "*",
-            gas: 7900000//default is 4712388, raised for testing
+            //gas: 7900000//default is 4712388, raised for testing
         }
     },
     compilers: {
@@ -15,7 +15,7 @@ module.exports = {
                                  // Can also be set to "native" to use a native solc
             optimizer: {  // enable optimization as test, 200 runs is obviously not the right choice
                 enabled: true,
-                runs: 200
+                runs: 2000
             }
         }
 
