@@ -3,11 +3,10 @@ const tryExpectCatch = require('./misc/trycatch');
 const KYCController = artifacts.require('KYCController.sol');
 const truffleAssert = require('truffle-assertions');
 
-const STATUS_SUCCESS = "0x51";
-const STATUS_FAIL = "0x50";
-const ALLOWED_APPLICATION_CODE = web3.utils.keccak256('org.tenx.allowed');
-const FORBIDDEN_APPLICATION_CODE = web3.utils.keccak256('org.tenx.forbidden');
-const NULLBYTE = '0x';
+const abi = require('ethereumjs-abi');
+const should = require('chai').should();
+
+const NULLBYTE=abi.rawEncode(['bytes'],['']);
 
 contract(['KYCController', 'KYCVerifierRole'], (accounts) => {
     let sut;
@@ -21,6 +20,7 @@ contract(['KYCController', 'KYCVerifierRole'], (accounts) => {
 
     before(async () => {
         sut = await KYCController.new();
+
     });
 
     it('deployer should be a verifier', async () => { //TODO rework with describe functions
@@ -65,67 +65,57 @@ contract(['KYCController', 'KYCVerifierRole'], (accounts) => {
 
     it('all verify actions should fail if one participating address is not whitelisted', async () => {
         await sut.addAddressToWhitelist(whitelisted);
-        const resultIssue = await sut.verifyIssue(unwhitelisted, 100, NULLBYTE, {from: deployer});
 
-        const resultTransferUU= await sut.verifyTransfer(unwhitelisted, unwhitelisted, 100, NULLBYTE, {from: deployer});
-        const resultTransferWU = await sut.verifyTransfer(whitelisted, unwhitelisted, 100, NULLBYTE, {from: deployer});
-        const resultTransferUW = await sut.verifyTransfer(unwhitelisted, whitelisted, 100, NULLBYTE, {from: deployer});
+        const resultIssue = (await sut.verifyIssue( unwhitelisted, 100,NULLBYTE, {from: deployer}));
 
-        const resultTransferFromUUU= await sut.verifyTransferFrom(unwhitelisted, unwhitelisted, unwhitelisted, 100, NULLBYTE, {from: deployer});
-        const resultTransferFromWUU = await sut.verifyTransferFrom(whitelisted, unwhitelisted, unwhitelisted, 100, NULLBYTE, {from: deployer});
-        const resultTransferFromWWU = await sut.verifyTransferFrom(whitelisted, whitelisted, unwhitelisted, 100, NULLBYTE, {from: deployer});
-        const resultTransferFromUWU = await sut.verifyTransferFrom(unwhitelisted, whitelisted, unwhitelisted, 100, NULLBYTE, {from: deployer});
-        const resultTransferFromUUW = await sut.verifyTransferFrom(unwhitelisted, unwhitelisted, whitelisted, 100, NULLBYTE, {from: deployer});
-        const resultTransferFromUWW = await sut.verifyTransferFrom(unwhitelisted, whitelisted, whitelisted, 100, NULLBYTE, {from: deployer});
+        const resultTransferUU= (await sut.verifyTransfer(unwhitelisted, unwhitelisted, 100, NULLBYTE, {from: deployer}));
+        const resultTransferWU = (await sut.verifyTransfer(whitelisted, unwhitelisted, 100, NULLBYTE, {from: deployer}));
+        const resultTransferUW = (await sut.verifyTransfer(unwhitelisted, whitelisted, 100, NULLBYTE, {from: deployer}));
 
-        const resultRedeem = await sut.verifyRedeem(unwhitelisted, 100, NULLBYTE, {from: deployer});
 
-        const resultRedeemFromUU= await sut.verifyRedeemFrom(unwhitelisted, unwhitelisted, 100, NULLBYTE, {from: deployer});
-        const resultRedeemFromWU = await sut.verifyRedeemFrom(whitelisted, unwhitelisted, 100, NULLBYTE, {from: deployer});
-        const resultRedeemFromUW = await sut.verifyRedeemFrom(unwhitelisted, whitelisted, 100, NULLBYTE, {from: deployer});
+        const resultTransferFromUUU= (await sut.verifyTransferFrom(unwhitelisted, unwhitelisted, unwhitelisted, 100, NULLBYTE, {from: deployer}));
+        const resultTransferFromWUU = (await sut.verifyTransferFrom(whitelisted, unwhitelisted, unwhitelisted, 100, NULLBYTE, {from: deployer}));
+        const resultTransferFromWWU = (await sut.verifyTransferFrom(whitelisted, whitelisted, unwhitelisted, 100, NULLBYTE, {from: deployer}));
+        const resultTransferFromUWU = (await sut.verifyTransferFrom(unwhitelisted, whitelisted, unwhitelisted, 100, NULLBYTE, {from: deployer}));
+        const resultTransferFromUUW = (await sut.verifyTransferFrom(unwhitelisted, unwhitelisted, whitelisted, 100, NULLBYTE, {from: deployer}));
+        const resultTransferFromUWW = (await sut.verifyTransferFrom(unwhitelisted, whitelisted, whitelisted, 100, NULLBYTE, {from: deployer}));
 
 
 
-        assert.equal(resultIssue.allowed, false);
-        assert.equal(resultIssue.statusCode, STATUS_FAIL);
+        const resultRedeem = (await sut.verifyRedeem(unwhitelisted, 100, NULLBYTE, {from: deployer}));
 
-        assert.equal(resultTransferUU.allowed, false);
-        assert.equal(resultTransferUU.statusCode, STATUS_FAIL);
-        assert.equal(resultTransferWU.allowed, false);
-        assert.equal(resultTransferWU.statusCode, STATUS_FAIL);
-        assert.equal(resultTransferUW.allowed, false);
-        assert.equal(resultTransferUW.statusCode, STATUS_FAIL);
+        const resultRedeemFromUU= (await sut.verifyRedeemFrom(unwhitelisted, unwhitelisted, 100, NULLBYTE, {from: deployer}));
+        const resultRedeemFromWU = (await sut.verifyRedeemFrom(whitelisted, unwhitelisted, 100, NULLBYTE, {from: deployer}));
+        const resultRedeemFromUW = (await sut.verifyRedeemFrom(unwhitelisted, whitelisted, 100, NULLBYTE, {from: deployer}));
 
-        assert.equal(resultTransferFromUUU.allowed, false);
-        assert.equal(resultTransferFromUUU.statusCode, STATUS_FAIL);
-        assert.equal(resultTransferFromWUU.allowed, false);
-        assert.equal(resultTransferFromWUU.statusCode, STATUS_FAIL);
-        assert.equal(resultTransferFromWWU.allowed, false);
-        assert.equal(resultTransferFromWWU.statusCode, STATUS_FAIL);
-        assert.equal(resultTransferFromUWU.allowed, false);
-        assert.equal(resultTransferFromUWU.statusCode, STATUS_FAIL);
-        assert.equal(resultTransferFromUUW.allowed, false);
-        assert.equal(resultTransferFromUUW.statusCode, STATUS_FAIL);
-        assert.equal(resultTransferFromUWW.allowed, false);
-        assert.equal(resultTransferFromUWW.statusCode, STATUS_FAIL);
 
-        assert.equal(resultRedeem.allowed, false);
-        assert.equal(resultRedeem.statusCode, STATUS_FAIL);
+       assert.equal(resultIssue, false);
 
-        assert.equal(resultRedeemFromUU.allowed, false);
-        assert.equal(resultRedeemFromUU.statusCode, STATUS_FAIL);
-        assert.equal(resultRedeemFromWU.allowed, false);
-        assert.equal(resultRedeemFromWU.statusCode, STATUS_FAIL);
-        assert.equal(resultRedeemFromUW.allowed, false);
-        assert.equal(resultRedeemFromUW.statusCode, STATUS_FAIL);
+        assert.equal(resultTransferUU, false);
+        assert.equal(resultTransferWU, false);
+        assert.equal(resultTransferUW, false);
+
+        assert.equal(resultTransferFromUUU, false);
+        assert.equal(resultTransferFromWUU, false);
+        assert.equal(resultTransferFromWWU, false);
+        assert.equal(resultTransferFromUWU, false);
+        assert.equal(resultTransferFromUUW, false);
+        assert.equal(resultTransferFromUWW, false);
+
+        assert.equal(resultRedeem, false);
+
+        assert.equal(resultRedeemFromUU, false);
+        assert.equal(resultRedeemFromWU, false);
+        assert.equal(resultRedeemFromUW, false);
 
     });
 
 
 
-    it('all verify actions should succeed if all participating address is not whitelisted', async () => {
+    it('all verify actions should succeed if all participating address are not whitelisted', async () => {
         await sut.addAddressToWhitelist(whitelisted);
-        const resultIssue = await sut.verifyIssue(whitelisted, 100, NULLBYTE, {from: deployer});
+
+        const resultIssue = await sut.verifyIssue( whitelisted, 100,  NULLBYTE,{from: deployer});
 
         const resultTransfer= await sut.verifyTransfer(whitelisted, whitelisted, 100, NULLBYTE, {from: deployer});
 
@@ -135,20 +125,17 @@ contract(['KYCController', 'KYCVerifierRole'], (accounts) => {
 
         const resultRedeemFrom= await sut.verifyRedeemFrom(whitelisted, whitelisted, 100, NULLBYTE, {from: deployer});
 
-        assert.equal(resultIssue.allowed, true);
-        assert.equal(resultIssue.statusCode, STATUS_SUCCESS);
+        console.log(resultIssue);
 
-        assert.equal(resultTransfer.allowed, true);
-        assert.equal(resultTransfer.statusCode, STATUS_SUCCESS);
+        assert.equal(resultIssue, true);
 
-        assert.equal(resultTransferFrom.allowed, true);
-        assert.equal(resultTransferFrom.statusCode, STATUS_SUCCESS);
+        assert.equal(resultTransfer, true);
 
-        assert.equal(resultRedeem.allowed, true);
-        assert.equal(resultRedeem.statusCode, STATUS_SUCCESS);
+        assert.equal(resultTransferFrom, true);
 
-        assert.equal(resultRedeemFrom.allowed, true);
-        assert.equal(resultRedeemFrom.statusCode, STATUS_SUCCESS);
+        assert.equal(resultRedeem, true);
+
+        assert.equal(resultRedeemFrom, true);
 
     });
 

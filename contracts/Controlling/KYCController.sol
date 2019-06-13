@@ -3,6 +3,7 @@ pragma solidity ^0.5.4;
 import "../Interfaces/IController.sol";
 import "../Roles/KYCVerifierRole.sol";
 
+
 //CENTRAL controller that stores addresses in a whitelist, TODO enter into registry
 //Allows all actions for all whitelisted addresses (sender and recipient, if applicable)
 //TODO include some kind of link to the decentralized information
@@ -12,8 +13,11 @@ contract KYCController is IController, KYCVerifierRole {
 
     event AddedToWhitelist(address added);
     event RemovedFromWhitelist(address added);
+    event Test(string test); //TODO remove
 
     mapping (address => bool) public whitelist; //TODO eventually store some some struct on what type of kyc is stored
+
+
 
 
     /**
@@ -25,14 +29,14 @@ contract KYCController is IController, KYCVerifierRole {
     }
     */
     function verifyIssue(address _tokenHolder, uint256 _value, bytes calldata _data) external view
-    returns (bool allowed)
+    returns (bool)
     {
         if(_onWhitelist(_tokenHolder)){
-            allowed = true;
+            return true;
             
         }
         else{
-            allowed = false;
+            return false;
             
         }
     }
@@ -64,7 +68,7 @@ contract KYCController is IController, KYCVerifierRole {
     * @dev Allows transfer if _from, _to, and _forwarder are on the whitelist
     * @return {
         "allowed": "Returns true if transferFrom is allowed, returns false otherwise.",
-        "statusCode": "ERC1066 status code"
+        "statusCode": "ERC1066 status code" //TODO remove comment
     }
     */
     function verifyTransferFrom(address _from, address _to, address _forwarder, uint256 _amount, bytes calldata _data) external view
@@ -106,7 +110,7 @@ contract KYCController is IController, KYCVerifierRole {
     * @dev Allows redeem if _sender and _tokenHolder are on the whitelist
     * @return {
         "allowed": "Returns true if redeem is allowed, returns false otherwise.",
-        "statusCode": "ERC1066 status code"
+        "statusCode": "ERC1066 status code" //TODO remove this on all of them
     }
     */
     function verifyRedeemFrom(address _sender, address _tokenHolder, uint256 _amount, bytes calldata _data) external view
@@ -147,5 +151,7 @@ contract KYCController is IController, KYCVerifierRole {
     function _onWhitelist(address _addr) public view returns(bool) {
         return (whitelist[_addr]); //TODO make whitelist expirable and check here?
     }
+
+
 
 }
