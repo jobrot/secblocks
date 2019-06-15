@@ -10,7 +10,7 @@ import "../Roles/VotingOfficialRole.sol";
 
 
 /// @dev draws some inspiration from Jordi Baylina's MiniMeToken to record historical balances
-contract VotingToken is DividendToken{
+contract VotingToken is DividendToken, VotingOfficialRole{
 
 
     event BallotCreated(
@@ -43,7 +43,9 @@ contract VotingToken is DividendToken{
         mapping (address => bool) voted; // record on which addresses already voted
         uint cutoffBlockNumber; // block number of the block, where the balances are counted for voting weight
     }
+    bytes32[] tempOptionNames;
 
+    event Test2(bytes32 word,uint number); //TODO remove this
 
     // `balances` is the map that tracks the balance of each address, in this
     //  contract when the balance changes the block number that the change
@@ -118,19 +120,27 @@ contract VotingToken is DividendToken{
 
 
     /// @dev creates a new ballot and appends it to 'ballots'
+    /// caller must ensure that optionNames are unique, or else only the first appearance is used
     /// @param ballotName The name of the ballot resp. the asked Question
     /// @param optionNames List of possible choices / answers to the question
-    function createBallot(bytes32 ballotName, bytes32[] memory optionNames) public { //TODO   onlyVotingOfficial
+    function createBallot(bytes32 ballotName, bytes32[] memory optionNames) public onlyVotingOfficial {
 
         //Check the arguments for validity
-        require(ballotName[0] != 0, "The ballotName must not be empty!");
-        require(optionNames.length > 0, "The optionNames Array must not be empty!");
+        require(ballotName[0] != 0, "VotingToken: The ballotName must not be empty!");
+        require(optionNames.length > 0, "VotingToken: The optionNames Array must not be empty!");
 
+        delete tempOptionNames;
 
-        Ballot memory ballot = Ballot({name: ballotName, cutoffBlockNumber: block.number, optionNames: optionNames, optionVoteCounts: new uint[](optionNames.length)});
+        for(uint i=0; i<optionNames.length;i++ ){
+            tempOptionNames.push(optionNames[i]);
+            emit Test2(optionNames[i], i);
+        }
+
+        Ballot memory ballot = Ballot({name: ballotName, cutoffBlockNumber: block.number, optionNames: tempOptionNames, optionVoteCounts: new uint[](optionNames.length)});
         ballots.push(ballot);
-        //ballots[ballots.length-1].players.push(msg.sender);
 
+        emit Test2(ballot.optionNames[0], 100);
+        emit Test2(ballots[0].optionNames[0], 101);
         emit BallotCreated(ballotName);
     }
 
@@ -149,16 +159,16 @@ contract VotingToken is DividendToken{
                 break;
             }
         }
-        require(found >= 0, "Ballot not found!"); //TODO test
+        require(found >= 0, "VotingToken: Ballot not found!"); //TODO test
 
         Ballot storage ballot = ballots[SafeMathInt.toUintSafe(found)];
 
         //check if User had tokens at the time of the ballot start == right to vote
         uint senderBalance = this.balanceOfAt(msg.sender, ballot.cutoffBlockNumber);
-        require(senderBalance >0, "Sender did not own tokens at the Cutoff Time!");
+        require(senderBalance >0, "VotingToken: Sender did not own tokens at the Cutoff Time!");
 
         //check if User already voted
-        require(ballot.voted[msg.sender]==false,"Sender already voted");
+        require(ballot.voted[msg.sender]==false,"VotingToken: Sender already voted");
 
         //Search for the voted option in the ballot
 
@@ -169,7 +179,7 @@ contract VotingToken is DividendToken{
                 return;
             }
         }
-        require(false, "Chosen option does not exist in chosen Ballot.");
+        require(false, "VotingToken: Chosen option does not exist in chosen Ballot.");
     }
 
     /// @info Computes the winning proposal taking all votes up until now into account, exact tallying can be gotten from

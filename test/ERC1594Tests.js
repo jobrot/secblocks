@@ -20,7 +20,7 @@ const Controller = artifacts.require("../contracts/Controlling/Controller.sol");
 
 
 const {
-    shouldBehaveLikeERC20,
+    shouldBehaveLikeERC20, //TODO
     shouldBehaveLikeERC20Transfer,
     shouldBehaveLikeERC20Approve,
 } = require('./ERC20BehaviourTests.js');
