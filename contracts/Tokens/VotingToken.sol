@@ -139,7 +139,7 @@ contract VotingToken is DividendToken, VotingOfficialRole{
         Ballot memory ballot = Ballot({name: ballotName, cutoffBlockNumber: block.number, optionNames: tempOptionNames, optionVoteCounts: new uint[](optionNames.length)});
         ballots.push(ballot);
 
-        emit Test2(ballot.optionNames[0], 100);
+        emit Test2(ballot.optionNames[0], 100); //TODO remove
         emit Test2(ballots[0].optionNames[0], 101);
         emit BallotCreated(ballotName);
     }

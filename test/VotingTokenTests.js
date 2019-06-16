@@ -57,7 +57,7 @@ contract('VotingToken', function ([deployer, initialHolder, recipient, votingOff
     });
 
 
-/*    describe('createBallot', function () {
+    describe('createBallot', function () {
         describe('when the ballotname is empty', function () {
             it('reverts', async function () {
 
@@ -82,7 +82,7 @@ contract('VotingToken', function ([deployer, initialHolder, recipient, votingOff
 
                 await this.token.createBallot( abi.rawEncode(['bytes32'],['Vote']), [abi.rawEncode(['bytes32'],['A']),abi.rawEncode(['bytes32'],['B'])],{from: votingOfficial});
 
-                console.log((await this.token.ballots(0)));
+                assert((await this.token.ballots().length)>0);
                 console.log((await this.token.ballots(0)).optionNames);
                 //assert(false); //TODO assertions on existence of options and optionnames
             });
@@ -160,11 +160,11 @@ contract('VotingToken', function ([deployer, initialHolder, recipient, votingOff
 
 
 
-    });*/
+    });
 
     describe('Voting and winner Calculations', function () {
         describe('when one holder has more tokens than another', function () {
-            it('reverts', async function () {
+            it('correct option wins', async function () {
                 await this.token.issue(initialHolder, new BN(100), abi.rawEncode(['bytes'],['']));
                 await this.token.issue(anotherAccount, new BN(101), abi.rawEncode(['bytes'],['']));
 
@@ -175,19 +175,133 @@ contract('VotingToken', function ([deployer, initialHolder, recipient, votingOff
 
 
                 var result = (await this.token.currentlyWinningOption(abi.rawEncode(['bytes32'],['Vote']),{from: initialHolder})); //abi.rawEncode(['bytes32'],['Vote'])
-                console.log("resultat:");
-                console.log(result);
 
-                //TODO here, winningoptionname is 0x4f7074696f6e2042000000000000000000000000000000000000000000000000, should be converted back for easier comparison
 
-                result.winningOptionName.should.be.equal('0x4f7074696f6e2042000000000000000000000000000000000000000000000000');
-                //result.winningOptionName.should.be.equalBytes('Option B');
-                result.winningOptionVoteCount.should.be.equal(new BN(101));
+
+                web3.utils.toAscii(result.winningOptionName).should.be.equal(abi.rawEncode(['bytes32'],['Option B']).toString("ascii"));
+                result.winningOptionVoteCount.should.be.bignumber.equal(new BN(101));
 
             });
         });
+
+
+        describe('when one holder has more tokens than another, than changing in another vote', function () {
+            it('correct option wins', async function () {
+                await this.token.issue(initialHolder, new BN(100), abi.rawEncode(['bytes'],['']));
+                await this.token.issue(anotherAccount, new BN(101), abi.rawEncode(['bytes'],['']));
+
+                await advanceBlock();
+                await this.token.createBallot( abi.rawEncode(['bytes32'],['Vote1']), [abi.rawEncode(['bytes32'],['Option A']),abi.rawEncode(['bytes32'],['Option B'])],{from: votingOfficial});
+
+                await this.token.issue(initialHolder, new BN(2), abi.rawEncode(['bytes'],['']));
+
+                await advanceBlock();
+                await this.token.createBallot( abi.rawEncode(['bytes32'],['Vote2']), [abi.rawEncode(['bytes32'],['Option C']),abi.rawEncode(['bytes32'],['Option D'])],{from: votingOfficial});
+
+
+                await this.token.vote( abi.rawEncode(['bytes32'],['Vote1']), abi.rawEncode(['bytes32'],['Option A']),{from: initialHolder});
+                await this.token.vote( abi.rawEncode(['bytes32'],['Vote1']), abi.rawEncode(['bytes32'],['Option B']),{from: anotherAccount});
+
+                await this.token.vote( abi.rawEncode(['bytes32'],['Vote2']), abi.rawEncode(['bytes32'],['Option C']),{from: initialHolder});
+                await this.token.vote( abi.rawEncode(['bytes32'],['Vote2']), abi.rawEncode(['bytes32'],['Option D']),{from: anotherAccount});
+
+
+
+                var result = (await this.token.currentlyWinningOption(abi.rawEncode(['bytes32'],['Vote1']),{from: initialHolder})); //abi.rawEncode(['bytes32'],['Vote'])
+                web3.utils.toAscii(result.winningOptionName).should.be.equal(abi.rawEncode(['bytes32'],['Option B']).toString("ascii"));
+                result.winningOptionVoteCount.should.be.bignumber.equal(new BN(101));
+
+                var result = (await this.token.currentlyWinningOption(abi.rawEncode(['bytes32'],['Vote2']),{from: initialHolder})); //abi.rawEncode(['bytes32'],['Vote'])
+                web3.utils.toAscii(result.winningOptionName).should.be.equal(abi.rawEncode(['bytes32'],['Option C']).toString("ascii"));
+                result.winningOptionVoteCount.should.be.bignumber.equal(new BN(102));
+
+            });
+        });
+
+
+        describe('when multiple token holders vote', function () {
+            it('correct option wins', async function () { //TODO
+                await this.token.issue(initialHolder, new BN(100), abi.rawEncode(['bytes'],['']));
+                await this.token.issue(anotherAccount, new BN(51), abi.rawEncode(['bytes'],['']));
+                await this.token.issue(recipient, new BN(50), abi.rawEncode(['bytes'],['']));
+
+                await advanceBlock();
+                await this.token.createBallot( abi.rawEncode(['bytes32'],['Vote1']), [abi.rawEncode(['bytes32'],['Option A']),abi.rawEncode(['bytes32'],['Option B'])],{from: votingOfficial});
+
+
+
+                await this.token.vote( abi.rawEncode(['bytes32'],['Vote1']), abi.rawEncode(['bytes32'],['Option A']),{from: initialHolder});
+                await this.token.vote( abi.rawEncode(['bytes32'],['Vote1']), abi.rawEncode(['bytes32'],['Option B']),{from: anotherAccount});
+
+                var result = (await this.token.currentlyWinningOption(abi.rawEncode(['bytes32'],['Vote1']),{from: initialHolder})); //abi.rawEncode(['bytes32'],['Vote'])
+                web3.utils.toAscii(result.winningOptionName).should.be.equal(abi.rawEncode(['bytes32'],['Option A']).toString("ascii"));
+                result.winningOptionVoteCount.should.be.bignumber.equal(new BN(100));
+
+                await this.token.vote( abi.rawEncode(['bytes32'],['Vote1']), abi.rawEncode(['bytes32'],['Option B']),{from: recipient});
+
+                var result = (await this.token.currentlyWinningOption(abi.rawEncode(['bytes32'],['Vote1']),{from: initialHolder})); //abi.rawEncode(['bytes32'],['Vote'])
+                web3.utils.toAscii(result.winningOptionName).should.be.equal(abi.rawEncode(['bytes32'],['Option B']).toString("ascii"));
+                result.winningOptionVoteCount.should.be.bignumber.equal(new BN(101));
+
+
+            });
+        });
+
+
+
+        describe('when multiple token holders vote and tokens are transferred', function () {
+            it('correct option wins', async function () {
+                await this.token.issue(initialHolder, new BN(101), abi.rawEncode(['bytes'],['']));
+                await this.token.issue(anotherAccount, new BN(100), abi.rawEncode(['bytes'],['']));
+                await this.token.issue(recipient, new BN(2), abi.rawEncode(['bytes'],['']));
+                await this.token.transferWithData(anotherAccount,2, abi.rawEncode(['bytes'],['']),{from:recipient});
+
+                await advanceBlock();
+                await this.token.createBallot( abi.rawEncode(['bytes32'],['Vote1']), [abi.rawEncode(['bytes32'],['Option A']),abi.rawEncode(['bytes32'],['Option B'])],{from: votingOfficial});
+
+
+                await this.token.vote( abi.rawEncode(['bytes32'],['Vote1']), abi.rawEncode(['bytes32'],['Option A']),{from: initialHolder});
+                await this.token.vote( abi.rawEncode(['bytes32'],['Vote1']), abi.rawEncode(['bytes32'],['Option B']),{from: anotherAccount});
+
+
+
+
+                var result = (await this.token.currentlyWinningOption(abi.rawEncode(['bytes32'],['Vote1']),{from: initialHolder})); //abi.rawEncode(['bytes32'],['Vote'])
+                web3.utils.toAscii(result.winningOptionName).should.be.equal(abi.rawEncode(['bytes32'],['Option B']).toString("ascii"));
+                result.winningOptionVoteCount.should.be.bignumber.equal(new BN(102));
+
+
+
+
+            });
+        });
+
+
+        describe('when multiple token holders vote and tokens are burned', function () {
+            it('correct option wins', async function () {
+                await this.token.issue(initialHolder, new BN(101), abi.rawEncode(['bytes'],['']));
+                await this.token.issue(anotherAccount, new BN(100), abi.rawEncode(['bytes'],['']));
+
+                await this.token.redeem(2, abi.rawEncode(['bytes'],['']),{from:initialHolder});
+
+                await advanceBlock();
+                await this.token.createBallot( abi.rawEncode(['bytes32'],['Vote1']), [abi.rawEncode(['bytes32'],['Option A']),abi.rawEncode(['bytes32'],['Option B'])],{from: votingOfficial});
+
+
+                await this.token.vote( abi.rawEncode(['bytes32'],['Vote1']), abi.rawEncode(['bytes32'],['Option A']),{from: initialHolder});
+                await this.token.vote( abi.rawEncode(['bytes32'],['Vote1']), abi.rawEncode(['bytes32'],['Option B']),{from: anotherAccount});
+
+
+
+
+                var result = (await this.token.currentlyWinningOption(abi.rawEncode(['bytes32'],['Vote1']),{from: initialHolder})); //abi.rawEncode(['bytes32'],['Vote'])
+                web3.utils.toAscii(result.winningOptionName).should.be.equal(abi.rawEncode(['bytes32'],['Option B']).toString("ascii"));
+                result.winningOptionVoteCount.should.be.bignumber.equal(new BN(100));
+
+            });
+        });
+
     });
-    //TODO test if ERC1594 functions also work when incorporating voting
 
 
 });
