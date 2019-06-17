@@ -3,8 +3,5 @@
   <component name="JavaScriptSettings">
     <option name="languageLevel" value="ES6" />
   </component>
-  <component name="ProjectPlainTextFileTypeManager">
-    <file url="file://$PROJECT_DIR$/contracts/AML/AMLController.sol" />
-  </component>
-  <component name="ProjectRootManager" version="2" languageLevel="JDK_1_3" />
+  <component name="ProjectRootManager" version="2" languageLevel="JDK_1_3" default="false" />
 </project>
