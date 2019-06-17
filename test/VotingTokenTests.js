@@ -80,16 +80,15 @@ contract('VotingToken', function ([deployer, initialHolder, recipient, votingOff
         describe('when all parameters are correct', function () {
             it('creates a ballot and stores it', async function () {
 
-                await this.token.createBallot( abi.rawEncode(['bytes32'],['Vote']), [abi.rawEncode(['bytes32'],['A']),abi.rawEncode(['bytes32'],['B'])],{from: votingOfficial});
+                const { logs } =  await this.token.createBallot( abi.rawEncode(['bytes32'],['Vote']), [abi.rawEncode(['bytes32'],['A']),abi.rawEncode(['bytes32'],['B'])],{from: votingOfficial});
 
-                assert((await this.token.ballots().length)>0);
-                console.log((await this.token.ballots(0)).optionNames);
-                //assert(false); //TODO assertions on existence of options and optionnames
+                assert((await this.token.ballots(0)).name!=0);
+                expectEvent.inLogs(logs, 'BallotCreated', { ballotName: '0x566f746500000000000000000000000000000000000000000000000000000000' });
             });
         });
 
     });
-    describe('Basic voting an reverts', function () {
+    describe('Basic voting and reverts', function () {
         describe('when the ballot does not exist', function () {
             it('reverts', async function () {
 

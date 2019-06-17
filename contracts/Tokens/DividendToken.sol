@@ -82,7 +82,7 @@ contract DividendToken is ERC1594 { //TODO comments
     ///     but keeping track of such data on-chain costs much more than
     ///     the saved ether, so we don't do that.
     function distributeDividends() public payable { //TODO rework
-        require(totalSupply() > 0);
+        require(totalSupply() > 0, "DividendToken: There are no Tokens currently owned");
 
         if (msg.value > 0) {
             magnifiedDividendPerShare = magnifiedDividendPerShare.add(
@@ -142,9 +142,9 @@ contract DividendToken is ERC1594 { //TODO comments
     /// @param _value The amount to be transferred.
     /// @param _data The `bytes _data` allows arbitrary data to be submitted alongside the transfer.
     function transferWithData(address _to, uint256 _value, bytes memory _data) public {
-        //require(false,"hierr");
 
-        super.transferWithData( _to, _value, _data); //TODO DOES THIS WORK WITH MSG.SENDER!!
+
+        super.transferWithData( _to, _value, _data);
 
 
 
