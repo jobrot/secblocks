@@ -192,7 +192,7 @@ contract DividendToken is ERC1594 {
      * @param _data The `bytes _data` it can be used in the token contract to authenticate the redemption.
      */
     function redeem(uint _value, bytes memory _data) public {
-        super.redeem(_value, _data); //TODO check if the super contract function is really uncallable
+        super.redeem(_value, _data);
         magnifiedDividendCorrections[msg.sender] = magnifiedDividendCorrections[msg.sender]
         .add( (magnifiedDividendPerShare.mul(_value)).toIntSafe() );
     }

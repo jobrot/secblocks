@@ -33,6 +33,7 @@ contract VotingToken is DividendToken, VotingOfficialRole {
         uint[] optionVoteCounts; //list of all resp. vote counts
         mapping(address => bool) voted; // record on which addresses already voted
         uint cutoffBlockNumber; // block number of the block, where the balances are counted for voting weight
+        // TODO future cutoffdate
     }
 
     bytes32[] tempOptionNames;
