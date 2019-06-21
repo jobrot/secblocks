@@ -2,6 +2,7 @@ const tryExpectCatch = require('./misc/trycatch');
 
 const KYCController = artifacts.require('KYCController.sol');
 const truffleAssert = require('truffle-assertions');
+const UnstructuredProxy = artifacts.require("../contracts/Proxy/UnstructuredProxy.sol");
 
 const abi = require('ethereumjs-abi');
 const should = require('chai').should();
@@ -9,7 +10,9 @@ const should = require('chai').should();
 const NULLBYTE=abi.rawEncode(['bytes'],['']);
 
 contract(['KYCController', 'KYCVerifierRole'], (accounts) => {
+    let origSut;
     let sut;
+    let proxy;
     let deployer = accounts[0];
     let verifier = accounts[1];
     let otherAccount = accounts[2];
@@ -20,7 +23,10 @@ contract(['KYCController', 'KYCVerifierRole'], (accounts) => {
 
     before(async () => {
         sut = await KYCController.new();
-
+        //comment this in for proxy test
+        /*proxy = await UnstructuredProxy.new();
+        await proxy.upgradeTo(sut.address);
+        sut = await KYCController.at(proxy.address);*/
     });
 
     it('deployer should be a verifier', async () => { //TODO rework with describe functions

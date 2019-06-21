@@ -5,31 +5,27 @@ import "./ERC20.sol";
 import "../Roles/IssuerRole.sol";
 import "../AML/TransferQueues.sol";
 import "../Controlling/Controller.sol";
+import "./Storage/ERC1594Storage.sol";
 //import "openzeppelin-solidity/contracts/ownership/Ownable.sol";
 
 /**
  * @title AML aware implementation of ERC1594 (Subset of ERC1400 https://github.com/ethereum/EIPs/issues/1411)
  * adapted from the standard implementation of the spec: https://github.com/SecurityTokenStandard/EIP-Spec
  */
-contract ERC1594 is IERC1594, ERC20, IssuerRole { //TODO erc20mintable? //TODO pausable, mintable
+contract ERC1594 is IERC1594, ERC20, IssuerRole { //TODO erc20mintable? //TODO pausable, mintable //erc1594storage
     // Variable which tells whether issuance is ON or OFF forever
     // Implementers need to implement one more function to reset the value of `issuance` variable
     // to false. That function is not a part of the standard (EIP-1594) as it is depend on the various factors
     // issuer, followed compliance rules etc. So issuers have the choice how they want to close the issuance.
     bool internal issuance = true; //TODO
 
-
-
-    event Test(string word,uint number); //TODO remove this
-
     // Variable that stores stores a mapping of the last transfers of the account
     // in order to comply with AML regulations
     // @dev maps each address to an array of dynamic length, that consists a struct of the timestamp and
     // the value of the outbound funds (counted in number of tokens, value must be determined on check (todo or not, check immediately at entering?)
-    //mapping (address => TransferQueue) lastTransfers;
     TransferQueues queues;
-
-    Controller controller;
+    // The single controller that is to be queried before all token moving actions on the respective functions
+    Controller public controller; //TODO remove public
 
     // Constant that defines how long the last Transfers of each sender are considered for AML checks
     uint constant TRANSFER_RETENTION_TIME = 604800; //604800 == 1 Week in Seconds
@@ -171,6 +167,7 @@ contract ERC1594 is IERC1594, ERC20, IssuerRole { //TODO erc20mintable? //TODO p
      */
     function canTransfer(address _to, uint256 _value, bytes calldata _data) external view returns (bool, byte, bytes32) {
         // Add a function to validate the `_data` parameter
+        //TODO add checks on controllers
         if (balanceOf(msg.sender) < _value) return (false, 0x52, bytes32(0));
         else if (_to == address(0)) return (false, 0x57, bytes32(0));
         else if (!_checkAdd(balanceOf(_to), _value)) return (false, 0x50, bytes32(0));
@@ -180,7 +177,7 @@ contract ERC1594 is IERC1594, ERC20, IssuerRole { //TODO erc20mintable? //TODO p
     /**
      * @notice Transfers of securities may fail for a number of reasons. So this function will used to understand the
      * cause of failure by getting the byte value. Which will be the ESC that follows the EIP 1066. ESC can be mapped
-     * with a reson string to understand the failure cause, table of Ethereum status code will always reside off-chain
+     * with a reason string to understand the failure cause, table of Ethereum status code will always reside off-chain
      * @param _from address The address which you want to send tokens from
      * @param _to address The address which you want to transfer to
      * @param _value uint256 the amount of tokens to be transferred

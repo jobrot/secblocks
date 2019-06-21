@@ -1,5 +1,6 @@
 const { BN, constants, expectEvent, expectRevert } = require('openzeppelin-test-helpers');
 const { ZERO_ADDRESS } = constants;
+const UnstructuredProxy = artifacts.require("../contracts/Proxy/UnstructuredProxy.sol");
 const should = require('chai').should();
 
 const {
@@ -17,7 +18,12 @@ contract('ERC20', function ([_, initialHolder, recipient, anotherAccount]) {
 
     beforeEach(async function () {
         this.token = await ERC20Mock.new(initialHolder, initialSupply);
-
+        /* //Comment this in for fulll proxy test
+        this.proxy = await UnstructuredProxy.new();
+        this.proxy.upgradeTo(this.token.address);
+        this.token = await ERC20Mock.at(this.proxy.address);
+        await this.token.mint(initialHolder, initialSupply);
+    */
     });
 
     shouldBehaveLikeERC20('ERC20', initialSupply, initialHolder, recipient, anotherAccount);

@@ -84,7 +84,7 @@ contract ERC20 is IERC20 { //TODO maybe add functionality from erc20detailed in 
      * @param to The address to transfer to.
      * @param value The amount to be transferred.
      */
-    function transfer(address to, uint256 value) public returns (bool) {
+    function transfer(address to, uint256 value) public returns (bool) { //TODO private
         _transfer(msg.sender, to, value);
         return true;
     }

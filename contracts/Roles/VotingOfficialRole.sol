@@ -2,11 +2,14 @@ pragma solidity ^0.5.0;
 
 //import "openzeppelin-solidity/contracts/access/Roles.sol";
 import "../Openzeppelin/Roles.sol";
+import "../Proxy/Initializable.sol";
 
 // A role for the Deployer of the Token Smart Contracts, that is allowed to add Controllers to the Tokens
-contract VotingOfficialRole {
+contract VotingOfficialRole is Initializable {
     using Roles for Roles.Role;
 
+    event VotingOfficialChecked(address indexed account); //TODO remove
+    event IsVotingOfficial(bool ist); //TODO remove
     event VotingOfficialAdded(address indexed account);
     event VotingOfficialRemoved(address indexed account);
 
@@ -14,9 +17,16 @@ contract VotingOfficialRole {
 
     constructor () internal {
         _addVotingOfficial(msg.sender);
+        initialized = true;
+    }
+
+    function _initialize(address _initialManager) internal{
+    _addVotingOfficial(_initialManager);
     }
 
     modifier onlyVotingOfficial() {
+        emit VotingOfficialChecked(msg.sender);
+        emit IsVotingOfficial(isVotingOfficial(msg.sender));
         require(isVotingOfficial(msg.sender), "VotingOfficialRole: caller does not have the VotingOfficial role");
         _;
     }

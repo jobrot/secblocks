@@ -75,6 +75,17 @@ contract('ERC1594, TransferQueues, Controller', function ([deployer, initialHold
         this.controller = await Controller.new(this.kycMock.address, this.insiderListMock.address, this.pepListMock.address);
         this.token = await ERC1594Mock.new(this.controller.address, this.transferQueues.address, initialHolder, initialSupply);
 
+
+        /* //Comment this in for full proxy test
+       this.proxy = await UnstructuredProxy.new();
+       this.proxy.upgradeTo(this.token.address);
+       this.token = await ERC20Mock.at(this.proxy.address);
+       await this.token.mint(initialHolder, initialSupply);
+        */
+
+
+
+
         //this.token = await ERC1594.new(this.kycMock.address, this.insiderMock.address, this.pepListMock.address);
 
         //await this.token.issue(initialHolder, initialSupply, abi.rawEncode(['bytes'],['']));//mint(initialHolder,initialSupply);

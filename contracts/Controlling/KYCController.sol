@@ -153,5 +153,4 @@ contract KYCController is IController, KYCVerifierRole {
     }
 
 
-
 }

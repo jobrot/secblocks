@@ -2,11 +2,12 @@ pragma solidity ^0.5.0;
 
 //import "openzeppelin-solidity/contracts/access/Roles.sol";
 import "../Openzeppelin/Roles.sol";
+import "../Proxy/Initializable.sol";
 
 
 // A role for the global Verifiers for KYC information, who are allowed to enter
 //TODO enter in singular registry somehow
-contract KYCVerifierRole {
+contract KYCVerifierRole is Initializable {
     using Roles for Roles.Role;
 
     event KYCVerifierAdded(address indexed account);
@@ -16,6 +17,11 @@ contract KYCVerifierRole {
 
     constructor () internal {
         _addKYCVerifier(msg.sender);
+        initialized = true;
+    }
+
+    function _initialize(address _initialManager) internal{
+        _addKYCVerifier(_initialManager);
     }
 
     modifier onlyKYCVerifier() {
