@@ -2,10 +2,11 @@ pragma solidity ^0.5.0;
 
 //import "openzeppelin-solidity/contracts/access/Roles.sol";
 import "../Openzeppelin/Roles.sol";
+import "../Proxy/Initializable.sol";
 
 
 // A role for the global Verifiers for KYC information, who are allowed to enter
-contract InsiderListManagerRole {
+contract InsiderListManagerRole is Initializable {
     using Roles for Roles.Role;
 
     event InsiderListManagerAdded(address indexed account);
@@ -15,6 +16,11 @@ contract InsiderListManagerRole {
 
     constructor () internal {
         _addInsiderListManager(msg.sender);
+        initialized = true;
+    }
+
+    function _initialize(address _initialManager) internal{
+        _addInsiderListManager(_initialManager);
     }
 
     modifier onlyInsiderListManager() {

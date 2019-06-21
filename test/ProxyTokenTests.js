@@ -98,7 +98,6 @@ contract('ProxyToken', function ([deployer, initialHolder, recipient, votingOffi
             });
         });*/
 
-
         describe('when all parameters are correct', function () {
             it('creates a ballot and stores it', async function () {
 

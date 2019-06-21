@@ -13,6 +13,7 @@ const InsiderListController = artifacts.require("../contracts/Controlling/Inside
 const PEPListController = artifacts.require("../contracts/Controlling/PEPListController.sol");
 const TransferQueues = artifacts.require("../contracts/AML/TransferQueues.sol");
 const Controller = artifacts.require("../contracts/Controlling/Controller.sol");
+const UnstructuredProxy = artifacts.require("../contracts/Proxy/UnstructuredProxy.sol");
 
 
 
@@ -46,6 +47,14 @@ contract('DividendToken', function ([deployer, initialHolder, distributer, recip
         //initial minting would distort test results
         this.token = await DividendToken.new(this.controller.address, this.transferQueues.address);
 
+
+        //Comment this in for full proxy test
+        this.proxy = await UnstructuredProxy.new();
+        this.proxy.upgradeTo(this.token.address);
+        this.token = await DividendToken.at(this.proxy.address);
+        await this.token.setController(this.controller.address);
+        await this.token.setTransferQueues(this.transferQueues.address);
+        await this.token.addIssuer(deployer);
 
 
     });

@@ -5,19 +5,15 @@ import "./ERC20.sol";
 import "../Roles/IssuerRole.sol";
 import "../AML/TransferQueues.sol";
 import "../Controlling/Controller.sol";
-import "./Storage/ERC1594Storage.sol";
 //import "openzeppelin-solidity/contracts/ownership/Ownable.sol";
 
 /**
  * @title AML aware implementation of ERC1594 (Subset of ERC1400 https://github.com/ethereum/EIPs/issues/1411)
  * adapted from the standard implementation of the spec: https://github.com/SecurityTokenStandard/EIP-Spec
  */
-contract ERC1594 is IERC1594, ERC20, IssuerRole { //TODO erc20mintable? //TODO pausable, mintable //erc1594storage
+contract ERC1594 is IERC1594, ERC20, IssuerRole, OrchestratorRole { //TODO erc20mintable? //TODO pausable, mintable //erc1594storage
     // Variable which tells whether issuance is ON or OFF forever
-    // Implementers need to implement one more function to reset the value of `issuance` variable
-    // to false. That function is not a part of the standard (EIP-1594) as it is depend on the various factors
-    // issuer, followed compliance rules etc. So issuers have the choice how they want to close the issuance.
-    bool internal issuance = true; //TODO
+    bool internal issuanceClosed = false;
 
     // Variable that stores stores a mapping of the last transfers of the account
     // in order to comply with AML regulations
@@ -25,7 +21,7 @@ contract ERC1594 is IERC1594, ERC20, IssuerRole { //TODO erc20mintable? //TODO p
     // the value of the outbound funds (counted in number of tokens, value must be determined on check (todo or not, check immediately at entering?)
     TransferQueues queues;
     // The single controller that is to be queried before all token moving actions on the respective functions
-    Controller public controller; //TODO remove public
+    Controller controller;
 
     // Constant that defines how long the last Transfers of each sender are considered for AML checks
     uint constant TRANSFER_RETENTION_TIME = 604800; //604800 == 1 Week in Seconds
@@ -33,10 +29,23 @@ contract ERC1594 is IERC1594, ERC20, IssuerRole { //TODO erc20mintable? //TODO p
     //TODO currently is used as token number, but should in future be implemented using a pricing oracle to represent euros
     uint constant SPEND_CEILING = 15000;
 
-    // Constructor
+    // Constructor TODO remove arguments
     constructor(Controller _controller, TransferQueues _queues)  public { //The super contract is a modifier of sorts of the constructor
         queues = _queues;
         controller = _controller;
+    }
+
+    /**
+     * @dev these three functions are the replacement for the constructor setters in proxy setups
+     */
+    function setTransferQueues(TransferQueues _queues) public onlyOrchestrator{
+        queues = _queues;
+    }
+    function setController(Controller _controller) public onlyOrchestrator{
+        controller = _controller;
+    }
+    function addIssuer(address issuer) public onlyOrchestrator{
+        _addIssuer(issuer);
     }
 
     /**
@@ -94,7 +103,7 @@ contract ERC1594 is IERC1594, ERC20, IssuerRole { //TODO erc20mintable? //TODO p
      * @return bool `true` signifies the minting is allowed. While `false` denotes the end of minting
      */
     function isIssuable() external view returns (bool) {
-        return issuance;
+        return !issuanceClosed;
     }
 
     /**
@@ -108,11 +117,17 @@ contract ERC1594 is IERC1594, ERC20, IssuerRole { //TODO erc20mintable? //TODO p
      */
     function issue(address _tokenHolder, uint256 _value, bytes memory _data) public onlyIssuer {
         // Add a function to validate the `_data` parameter
-        require(issuance, "Issuance is closed");
+        require(!issuanceClosed, "Issuance is closed");
         _mint(_tokenHolder, _value);
         emit Issued(msg.sender, _tokenHolder, _value, _data);
     }
 
+    /**
+     * @notice Closes the issuance forever, forbidding any more tokens to be minted as per ERC1594
+     */
+    function closeIssuance() public onlyIssuer {
+        issuanceClosed = true;
+    }
     /**
      * @notice This function redeems an amount of the token of a msg.sender. For doing so msg.sender may incentivize
      * using different ways that could be implemented with in the `redeem` function definition. But those implementations

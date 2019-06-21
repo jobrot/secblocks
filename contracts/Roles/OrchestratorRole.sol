@@ -2,9 +2,10 @@ pragma solidity ^0.5.0;
 
 //import "openzeppelin-solidity/contracts/access/Roles.sol";
 import "../Openzeppelin/Roles.sol";
+import "../Proxy/Initializable.sol";
 
 // A role for the Deployer of the Token Smart Contracts, that is allowed to add Controllers to the Tokens
-contract OrchestratorRole {
+contract OrchestratorRole is Initializable {
     using Roles for Roles.Role;
 
     event OrchestratorAdded(address indexed account);
@@ -14,6 +15,11 @@ contract OrchestratorRole {
 
     constructor () internal {
         _addOrchestrator(msg.sender);
+        initialized = true;
+    }
+
+    function _initialize(address _initialManager) internal{
+        _addOrchestrator(_initialManager);
     }
 
     modifier onlyOrchestrator() {

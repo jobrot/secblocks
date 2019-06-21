@@ -57,6 +57,15 @@ contract VotingToken is DividendToken, VotingOfficialRole {
     }
 
     /**
+     * @dev Function to be called
+     * @param votingOfficial The address designated as votingofficial
+    */
+    function addVotingOfficial(address votingOfficial) public onlyOrchestrator{
+        _addVotingOfficial(votingOfficial);
+    }
+
+
+    /**
      * @dev Overwrites the ERC-20 function so that it will be used
      * by all functions in super contracts to keep checkpoints up to date
      * @param _from The address holding the tokens being transferred

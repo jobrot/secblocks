@@ -17,6 +17,7 @@ const InsiderListController = artifacts.require("../contracts/Controlling/Inside
 const PEPListController = artifacts.require("../contracts/Controlling/PEPListController.sol");
 const TransferQueues = artifacts.require("../contracts/AML/TransferQueues.sol");
 const Controller = artifacts.require("../contracts/Controlling/Controller.sol");
+const UnstructuredProxy = artifacts.require("../contracts/Proxy/UnstructuredProxy.sol");
 
 
 const {
@@ -76,12 +77,15 @@ contract('ERC1594, TransferQueues, Controller', function ([deployer, initialHold
         this.token = await ERC1594Mock.new(this.controller.address, this.transferQueues.address, initialHolder, initialSupply);
 
 
-        /* //Comment this in for full proxy test
-       this.proxy = await UnstructuredProxy.new();
+         //Comment this in for full proxy test
+       /*this.proxy = await UnstructuredProxy.new();
        this.proxy.upgradeTo(this.token.address);
-       this.token = await ERC20Mock.at(this.proxy.address);
-       await this.token.mint(initialHolder, initialSupply);
-        */
+       this.token = await ERC1594Mock.at(this.proxy.address);
+       await this.token.setController(this.controller.address);
+        await this.token.setTransferQueues(this.transferQueues.address);
+        await this.token.addIssuer(deployer);
+       await this.token.mint(initialHolder, initialSupply);*/
+
 
 
 

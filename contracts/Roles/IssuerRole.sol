@@ -2,8 +2,9 @@ pragma solidity ^0.5.0;
 
 //import "openzeppelin-solidity/contracts/access/Roles.sol";
 import "../Openzeppelin/Roles.sol";
+import "../Proxy/Initializable.sol";
 
-// A role for the Issuer of a token
+// A role for the Issuer of a token, not initializable as the other roles, as this would clash in ERC1594
 contract IssuerRole {
     using Roles for Roles.Role;
 
