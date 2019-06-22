@@ -55,7 +55,14 @@ contract('VotingToken', function ([deployer, initialHolder, recipient, votingOff
 
 
         //Comment this in for full proxy test
-        this.proxy = await UnstructuredProxy.new();
+        this.controllerProxy = await UnstructuredProxy.new(deployer);
+        this.controllerProxy.upgradeTo(this.controller.address);
+        this.controller = await Controller.at(this.controllerProxy.address);
+        this.controller.setKYCController(this.kycMock.address);
+        this.controller.setPEPListController(this.pepListMock.address);
+        this.controller.setInsiderListController(this.insiderListMock.address);
+
+        this.proxy = await UnstructuredProxy.new(deployer);
         this.proxy.upgradeTo(this.token.address);
         this.token = await VotingToken.at(this.proxy.address);
         await this.token.setController(this.controller.address);

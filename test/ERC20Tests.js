@@ -19,7 +19,7 @@ contract('ERC20', function ([_, initialHolder, recipient, anotherAccount]) {
     beforeEach(async function () {
         this.token = await ERC20Mock.new(initialHolder, initialSupply);
         /* //Comment this in for fulll proxy test
-        this.proxy = await UnstructuredProxy.new();
+        this.proxy = await UnstructuredProxy.new(deployer);
         this.proxy.upgradeTo(this.token.address);
         this.token = await ERC20Mock.at(this.proxy.address);
         await this.token.mint(initialHolder, initialSupply);

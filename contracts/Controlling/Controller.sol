@@ -27,6 +27,7 @@ contract Controller is OrchestratorRole {
     event InsiderListControllerUpdated(address controller);
     event PEPListControllerUpdated(address controller);
 
+    //TODO remove arguments
     constructor(KYCController _kycController, InsiderListController _insiderListController, PEPListController _pepListController) public {
         kycController = _kycController;
         insiderListController = _insiderListController;

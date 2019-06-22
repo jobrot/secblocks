@@ -49,7 +49,7 @@ contract('DividendToken', function ([deployer, initialHolder, distributer, recip
 
 
         //Comment this in for full proxy test
-        this.proxy = await UnstructuredProxy.new();
+        this.proxy = await UnstructuredProxy.new(deployer);
         this.proxy.upgradeTo(this.token.address);
         this.token = await DividendToken.at(this.proxy.address);
         await this.token.setController(this.controller.address);

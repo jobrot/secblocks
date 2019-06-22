@@ -7,8 +7,9 @@ contract UnstructuredProxy {
     /**
     * @dev the constructor sets the owner
     */
-    constructor() public {
-        _setProxyOwner(msg.sender);
+    constructor(address owner) public {
+        require(address(0)!=owner, "The owner of a proxy must not be null");
+        _setProxyOwner(owner);
     }
 
      /**
@@ -22,7 +23,11 @@ contract UnstructuredProxy {
         require(currentImplementation != newImplementation);
         setImplementation(newImplementation);
         bytes memory payload = abi.encodeWithSignature("initialize(address)", msg.sender);
-        address(this).call(payload);
+
+        bool success;
+        bytes memory returndata;
+        (success, returndata) = address(this).call(payload);
+        require(success, string (returndata));
     }
 
     /**
