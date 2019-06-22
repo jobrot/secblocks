@@ -4,26 +4,102 @@ const InsiderListController = artifacts.require("../contracts/Controlling/Inside
 const PEPListController = artifacts.require("../contracts/Controlling/PEPListController.sol");
 const TransferQueues = artifacts.require("../contracts/AML/TransferQueues.sol");
 const Controller = artifacts.require("../contracts/Controlling/Controller.sol");
+const Registry = artifacts.require("../contracts/Registry.sol");
 
-const Proxy = artifacts.require("../contracts/Proxy/UnstructuredProxy.sol");
+const UnstructuredProxy = artifacts.require("../contracts/Proxy/UnstructuredProxy.sol");
 
 const ERC1594 = artifacts.require("../contracts/Tokens/ERC1594.sol");
 const DividendToken = artifacts.require("../contracts/Tokens/DividendToken.sol");
+const abi = require('ethereumjs-abi');
 
 
-module.exports = function (deployer) {
-    var address;
+module.exports = async function (deployer) {
 
 
-    deployer.deploy(KYCController).then(() => {
+    await deployer.deploy(KYCController);
+    await deployer.deploy(InsiderListController);
+    await deployer.deploy(PEPListController);
+    await deployer.deploy(TransferQueues);
+    await deployer.deploy(Controller, KYCController.address, InsiderListController.address, PEPListController.address);
+    await deployer.deploy(VotingToken, Controller.address,  TransferQueues.address);
+    var registrydeployed = await deployer.deploy(Registry);
+
+    // var proxyAddress = await registrydeployed.createProxy("VotingTokenExampleCompany").then((result)=>{
+    //     return result.logs[0].args.proxyAddress;
+    // });
+
+    //console.log(proxyAddress);
+    //console.log((await registrydeployed.proxies("VotingTokenExampleCompany")).proxyAddress);
+
+    //--- Create all Subcontroller proxies ---
+
+    var kycControllerProxy = await UnstructuredProxy.at(await registrydeployed.createProxy("KYCController").then((result)=>{
+        return result.logs[0].args.proxyAddress;
+    }));
+    kycControllerProxy.upgradeTo(KYCController.address);
+    var kycController = await KYCController.at(kycControllerProxy.address); //TODO this line is unneccessary, proxy address could also be used if we dont need functions of the controller itself
+
+
+    var insiderListControllerProxy = await UnstructuredProxy.at(await registrydeployed.createProxy("InsiderListControllerExampleCompany").then((result)=>{
+        return result.logs[0].args.proxyAddress;
+    }));
+    insiderListControllerProxy.upgradeTo(InsiderListController.address);
+    var insiderListController = await InsiderListController.at(insiderListControllerProxy.address);
+
+
+    var pepListControllerProxy = await UnstructuredProxy.at(await registrydeployed.createProxy("PEPListController").then((result)=>{
+        return result.logs[0].args.proxyAddress;
+    }));
+    pepListControllerProxy.upgradeTo(PEPListController.address);
+    var pepListController = await PEPListController.at(pepListControllerProxy.address);
+
+    //--- create controller proxy ---
+
+    var controllerProxy = await UnstructuredProxy.at(await registrydeployed.createProxy("ControllerExampleCompany").then((result)=>{
+        return result.logs[0].args.proxyAddress;
+    }));
+    controllerProxy.upgradeTo(Controller.address);
+    var controller = await Controller.at(controllerProxy.address);
+
+    // add subcontroller proxies to controller proxy
+
+    controller.setKYCController(kycController.address);
+    controller.setPEPListController(pepListController.address);
+    controller.setInsiderListController(insiderListController.address);
+
+    //--- Deploying the main Token contract (in real world use, this would happen for each token that is listed
+
+    var votingTokenProxy = await UnstructuredProxy.at(await registrydeployed.createProxy("VotingTokenExampleCompany").then((result)=>{
+        return result.logs[0].args.proxyAddress;
+    }));
+    votingTokenProxy.upgradeTo(VotingToken.address);
+    var votingToken = await VotingToken.at(votingTokenProxy.address);
+
+    /*
+        this.proxy = await UnstructuredProxy.new(deployer);
+        this.proxy.upgradeTo(this.token.address);
+        this.token = await VotingToken.at(this.proxy.address);
+        await this.token.setController(this.controller.address);
+        await this.token.setTransferQueues(this.transferQueues.address);
+        await this.token.addIssuer(deployer);
+        await this.token.addVotingOfficial(deployer);*/
+
+
+
+  /*  deployer.deploy(KYCController).then(() => {
         return deployer.deploy(InsiderListController).then(() => {
             return deployer.deploy(PEPListController).then(() => {
                 return deployer.deploy(TransferQueues).then(() => {
                     return deployer.deploy(Controller, KYCController.address, InsiderListController.address, PEPListController.address,).then(() => {
                         return deployer.deploy(VotingToken, Controller.address,  TransferQueues.address).then(() => {
-                            return deployer.deploy(Proxy).then((proxydeployed) => {
+                            return deployer.deploy(Registry).then((registrydeployed) => {
                                 //VotingToken.deployed.totalsupply();
-                                proxydeployed.upgradeTo(VotingToken.address);
+                                //proxydeployed.upgradeTo(VotingToken.address);
+                                registrydeployed.createProxy(abi.rawEncode(['bytes32'],['VotingTokenExampleCompany'])).then((result)=>{
+                                    console.log(result);
+                                    console.log("hier");
+                                    console.log(result.logs[0].address);
+                                });
                                 return true;
                             });
                         });
@@ -31,7 +107,7 @@ module.exports = function (deployer) {
                 });
             });
         });
-    });
+    });*/
 
 
     // Deploy multiple contracts, some with arguments and some without.
