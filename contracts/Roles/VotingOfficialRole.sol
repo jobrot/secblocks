@@ -7,8 +7,6 @@ import "../Openzeppelin/Roles.sol";
 contract VotingOfficialRole {
     using Roles for Roles.Role;
 
-    event VotingOfficialChecked(address indexed account); //TODO remove
-    event IsVotingOfficial(bool ist); //TODO remove
     event VotingOfficialAdded(address indexed account);
     event VotingOfficialRemoved(address indexed account);
 

@@ -24,9 +24,6 @@ contract('DividendToken', function ([deployer, initialHolder, distributer, recip
 
 
     beforeEach(async function () {
-        this.kycController = await KYCController.new();
-        this.insiderListController = await InsiderListController.new();
-        this.pepListController = await PEPListController.new();
         
 
         this.kycMock = await MockContract.new();

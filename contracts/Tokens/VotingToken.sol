@@ -139,7 +139,7 @@ contract VotingToken is DividendToken, VotingOfficialRole {
         //Search through all Ballots backwards, so that the recent ones are found first
         int found = - 1;
 
-        for (int i = UIntConverterLib.toIntSafe(ballots.length); i > 0; i--) {//TODO could be optimized for gas
+        for (int i = UIntConverterLib.toIntSafe(ballots.length); i > 0; i--) {//could still be optimized for gas
             if (ballots[SafeMathInt.toUintSafe(i - 1)].name == ballotName) {
                 found = i - 1;
                 break;

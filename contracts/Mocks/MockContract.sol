@@ -1,5 +1,5 @@
 pragma solidity ^0.5.0;
-
+//Source: Gnosis Mock contract framework: https://github.com/gnosis/mock-contract
 interface MockInterface {
     /**
      * @dev After calling this method, the mock will return `response` when it is called

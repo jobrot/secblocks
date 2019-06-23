@@ -3,11 +3,9 @@ pragma solidity ^0.5.0;
 import "../Openzeppelin/SafeMath.sol";
 import "../Openzeppelin/IERC20.sol";
 
-//import "openzeppelin-solidity/contracts/token/ERC20/IERC20.sol";
-//import "openzeppelin-solidity/contracts/math/SafeMath.sol"; //TODO readd these, if they do not impact ganache
 
 
-contract ERC20 is IERC20 { //TODO maybe add functionality from erc20detailed in order to implement names of company etc
+contract ERC20 is IERC20 {
     using SafeMath for uint256;
 
                                         //TODO consistent underscore convention
@@ -84,7 +82,7 @@ contract ERC20 is IERC20 { //TODO maybe add functionality from erc20detailed in 
      * @param to The address to transfer to.
      * @param value The amount to be transferred.
      */
-    function transfer(address to, uint256 value) public returns (bool) { //TODO private
+    function transfer(address to, uint256 value) private returns (bool) {
         _transfer(msg.sender, to, value);
         return true;
     }
@@ -151,7 +149,7 @@ contract ERC20 is IERC20 { //TODO maybe add functionality from erc20detailed in 
     function _transfer(address from, address to, uint256 value) internal {
         require(from != address(0), "ERC20: transfer from the zero address");
         require(to != address(0), "ERC20: transfer to the zero address");
-        _balances[from] = _balances[from].sub(value); //TODO should i add more meaningful error messages instead of subtraction overflow in case of too little funds?
+        _balances[from] = _balances[from].sub(value);
         _balances[to] = _balances[to].add(value);
         emit Transfer(from, to, value);
     }

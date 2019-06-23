@@ -37,7 +37,7 @@ module.exports = async function (deployer) {
         return result.logs[0].args.proxyAddress;
     }));
     kycControllerProxy.upgradeToInit(KYCController.address);
-    var kycController = await KYCController.at(kycControllerProxy.address); //TODO this line is unneccessary, proxy address could also be used if we dont need functions of the controller itself
+    var kycController = await KYCController.at(kycControllerProxy.address); // this line is unneccessary, proxy address could also be used if we dont need functions of the controller itself
 
 
     var insiderListControllerProxy = await UnstructuredProxy.at(await registrydeployed.createProxy("InsiderListControllerExampleCompany").then((result)=>{

@@ -2,13 +2,9 @@ const {BN, constants, expectEvent, expectRevert} = require('openzeppelin-test-he
 const {ZERO_ADDRESS} = constants;
 const should = require('chai').should();
 const abi = require('ethereumjs-abi');
-//import Doppelganger from 'ethereum-doppelganger';
-//const Doppelganger = require('ethereum-doppelganger').default;
-//const Doppelganger = require('ethereum-doppelganger');
-// const Web3 = require('web3');
-// const web3 = new Web3(new Web3.providers.HttpProvider('http://localhost:8545'));
 
 const MockContract = artifacts.require("../contracts/Mocks/MockContract.sol"); //Gnosis Mock contract framework
+const GeneralControllerMock = artifacts.require("../contracts/Mocks/GeneralControllerMock.sol");
 
 const ERC1594 = artifacts.require("../contracts/Tokens/ERC1594.sol");
 const VotingToken = artifacts.require("../contracts/Tokens/VotingToken.sol");
@@ -21,12 +17,11 @@ const UnstructuredProxy = artifacts.require("../contracts/Proxy/UnstructuredProx
 
 
 const {
-    shouldBehaveLikeERC20, //TODO
+    shouldBehaveLikeERC20,
     shouldBehaveLikeERC20Transfer,
     shouldBehaveLikeERC20Approve,
 } = require('./ERC20BehaviourTests.js');
 
-//TODO use other tests, tests for mint etc? or only really important tests
 
 const ERC1594Mock = artifacts.require('ERC1594Mock');
 
@@ -92,12 +87,11 @@ contract('ERC1594, TransferQueues, Controller', function ([deployer, initialHold
         await this.token.mint(initialHolder, initialSupply);
 
 
-        //this.token = await ERC1594.new(this.kycMock.address, this.insiderMock.address, this.pepListMock.address);
 
-        //await this.token.issue(initialHolder, initialSupply, abi.rawEncode(['bytes'],['']));//mint(initialHolder,initialSupply);
     });
 
-    //shouldBehaveLikeERC20(kycController,insiderListController,pepListController,  'ERC20', initialSupply, initialHolder, recipient, anotherAccount);
+    shouldBehaveLikeERC20('ERC20', initialSupply, initialHolder, recipient, anotherAccount);
+    shouldBehaveLikeERC20Approve('ERC20', initialSupply, initialHolder, recipient, anotherAccount);
 
     describe('transferWithData', function () {
 
@@ -371,6 +365,98 @@ contract('ERC1594, TransferQueues, Controller', function ([deployer, initialHold
             });
         });
 
+
+    });
+
+
+
+    describe('Controllers General Adding and Removing', function () {
+
+
+        describe('when a general controller is added', function () {
+            it('an event is emitted', async function () {
+                this.generalcontrollerMock = await GeneralControllerMock.new();
+
+
+                var { logs } = await this.controller.addController(this.generalcontrollerMock.address);
+                expectEvent.inLogs(logs, 'ControllerAdded', { controller: this.generalcontrollerMock.address });
+
+            });
+        });
+
+
+
+
+        describe('when a non existing general controller is removed', function () {
+            it('reverts', async function () {
+                this.generalcontrollerMock = await GeneralControllerMock.new();
+                await expectRevert(this.controller.removeController(this.generalcontrollerMock.address),
+                    'Controllers list is empty.'
+                );
+            });
+        });
+
+
+        describe('when multiple general controllers are added and removed', function () {
+            it('all adds and removes work as expected', async function () {
+                this.generalcontrollerMock1 = await GeneralControllerMock.new();
+                this.generalcontrollerMock2 = await GeneralControllerMock.new();
+                this.generalcontrollerMock3 = await GeneralControllerMock.new();
+                this.generalcontrollerMock4 = await GeneralControllerMock.new();
+
+
+                var { logs } = await this.controller.addController(this.generalcontrollerMock1.address);
+                expectEvent.inLogs(logs, 'ControllerAdded', { controller: this.generalcontrollerMock1.address });
+
+               var { logs } = await this.controller.addController(this.generalcontrollerMock2.address);
+                expectEvent.inLogs(logs, 'ControllerAdded', { controller: this.generalcontrollerMock2.address });
+
+                var { logs } = await this.controller.addController(this.generalcontrollerMock3.address);
+                expectEvent.inLogs(logs, 'ControllerAdded', { controller: this.generalcontrollerMock3.address });
+
+                assert((await this.controller.getControllerCount())==3);
+
+                var { logs } = await this.controller.removeController(this.generalcontrollerMock1.address);
+                expectEvent.inLogs(logs, 'ControllerRemoved', { controller: this.generalcontrollerMock1.address });
+
+                assert((await this.controller.getControllerCount())==2);
+
+                var { logs } = await this.controller.removeController(this.generalcontrollerMock2.address);
+                expectEvent.inLogs(logs, 'ControllerRemoved', { controller: this.generalcontrollerMock2.address });
+
+                assert((await this.controller.getControllerCount())==1);
+
+                await expectRevert(this.controller.removeController(this.generalcontrollerMock1.address),
+                    'Controller to remove is not in the controllers list.'
+                );
+
+                assert((await this.controller.getControllerCount())==1);
+
+                var { logs } = await this.controller.addController(this.generalcontrollerMock4.address);
+                expectEvent.inLogs(logs, 'ControllerAdded', { controller: this.generalcontrollerMock4.address });
+
+
+
+            });
+        });
+
+
+        describe('when verifyall is called', function () {
+            it('general Controllers are also called', async function () {
+                this.generalcontrollerMock = await GeneralControllerMock.new();
+
+
+                var { logs } = await this.controller.addController(this.generalcontrollerMock.address);
+                expectEvent.inLogs(logs, 'ControllerAdded', { controller: this.generalcontrollerMock.address });
+
+
+                await expectRevert(this.token.transferWithData(recipient,1 ,abi.rawEncode(['bytes'], ['']),{from: initialHolder}),
+                    'The transfer is not allowed by a general Controller!'
+                );
+
+
+            });
+        });
 
     });
 

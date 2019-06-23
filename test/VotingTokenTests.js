@@ -22,9 +22,7 @@ contract('VotingToken', function ([deployer, initialHolder, recipient, votingOff
 
 
     beforeEach(async function () {
-        this.kycController = await KYCController.new();
-        this.insiderListController = await InsiderListController.new();
-        this.pepListController = await PEPListController.new();
+
         
 
         this.kycMock = await MockContract.new();
@@ -229,7 +227,7 @@ contract('VotingToken', function ([deployer, initialHolder, recipient, votingOff
 
 
         describe('when multiple token holders vote', function () {
-            it('correct option wins', async function () { //TODO
+            it('correct option wins', async function () {
                 await this.token.issue(initialHolder, new BN(100), abi.rawEncode(['bytes'],['']));
                 await this.token.issue(anotherAccount, new BN(51), abi.rawEncode(['bytes'],['']));
                 await this.token.issue(recipient, new BN(50), abi.rawEncode(['bytes'],['']));

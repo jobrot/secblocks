@@ -8,6 +8,8 @@ import "../Roles/OrchestratorRole.sol";
 import "./KYCController.sol";
 import "./PEPListController.sol";
 import "./InsiderListController.sol";
+
+
 /**
   A controlled Contract is an entity, that has multiple Controllers implementing IController, which can verify
   Transactions, issues etc. It must have exactly one KYC-, PEP- and an InsiderController, as they are mandated
@@ -19,7 +21,6 @@ contract Controller is OrchestratorRole {
     KYCController public kycController;
     InsiderListController public insiderListController;
     PEPListController public pepListController;
-
 
     event ControllerAdded(address controller);
     event ControllerRemoved(address controller);
@@ -37,9 +38,10 @@ contract Controller is OrchestratorRole {
 
     /**
     * @notice Adds a Controller contract to this contract.
+    * @dev does not control for duplicate entries
     * @param _controller Controller contract address.
     */
-    function addController(IController _controller) external onlyOrchestrator {//TODO what happens, when i put a contract that isnt IController?? If it doesnt matter, remove all functions for specific controllers below
+    function addController(IController _controller) external onlyOrchestrator {
         require(address(_controller) != address(0), "Controller address must not be a zero address.");
         require(Address.isContract(address(_controller)), "Address must point to a contract.");
         controllers.push(_controller);
@@ -54,7 +56,11 @@ contract Controller is OrchestratorRole {
         require(address(_controller) != address(0), "Controller address must not be a zero address.");
         require(Address.isContract(address(_controller)), "Address must point to a contract.");
         remove(_controller);
-        emit ControllerRemoved(address(_controller));
+    }
+
+
+    function getControllerCount() public view returns(uint) {
+        return controllers.length;
     }
 
     /**
@@ -94,22 +100,30 @@ contract Controller is OrchestratorRole {
     /**
         @dev removes a single controller from the list of general controllers in the contract
     */
-    function remove(IController _controllerToRemove) internal {//TODO test this, also with empty list
+    function remove(IController _controllerToRemove) internal {
+        require(controllers.length>0, "Controllers list is empty.");
         uint i = 0;
-        while (controllers[i] != _controllerToRemove) {
-            i++;
+        for(;i<controllers.length;i++){
+            if(address(controllers[i]) == address(_controllerToRemove)){
+                break;
+            }
         }
+
         require(i != controllers.length, "Controller to remove is not in the controllers list.");
-        while (i < controllers.length - 1) {
-            controllers[i] = controllers[i + 1];
-            i++;
-        }
-        delete controllers[controllers.length - 1];
-        controllers.length--;
+
+
+            controllers[i]=controllers[controllers.length-1];
+
+
+            controllers.length--;
+        emit ControllerRemoved(address(_controllerToRemove));
+
+
+
     }
 
 
-    function verifyAll(address _from, address _to, uint _value, bytes memory _data) public{ //TODO rename verifyalltransfer
+    function verifyAllTransfer(address _from, address _to, uint _value, bytes memory _data) public{
         bool verified;
         verified = kycController.verifyTransfer(_from, _to, _value, _data);
         require(verified, "The transfer is not allowed by the KYCController!");
@@ -117,7 +131,14 @@ contract Controller is OrchestratorRole {
         require(verified, "The transfer is not allowed by the InsiderListController!");
         verified = pepListController.verifyTransfer(_from, _to, _value, _data);
         require(verified, "The transfer is not allowed by the PoliticallyExposedPersonController!");
-        //TODO verify list of controllers
+
+        //this could be a problem, if there were enough complex controllers to run out of gas, but in this case the whole point of the system would be already defeated
+        for(uint i = 0; i<controllers.length; i++){
+            IController controller = IController(address(controllers[i]));
+            verified= controller.verifyTransfer(_from, _to, _value, _data);
+            require(verified, "The transfer is not allowed by a general Controller!");
+        }
+
     }
 
 

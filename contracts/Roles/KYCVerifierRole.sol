@@ -6,7 +6,6 @@ import "../Proxy/Initializable.sol";
 
 
 // A role for the global Verifiers for KYC information, who are allowed to enter
-//TODO enter in singular registry somehow
 contract KYCVerifierRole is Initializable {
     using Roles for Roles.Role;
 

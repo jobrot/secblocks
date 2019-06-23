@@ -11,14 +11,14 @@ import "../Controlling/Controller.sol";
  * @title AML aware implementation of ERC1594 (Subset of ERC1400 https://github.com/ethereum/EIPs/issues/1411)
  * adapted from the standard implementation of the spec: https://github.com/SecurityTokenStandard/EIP-Spec
  */
-contract ERC1594 is IERC1594, ERC20, IssuerRole, OrchestratorRole { //TODO erc20mintable? //TODO pausable, mintable //erc1594storage
+contract ERC1594 is IERC1594, ERC20, IssuerRole, OrchestratorRole {
     // Variable which tells whether issuance is ON or OFF forever
     bool internal issuanceClosed = false;
 
     // Variable that stores stores a mapping of the last transfers of the account
     // in order to comply with AML regulations
     // @dev maps each address to an array of dynamic length, that consists a struct of the timestamp and
-    // the value of the outbound funds (counted in number of tokens, value must be determined on check (todo or not, check immediately at entering?)
+    // the value of the outbound funds (counted in number of tokens, value must be determined on check
     TransferQueues queues;
     // The single controller that is to be queried before all token moving actions on the respective functions
     Controller controller;
@@ -26,7 +26,7 @@ contract ERC1594 is IERC1594, ERC20, IssuerRole, OrchestratorRole { //TODO erc20
     // Constant that defines how long the last Transfers of each sender are considered for AML checks
     uint constant TRANSFER_RETENTION_TIME = 604800; //604800 == 1 Week in Seconds
     // Constant that defines the maximum value that may be traded within the retention time
-    //TODO currently is used as token number, but should in future be implemented using a pricing oracle to represent euros
+    // currently is used as token number, but should in future be implemented using a pricing oracle to represent euros
     uint constant SPEND_CEILING = 15000;
 
     // reenable constructor, if deployment without proxy is needed
@@ -61,11 +61,11 @@ contract ERC1594 is IERC1594, ERC20, IssuerRole, OrchestratorRole { //TODO erc20
      */
     function transferWithData(address _to, uint256 _value, bytes memory  _data) public {
         bool verified;
-        controller.verifyAll(msg.sender, _to, _value, _data);
+        controller.verifyAllTransfer(msg.sender, _to, _value, _data);
 
 
 
-        //TODO if >15000 you must consult with bank? actually, you only have to be identified, which
+
         //in our case, is always the case... so what is it? just implement a flagging service?
         //if anything is done, it surely must also be stored, (alle ausgänge innerhalb einer woche oder so)
         //kein ausgang x anderer, sondern generell ausgang, einfach zweite map

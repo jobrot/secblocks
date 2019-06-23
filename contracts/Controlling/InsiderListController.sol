@@ -21,8 +21,7 @@ contract InsiderListController is IController, InsiderListManagerRole {
     * @notice Verify if an issuance to an address is allowed
     * @dev Forbids issuing if _tokenHolder is on blacklist
     * @return {
-        "allowed": "Returns true if issue is allowed, returns false otherwise.",
-        "statusCode": "ERC1066 status code"
+        "allowed": "Returns true if issue is allowed, returns false otherwise."
     }
     */
     function verifyIssue(address _tokenHolder, uint256 _value, bytes calldata _data) external view
@@ -42,14 +41,13 @@ contract InsiderListController is IController, InsiderListManagerRole {
     * @notice Verify if a transfer is allowed.
     * @dev Forbids transfer if _from and _to are on blacklist
     * @return {
-        "allowed": "Returns true if transfer is allowed, returns false otherwise.",
-        "statusCode": "ERC1066 status code"
+        "allowed": "Returns true if transfer is allowed, returns false otherwise."
     }
     */
     function verifyTransfer(address _from, address _to, uint256 _amount, bytes calldata _data) external view
     returns (bool allowed)
     {
-        if(_onBlacklist(_from) && _onBlacklist(_to)){ //TODO application specific more detailed Status codes?
+        if(_onBlacklist(_from) && _onBlacklist(_to)){
             allowed = false;
             
         }
@@ -63,8 +61,7 @@ contract InsiderListController is IController, InsiderListManagerRole {
     * @notice Verify if a transferFrom is allowed.
     * @dev Forbids transfer if _from, _to, and _forwarder are on the blacklist
     * @return {
-        "allowed": "Returns true if transferFrom is allowed, returns false otherwise.",
-        "statusCode": "ERC1066 status code"
+        "allowed": "Returns true if transferFrom is allowed, returns false otherwise."
     }
     */
     function verifyTransferFrom(address _from, address _to, address _forwarder, uint256 _amount, bytes calldata _data) external view
@@ -84,8 +81,7 @@ contract InsiderListController is IController, InsiderListManagerRole {
     * @notice Verify if a redeem is allowed.
     * @dev Forbids redeem if _sender is on the blacklist
     * @return {
-        "allowed": "Returns true if redeem is allowed, returns false otherwise.",
-        "statusCode": "ERC1066 status code"
+        "allowed": "Returns true if redeem is allowed, returns false otherwise."
     }
     */
     function verifyRedeem(address _sender, uint256 _amount, bytes calldata _data) external view
@@ -105,8 +101,7 @@ contract InsiderListController is IController, InsiderListManagerRole {
     * @notice Verify if a redeemFrom is allowed.
     * @dev Forbids redeem if _sender and _tokenHolder are on the blacklist
     * @return {
-        "allowed": "Returns true if redeem is allowed, returns false otherwise.",
-        "statusCode": "ERC1066 status code"
+        "allowed": "Returns true if redeem is allowed, returns false otherwise."
     }
     */
     function verifyRedeemFrom(address _sender, address _tokenHolder, uint256 _amount, bytes calldata _data) external view

@@ -29,7 +29,7 @@ contract(['KYCController', 'KYCVerifierRole'], (accounts) => {
         sut = await KYCController.at(proxy.address);
     });
 
-    it('deployer should be a verifier', async () => { //TODO rework with describe functions
+    it('deployer should be a verifier', async () => {
         const result = await sut.isKYCVerifier(deployer);
         assert.equal(result, true);
     });

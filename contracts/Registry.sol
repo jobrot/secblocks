@@ -54,7 +54,6 @@ contract Registry is OrchestratorRole {
         proxies[proxyId].proxyAddress = proxyAddress;
         proxies[proxyId].exists = true;
         return proxyAddress;
-        //address(0x33ccc2f306ea7a797c4b03b4c0e1a37eef2c7678a90c3e2ea9b6cbf864111111); //TODO
     }
     /**
         @notice add a preexisting proxy with the id @param proxyId to the registry by passing

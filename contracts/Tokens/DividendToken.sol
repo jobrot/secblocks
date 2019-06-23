@@ -75,7 +75,7 @@ contract DividendToken is ERC1594 {
      *     but keeping track of such data on-chain costs much more than
      *     the saved ether, so we don't do that.
     */
-    function distributeDividends() public payable { //TODO rework
+    function distributeDividends() public payable {
         require(totalSupply() > 0, "DividendToken: There are no Tokens currently owned");
 
         if (msg.value > 0) {
