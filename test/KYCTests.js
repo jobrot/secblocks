@@ -24,9 +24,9 @@ contract(['KYCController', 'KYCVerifierRole'], (accounts) => {
     before(async () => {
         sut = await KYCController.new();
         //comment this in for proxy test
-        /*proxy = await UnstructuredProxy.new(deployer);
-        await proxy.upgradeTo(sut.address);
-        sut = await KYCController.at(proxy.address);*/
+        proxy = await UnstructuredProxy.new(deployer);
+        await proxy.upgradeToInit(sut.address);
+        sut = await KYCController.at(proxy.address);
     });
 
     it('deployer should be a verifier', async () => { //TODO rework with describe functions

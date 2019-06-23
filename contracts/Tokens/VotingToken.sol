@@ -52,9 +52,10 @@ contract VotingToken is DividendToken, VotingOfficialRole {
     // all ballots that can be voted upon by token holders
     Ballot[] public ballots;
 
-    constructor(Controller _controller, TransferQueues _queues) DividendToken(_controller, _queues) public {//The super contract is a modifier of sorts of the constructor
+    // reenable constructor, if deployment without proxy is needed
+    /*constructor(Controller _controller, TransferQueues _queues) DividendToken(_controller, _queues) public {//The super contract is a modifier of sorts of the constructor
 
-    }
+    }*/
 
     /**
      * @dev Function to be called

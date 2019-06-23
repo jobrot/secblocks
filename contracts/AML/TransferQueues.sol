@@ -3,12 +3,6 @@ pragma solidity ^0.5.0;
 
 contract TransferQueues {
 
-
-//    struct TimestampedTransfer{
-//        uint timestamp;
-//        uint amount;
-//    }
-
     struct TransferQueue{
         mapping(uint => uint) timestampQueue;
         mapping(uint => uint) amountQueue;

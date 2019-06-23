@@ -71,20 +71,20 @@ contract('ERC1594, TransferQueues, Controller', function ([deployer, initialHold
 
         //create SUT
         this.transferQueues = await TransferQueues.new();
-        this.controller = await Controller.new(this.kycMock.address, this.insiderListMock.address, this.pepListMock.address);
-        this.token = await ERC1594Mock.new(this.controller.address, this.transferQueues.address, initialHolder, initialSupply);
+        this.controller = await Controller.new(); //this.kycMock.address, this.insiderListMock.address, this.pepListMock.address
+        this.token = await ERC1594Mock.new(); //this.controller.address, this.transferQueues.address, initialHolder, initialSupply
 
 
         //Comment this in for full proxy test
         this.controllerProxy = await UnstructuredProxy.new(deployer);
-        this.controllerProxy.upgradeTo(this.controller.address);
+        await this.controllerProxy.upgradeToInit(this.controller.address);
         this.controller = await Controller.at(this.controllerProxy.address);
         this.controller.setKYCController(this.kycMock.address);
         this.controller.setPEPListController(this.pepListMock.address);
         this.controller.setInsiderListController(this.insiderListMock.address);
 
         this.proxy = await UnstructuredProxy.new(deployer);
-        this.proxy.upgradeTo(this.token.address);
+        await this.proxy.upgradeToInit(this.token.address);
         this.token = await ERC1594Mock.at(this.proxy.address);
         await this.token.setController(this.controller.address);
         await this.token.setTransferQueues(this.transferQueues.address);

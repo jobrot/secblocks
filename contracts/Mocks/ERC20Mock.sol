@@ -4,9 +4,6 @@ import "../Tokens/ERC20.sol";
 
 // mock class using ERC20, in order for the test class to be able to access internal functions
 contract ERC20Mock is ERC20 {
-    constructor (address initialAccount, uint256 initialBalance) public {
-        _mint(initialAccount, initialBalance);
-    }
 
     function mint(address account, uint256 amount) public {  //TODO maybe private sub functions for hiding for Votingtoken
         _mint(account, amount);

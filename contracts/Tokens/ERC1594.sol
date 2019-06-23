@@ -29,11 +29,11 @@ contract ERC1594 is IERC1594, ERC20, IssuerRole, OrchestratorRole { //TODO erc20
     //TODO currently is used as token number, but should in future be implemented using a pricing oracle to represent euros
     uint constant SPEND_CEILING = 15000;
 
-    // Constructor TODO remove arguments
-    constructor(Controller _controller, TransferQueues _queues)  public { //The super contract is a modifier of sorts of the constructor
+    // reenable constructor, if deployment without proxy is needed
+    /*constructor(Controller _controller, TransferQueues _queues)  public { //The super contract is a modifier of sorts of the constructor
         queues = _queues;
         controller = _controller;
-    }
+    }*/
 
     /**
      * @dev these three functions are the replacement for the constructor setters in proxy setups

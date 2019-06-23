@@ -59,7 +59,7 @@ web3.eth.getBalance(accounts[0])
 owner = web3.eth.accounts[0]
 proxy = await UnstructuredProxy.deployed() //.new({ from: owner })
 token = await VotingToken.deployed()
-proxy.upgradeTo(token.address, { from: owner })
+proxy.upgradeToInit(token.address, { from: owner })
 proxyToken = await VotingToken.at(proxy.address)
 
 

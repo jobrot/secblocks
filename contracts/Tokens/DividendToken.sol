@@ -51,9 +51,9 @@ contract DividendToken is ERC1594 {
     mapping(address => uint) internal withdrawnDividends;
 
 
-    constructor(Controller _controller, TransferQueues _queues) ERC1594( _controller, _queues) public { //The super contract is a modifier of sorts of the constructor
+    /*constructor(Controller _controller, TransferQueues _queues) ERC1594( _controller, _queues) public { //The super contract is a modifier of sorts of the constructor
 
-    }
+    }*/
 
 
     /// @dev Distributes dividends whenever ether is paid to this contract.

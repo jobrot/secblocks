@@ -13,17 +13,18 @@ const ERC20Mock = artifacts.require('ERC20Mock');
 
 //Source: https://github.com/OpenZeppelin/openzeppelin-solidity/blob/master/test/token/ERC20
 
-contract('ERC20', function ([_, initialHolder, recipient, anotherAccount]) {
+contract('ERC20', function ([deployer, initialHolder, recipient, anotherAccount]) {
     const initialSupply = new BN(100);
 
     beforeEach(async function () {
-        this.token = await ERC20Mock.new(initialHolder, initialSupply);
-        /* //Comment this in for fulll proxy test
-        this.proxy = await UnstructuredProxy.new(deployer);
-        this.proxy.upgradeTo(this.token.address);
-        this.token = await ERC20Mock.at(this.proxy.address);
-        await this.token.mint(initialHolder, initialSupply);
-    */
+        this.token = await ERC20Mock.new();
+         //Comment this in for full proxy test
+         this.proxy = await UnstructuredProxy.new(deployer);
+         await this.proxy.upgradeTo(this.token.address);
+         this.token = await ERC20Mock.at(this.proxy.address);
+         await this.token.mint(initialHolder, initialSupply);
+
+
     });
 
     shouldBehaveLikeERC20('ERC20', initialSupply, initialHolder, recipient, anotherAccount);

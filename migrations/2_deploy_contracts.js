@@ -36,21 +36,21 @@ module.exports = async function (deployer) {
     var kycControllerProxy = await UnstructuredProxy.at(await registrydeployed.createProxy("KYCController").then((result)=>{
         return result.logs[0].args.proxyAddress;
     }));
-    kycControllerProxy.upgradeTo(KYCController.address);
+    kycControllerProxy.upgradeToInit(KYCController.address);
     var kycController = await KYCController.at(kycControllerProxy.address); //TODO this line is unneccessary, proxy address could also be used if we dont need functions of the controller itself
 
 
     var insiderListControllerProxy = await UnstructuredProxy.at(await registrydeployed.createProxy("InsiderListControllerExampleCompany").then((result)=>{
         return result.logs[0].args.proxyAddress;
     }));
-    insiderListControllerProxy.upgradeTo(InsiderListController.address);
+    insiderListControllerProxy.upgradeToInit(InsiderListController.address);
     var insiderListController = await InsiderListController.at(insiderListControllerProxy.address);
 
 
     var pepListControllerProxy = await UnstructuredProxy.at(await registrydeployed.createProxy("PEPListController").then((result)=>{
         return result.logs[0].args.proxyAddress;
     }));
-    pepListControllerProxy.upgradeTo(PEPListController.address);
+    pepListControllerProxy.upgradeToInit(PEPListController.address);
     var pepListController = await PEPListController.at(pepListControllerProxy.address);
 
     //--- create controller proxy ---
@@ -58,7 +58,7 @@ module.exports = async function (deployer) {
     var controllerProxy = await UnstructuredProxy.at(await registrydeployed.createProxy("ControllerExampleCompany").then((result)=>{
         return result.logs[0].args.proxyAddress;
     }));
-    controllerProxy.upgradeTo(Controller.address);
+    controllerProxy.upgradeToInit(Controller.address);
     var controller = await Controller.at(controllerProxy.address);
 
     // add subcontroller proxies to controller proxy
@@ -72,12 +72,12 @@ module.exports = async function (deployer) {
     var votingTokenProxy = await UnstructuredProxy.at(await registrydeployed.createProxy("VotingTokenExampleCompany").then((result)=>{
         return result.logs[0].args.proxyAddress;
     }));
-    votingTokenProxy.upgradeTo(VotingToken.address);
+    votingTokenProxy.upgradeToInit(VotingToken.address);
     var votingToken = await VotingToken.at(votingTokenProxy.address);
 
     /*
         this.proxy = await UnstructuredProxy.new(deployer);
-        this.proxy.upgradeTo(this.token.address);
+        this.proxy.upgradeToInit(this.token.address);
         this.token = await VotingToken.at(this.proxy.address);
         await this.token.setController(this.controller.address);
         await this.token.setTransferQueues(this.transferQueues.address);
@@ -94,7 +94,7 @@ module.exports = async function (deployer) {
                         return deployer.deploy(VotingToken, Controller.address,  TransferQueues.address).then(() => {
                             return deployer.deploy(Registry).then((registrydeployed) => {
                                 //VotingToken.deployed.totalsupply();
-                                //proxydeployed.upgradeTo(VotingToken.address);
+                                //proxydeployed.upgradeToInit(VotingToken.address);
                                 registrydeployed.createProxy(abi.rawEncode(['bytes32'],['VotingTokenExampleCompany'])).then((result)=>{
                                     console.log(result);
                                     console.log("hier");

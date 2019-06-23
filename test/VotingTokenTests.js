@@ -17,14 +17,6 @@ const Controller = artifacts.require("../contracts/Controlling/Controller.sol");
 const UnstructuredProxy = artifacts.require("../contracts/Proxy/UnstructuredProxy.sol");
 
 
-
-
-
-//const AMLLimit = new BN(15000);
-
-
-
-
 contract('VotingToken', function ([deployer, initialHolder, recipient, votingOfficial, anotherAccount]) {
 
 
@@ -47,23 +39,23 @@ contract('VotingToken', function ([deployer, initialHolder, recipient, votingOff
 
         //create SUT
         this.transferQueues = await TransferQueues.new();
-        this.controller = await Controller.new(this.kycMock.address, this.insiderListMock.address, this.pepListMock.address);
+        this.controller = await Controller.new(); //this.kycMock.address, this.insiderListMock.address, this.pepListMock.address
 
         //not via mocked Token and initial supply, because erc20 functionality tests are not required anymore here, and
         //initial minting would distort test results
-        this.token = await VotingToken.new(this.controller.address, this.transferQueues.address);
+        this.token = await VotingToken.new(); //this.controller.address, this.transferQueues.address
 
 
         //Comment this in for full proxy test
         this.controllerProxy = await UnstructuredProxy.new(deployer);
-        this.controllerProxy.upgradeTo(this.controller.address);
+        await this.controllerProxy.upgradeToInit(this.controller.address);
         this.controller = await Controller.at(this.controllerProxy.address);
         this.controller.setKYCController(this.kycMock.address);
         this.controller.setPEPListController(this.pepListMock.address);
         this.controller.setInsiderListController(this.insiderListMock.address);
 
         this.proxy = await UnstructuredProxy.new(deployer);
-        this.proxy.upgradeTo(this.token.address);
+        await this.proxy.upgradeToInit(this.token.address);
         this.token = await VotingToken.at(this.proxy.address);
         await this.token.setController(this.controller.address);
         await this.token.setTransferQueues(this.transferQueues.address);

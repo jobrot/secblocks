@@ -8,26 +8,37 @@ contract UnstructuredProxy {
     * @dev the constructor sets the owner
     */
     constructor(address owner) public {
-        require(address(0)!=owner, "The owner of a proxy must not be null");
+        require(address(0) != owner, "The owner of a proxy must not be null");
         _setProxyOwner(owner);
     }
 
-     /**
-     * @dev upgrades the contained implementation of the Contract
-     * Attention! Upgraded contract must extend the original implementation
-     * and follow the same storage layout (no switching of variables etc.)
-     * Contract must be Initializable
-    */
-    function upgradeTo(address newImplementation) public onlyProxyOwner {
+    /**
+    * @dev upgrades the contained implementation of the Contract and initializes the contract
+    * Attention! Upgraded contract must extend the original implementation
+    * and follow the same storage layout (no switching of variables etc.)
+    * Contract must be Initializable
+   */
+    function upgradeToInit(address newImplementation) public onlyProxyOwner {
         address currentImplementation = implementation();
-        require(currentImplementation != newImplementation);
+        require(currentImplementation != newImplementation, "Upgrading address identical to current Address");
         setImplementation(newImplementation);
         bytes memory payload = abi.encodeWithSignature("initialize(address)", msg.sender);
 
         bool success;
         bytes memory returndata;
         (success, returndata) = address(this).call(payload);
-        require(success, string (returndata));
+        require(success, "Initialization did not work, ensure that the Contract is Initializable");
+    }
+
+    /**
+    * @dev upgrades the contained implementation of the Contract without initialization
+    * Attention! Upgraded contract must extend the original implementation
+    * and follow the same storage layout (no switching of variables etc.)
+    */
+    function upgradeTo(address newImplementation) public onlyProxyOwner {
+        address currentImplementation = implementation();
+        require(currentImplementation != newImplementation, "Upgrading address identical to current Address");
+        setImplementation(newImplementation);
     }
 
     /**
@@ -35,7 +46,7 @@ contract UnstructuredProxy {
     */
     function implementation() public view returns (address impl) {
         bytes32 position = implementationPosition;
-        assembly { impl := sload(position) }
+        assembly {impl := sload(position)}
     }
 
     /**
@@ -43,14 +54,14 @@ contract UnstructuredProxy {
     */
     function setImplementation(address newImplementation) internal {
         bytes32 position = implementationPosition;
-        assembly { sstore(position, newImplementation) }
+        assembly {sstore(position, newImplementation)}
     }
 
     /**
     * @dev sets new Proxy owner. ATTENTION! Removes the owner rights of the executing address!
     */
     function setProxyOwner(address newProxyOwner) public onlyProxyOwner {
-        require(newProxyOwner!=address(0));
+        require(newProxyOwner != address(0));
         _setProxyOwner(newProxyOwner);
     }
 
@@ -59,7 +70,7 @@ contract UnstructuredProxy {
     */
     function proxyOwner() public view returns (address owner) {
         bytes32 position = ownerPosition;
-        assembly { owner := sload(position) }
+        assembly {owner := sload(position)}
     }
 
 
@@ -68,7 +79,7 @@ contract UnstructuredProxy {
     * This function will return whatever the implementation call returns
     * Is marked external, as it will be called mostly externally (only on upgrade internal call), to save gas.
     */
-    function () payable external {
+    function() payable external {
         address _impl = implementation();
         require(_impl != address(0));
 
@@ -80,8 +91,8 @@ contract UnstructuredProxy {
             returndatacopy(ptr, 0, size)
 
             switch result
-            case 0 { revert(ptr, size) }
-            default { return(ptr, size) }
+            case 0 {revert(ptr, size)}
+            default {return (ptr, size)}
         }
     }
 
@@ -90,11 +101,11 @@ contract UnstructuredProxy {
     */
     function _setProxyOwner(address newProxyOwner) internal {
         bytes32 position = ownerPosition;
-        assembly { sstore(position, newProxyOwner) }
+        assembly {sstore(position, newProxyOwner)}
     }
 
     modifier onlyProxyOwner() {
-        require (msg.sender == proxyOwner());
+        require(msg.sender == proxyOwner());
         _;
     }
 }
