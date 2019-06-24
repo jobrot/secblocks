@@ -68,7 +68,7 @@ contract('DividendToken', function ([deployer, initialHolder, distributer, recip
             it('reverts', async function () {
 
                 await expectRevert(this.token.distributeDividends({from: distributer, value: new BN(web3.utils.toWei('2', 'ether'))}),
-                    'DividendToken: There are no Tokens currently owned'
+                    'Currently, no tokens exist.'
                 );
             });
         });

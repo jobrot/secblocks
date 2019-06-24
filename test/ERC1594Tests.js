@@ -184,7 +184,7 @@ contract('ERC1594, TransferQueues, Controller', function ([deployer, initialHold
                 //await this.token.issue(initialHolder, AMLLimit, abi.rawEncode(['bytes'],['']));
 
                 await expectRevert(this.token.transferWithData(recipient, AMLLimit, abi.rawEncode(['bytes'], ['']), {from: initialHolder}),
-                    'ERC1594: The transfer exceeds the allowed quota within the retention period, and must be cosigned by an operator.'
+                    'ERC1594: The transfer exceeds the allowed quota within the retention period.'
                 );
             });
         });
@@ -197,7 +197,7 @@ contract('ERC1594, TransferQueues, Controller', function ([deployer, initialHold
                 await this.token.transferWithData(recipient, HalfAMLLimit, abi.rawEncode(['bytes'], ['']), {from: initialHolder})
 
                 await expectRevert(this.token.transferWithData(recipient, HalfAMLLimit, abi.rawEncode(['bytes'], ['']), {from: initialHolder}),
-                    'ERC1594: The transfer exceeds the allowed quota within the retention period, and must be cosigned by an operator.'
+                    'ERC1594: The transfer exceeds the allowed quota within the retention period.'
                 );
             });
         });
@@ -209,7 +209,7 @@ contract('ERC1594, TransferQueues, Controller', function ([deployer, initialHold
                 await this.token.transferWithData(recipient, HalfAMLLimit, abi.rawEncode(['bytes'], ['']), {from: initialHolder})
 
                 await expectRevert(this.token.transferWithData(anotherAccount, HalfAMLLimit, abi.rawEncode(['bytes'], ['']), {from: initialHolder}),
-                    'ERC1594: The transfer exceeds the allowed quota within the retention period, and must be cosigned by an operator.'
+                    'ERC1594: The transfer exceeds the allowed quota within the retention period.'
                 );
             });
         });
@@ -305,7 +305,7 @@ contract('ERC1594, TransferQueues, Controller', function ([deployer, initialHold
                 await advanceBlock();
 
                 await expectRevert(this.token.transferWithData(recipient, AMLLimit.div(new BN(4)), abi.rawEncode(['bytes'], ['']), {from: initialHolder}),
-                    'ERC1594: The transfer exceeds the allowed quota within the retention period, and must be cosigned by an operator.'
+                    'ERC1594: The transfer exceeds the allowed quota within the retention period.'
                 );
 
             });
@@ -324,7 +324,7 @@ contract('ERC1594, TransferQueues, Controller', function ([deployer, initialHold
 
                 //Reverts, as retention time is not yet over
                 await expectRevert(this.token.transferWithData(recipient, HalfAMLLimit, abi.rawEncode(['bytes'], ['']), {from: initialHolder}),
-                    'ERC1594: The transfer exceeds the allowed quota within the retention period, and must be cosigned by an operator.'
+                    'ERC1594: The transfer exceeds the allowed quota within the retention period.'
                 );
                 await advanceTime(TRANSFER_RETENTION_TIME / 4);
                 await advanceBlock();
@@ -347,7 +347,7 @@ contract('ERC1594, TransferQueues, Controller', function ([deployer, initialHold
 
                 //small transfers should be cleared out by now, so a transfer of 2 should work, but not a transfer of 3
                 await expectRevert(this.token.transferWithData(recipient, new BN(3), abi.rawEncode(['bytes'], ['']), {from: initialHolder}),
-                    'ERC1594: The transfer exceeds the allowed quota within the retention period, and must be cosigned by an operator.'
+                    'ERC1594: The transfer exceeds the allowed quota within the retention period.'
                 );
 
                 await this.token.transferWithData(recipient, new BN(2), abi.rawEncode(['bytes'], ['']), {from: initialHolder});

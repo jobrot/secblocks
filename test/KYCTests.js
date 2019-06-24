@@ -131,7 +131,6 @@ contract(['KYCController', 'KYCVerifierRole'], (accounts) => {
 
         const resultRedeemFrom= await sut.verifyRedeemFrom(whitelisted, whitelisted, 100, NULLBYTE, {from: deployer});
 
-        console.log(resultIssue);
 
         assert.equal(resultIssue, true);
 

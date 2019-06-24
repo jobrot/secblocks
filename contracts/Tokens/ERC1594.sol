@@ -62,17 +62,10 @@ contract ERC1594 is IERC1594, ERC20, IssuerRole, OrchestratorRole { //TODO comme
     function transferWithData(address _to, uint256 _value, bytes memory  _data) public {
         controller.verifyAllTransfer(msg.sender, _to, _value, _data);
         _checkAMLConstraints(msg.sender,_value);
-        super._transfer(msg.sender, _to, _value);
+        super.transferWithData(_to, _value,_data);
     }
 
-    /**
-     * @dev internal function that overrides and calls the super function, and executes checks
-     */
-    function _transfer(address from, address to, uint256 value) internal {
-        controller.verifyAllTransfer(from, to, value, "");
-        _checkAMLConstraints(from,value);
-        super._transfer(from, to, value);
-    }
+
 
     /**
      * @notice Transfer restrictions can take many forms and typically involve on-chain rules or whitelists.
@@ -90,18 +83,11 @@ contract ERC1594 is IERC1594, ERC20, IssuerRole, OrchestratorRole { //TODO comme
     function transferFromWithData(address _from, address _to, uint256 _value, bytes memory  _data) public {
         controller.verifyAllTransferFrom(msg.sender, _from, _to, _value, _data);
         _checkAMLConstraints(_from,_value);
-        super._transferFrom(msg.sender, _from, _to, _value);
+        super.transferFromWithData(_from, _to, _value,_data);
     }
 
 
-    /**
-     * @dev internal function that overrides and calls the super function, and executes checks
-     */
-    function _transferFrom(address spender, address from, address to, uint256 value) internal {
-        controller.verifyAllTransferFrom(spender, from, to, value, "");
-        _checkAMLConstraints(from,value);
-        super._transferFrom(spender,from, to, value);
-    }
+
 
     /**
      * @notice A security token issuer can specify that issuance has finished for the token
@@ -184,7 +170,7 @@ contract ERC1594 is IERC1594, ERC20, IssuerRole, OrchestratorRole { //TODO comme
      * @param _value uint256 the amount of tokens to be transferred
      * @param _data The `bytes _data` allows arbitrary data to be submitted alongside the transfer.
      * @return bool It signifies whether the transaction will be executed or not.
-     * @return byte Ethereum status code (ESC)
+     * @return byte Ethereum status code (ESC) TODO
      * @return bytes32 Application specific reason code
      */
     function canTransfer(address _to, uint256 _value, bytes calldata _data) external view returns (bool, byte, bytes32) {
@@ -232,7 +218,7 @@ contract ERC1594 is IERC1594, ERC20, IssuerRole, OrchestratorRole { //TODO comme
         //in our case, is always the case... so what is it? just implement a flagging service?
         //if anything is done, it surely must also be stored, (alle ausgänge innerhalb einer woche oder so)
         //kein ausgang x anderer, sondern generell ausgang, einfach zweite map
-        require(_updateTransferListAndCalculateSum(from,value) < SPEND_CEILING,"ERC1594: The transfer exceeds the allowed quota within the retention period, and must be cosigned by an operator."); //TODO naming of operator with role
+        require(_updateTransferListAndCalculateSum(from,value) < SPEND_CEILING,"ERC1594: The transfer exceeds the allowed quota within the retention period."); //TODO Future work: enable cosigning via data
     }
 
     /**

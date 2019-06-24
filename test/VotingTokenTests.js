@@ -9,15 +9,12 @@ const MockContract = artifacts.require("../contracts/Mocks/MockContract.sol"); /
 
 
 const VotingToken = artifacts.require("../contracts/Tokens/VotingToken.sol");
-const KYCController = artifacts.require("../contracts/Controlling/KYCController.sol");
-const InsiderListController = artifacts.require("../contracts/Controlling/InsiderListController.sol");
-const PEPListController = artifacts.require("../contracts/Controlling/PEPListController.sol");
 const TransferQueues = artifacts.require("../contracts/AML/TransferQueues.sol");
 const Controller = artifacts.require("../contracts/Controlling/Controller.sol");
 const UnstructuredProxy = artifacts.require("../contracts/Proxy/UnstructuredProxy.sol");
 
 
-contract('VotingToken', function ([deployer, initialHolder, recipient, votingOfficial, anotherAccount]) {
+contract('VotingToken', function ([deployer, initialHolder, recipient, issuer, anotherAccount]) {
 
 
 
@@ -58,10 +55,10 @@ contract('VotingToken', function ([deployer, initialHolder, recipient, votingOff
         await this.token.setController(this.controller.address);
         await this.token.setTransferQueues(this.transferQueues.address);
         await this.token.addIssuer(deployer);
-        await this.token.addVotingOfficial(deployer);
+        await this.token.addIssuer(issuer);
+        
+        this.futureDate = (await web3.eth.getBlock('latest')).timestamp + 1000000;
 
-
-        this.token.addVotingOfficial(votingOfficial);
     });
 
 
@@ -69,8 +66,8 @@ contract('VotingToken', function ([deployer, initialHolder, recipient, votingOff
         describe('when the ballotname is empty', function () {
             it('reverts', async function () {
 
-                await expectRevert(this.token.createBallot( abi.rawEncode(['bytes32'],['']), [abi.rawEncode(['bytes32'],[''])],{from: votingOfficial}),
-                    'VotingToken: The ballotName must not be empty!'
+                await expectRevert(this.token.createBallot( abi.rawEncode(['bytes32'],['']), [abi.rawEncode(['bytes32'],[''])],this.futureDate,{from: issuer}),
+                    'BallotName must not be empty!'
                 );
             });
         });
@@ -78,8 +75,8 @@ contract('VotingToken', function ([deployer, initialHolder, recipient, votingOff
         describe('when the optionNames parameter is empty', function () {
             it('reverts', async function () {
 
-                await expectRevert(this.token.createBallot( abi.rawEncode(['bytes32'],['Vote']), [],{from: votingOfficial}),
-                    'VotingToken: The optionNames Array must not be empty!'
+                await expectRevert(this.token.createBallot( abi.rawEncode(['bytes32'],['Vote']), [],this.futureDate,{from: issuer}),
+                    'OptionNames must not be empty!'
                 );
             });
         });
@@ -88,7 +85,7 @@ contract('VotingToken', function ([deployer, initialHolder, recipient, votingOff
         describe('when all parameters are correct', function () {
             it('creates a ballot and stores it', async function () {
 
-                const { logs } =  await this.token.createBallot( abi.rawEncode(['bytes32'],['Vote']), [abi.rawEncode(['bytes32'],['A']),abi.rawEncode(['bytes32'],['B'])],{from: votingOfficial});
+                const { logs } =  await this.token.createBallot( abi.rawEncode(['bytes32'],['Vote']), [abi.rawEncode(['bytes32'],['A']),abi.rawEncode(['bytes32'],['B'])],this.futureDate,{from: issuer});
 
                 assert((await this.token.ballots(0)).name!=0);
                 expectEvent.inLogs(logs, 'BallotCreated', { ballotName: '0x566f746500000000000000000000000000000000000000000000000000000000' });
@@ -101,10 +98,10 @@ contract('VotingToken', function ([deployer, initialHolder, recipient, votingOff
             it('reverts', async function () {
 
                 await this.token.issue(initialHolder, 100, abi.rawEncode(['bytes'],[''])); //issue must be before create, for cutoff time
-                await this.token.createBallot( abi.rawEncode(['bytes32'],['Vote']), [abi.rawEncode(['bytes32'],['Option A']),abi.rawEncode(['bytes32'],['Option B'])],{from: votingOfficial});
+                await this.token.createBallot( abi.rawEncode(['bytes32'],['Vote']), [abi.rawEncode(['bytes32'],['Option A']),abi.rawEncode(['bytes32'],['Option B'])],this.futureDate,{from: issuer});
 
                 await expectRevert(this.token.vote( abi.rawEncode(['bytes32'],['VoteWRONG']), abi.rawEncode(['bytes32'],['Option A']),{from: initialHolder}),
-                    'VotingToken: Ballot not found!'
+                    'Ballot not found!'
                 );
             });
         });
@@ -115,10 +112,10 @@ contract('VotingToken', function ([deployer, initialHolder, recipient, votingOff
                 await this.token.issue(initialHolder, 100, abi.rawEncode(['bytes'],['']));
 
                 await advanceBlock();
-                await this.token.createBallot( abi.rawEncode(['bytes32'],['Vote']), [abi.rawEncode(['bytes32'],['Option A']),abi.rawEncode(['bytes32'],['Option B'])],{from: votingOfficial});
+                await this.token.createBallot( abi.rawEncode(['bytes32'],['Vote']), [abi.rawEncode(['bytes32'],['Option A']),abi.rawEncode(['bytes32'],['Option B'])],this.futureDate,{from: issuer});
 
                 await expectRevert(this.token.vote( abi.rawEncode(['bytes32'],['Vote']), abi.rawEncode(['bytes32'],['Option C']),{from: initialHolder}),
-                    'VotingToken: Chosen option does not exist in chosen Ballot.'
+                    'Option does not exist in Ballot.'
                 );
             });
         });
@@ -127,13 +124,13 @@ contract('VotingToken', function ([deployer, initialHolder, recipient, votingOff
             it('reverts', async function () {
 
 
-                await this.token.createBallot( abi.rawEncode(['bytes32'],['Vote']), [abi.rawEncode(['bytes32'],['Option A']),abi.rawEncode(['bytes32'],['Option B'])],{from: votingOfficial});
+                await this.token.createBallot( abi.rawEncode(['bytes32'],['Vote']), [abi.rawEncode(['bytes32'],['Option A']),abi.rawEncode(['bytes32'],['Option B'])],this.futureDate,{from: issuer});
 
                 //we issue the tokens after the creation of the ballot, after the cutoff time
                 await this.token.issue(initialHolder, 100, abi.rawEncode(['bytes'],['']));
 
                 await expectRevert(this.token.vote( abi.rawEncode(['bytes32'],['Vote']), abi.rawEncode(['bytes32'],['Option A']),{from: initialHolder}),
-                    'VotingToken: Sender did not own tokens at the Cutoff Time!'
+                    'Sender held no tokens at cutoff'
                 );
             });
         });
@@ -143,29 +140,40 @@ contract('VotingToken', function ([deployer, initialHolder, recipient, votingOff
 
                     await this.token.issue(initialHolder, 100, abi.rawEncode(['bytes'],['']));
                     await advanceBlock();
-                    await this.token.createBallot( abi.rawEncode(['bytes32'],['Vote']), [abi.rawEncode(['bytes32'],['Option A']),abi.rawEncode(['bytes32'],['Option B'])],{from: votingOfficial});
+                    await this.token.createBallot( abi.rawEncode(['bytes32'],['Vote']), [abi.rawEncode(['bytes32'],['Option A']),abi.rawEncode(['bytes32'],['Option B'])],this.futureDate,{from: issuer});
                     await this.token.vote( abi.rawEncode(['bytes32'],['Vote']), abi.rawEncode(['bytes32'],['Option B']),{from: initialHolder});
                     await expectRevert(this.token.vote( abi.rawEncode(['bytes32'],['Vote']), abi.rawEncode(['bytes32'],['Option B']),{from: initialHolder}),
-                        'VotingToken: Sender already voted'
+                        'Sender already voted'
                     );
                 });
         });
 
 
-        describe('when the sender already voted', function () {
+        describe('when the Voting Time is over', function () {
             it('reverts', async function () {
 
                 await this.token.issue(initialHolder, 100, abi.rawEncode(['bytes'],['']));
                 await advanceBlock();
-                await this.token.createBallot( abi.rawEncode(['bytes32'],['Vote']), [abi.rawEncode(['bytes32'],['Option A']),abi.rawEncode(['bytes32'],['Option B'])],{from: votingOfficial});
-                await this.token.vote( abi.rawEncode(['bytes32'],['Vote']), abi.rawEncode(['bytes32'],['Option B']),{from: initialHolder});
+                await this.token.createBallot( abi.rawEncode(['bytes32'],['Vote']), [abi.rawEncode(['bytes32'],['Option A']),abi.rawEncode(['bytes32'],['Option B'])],(await web3.eth.getBlock('latest')).timestamp,{from: issuer});
+                //await this.token.vote( abi.rawEncode(['bytes32'],['Vote']), abi.rawEncode(['bytes32'],['Option B']),{from: initialHolder});
                 await expectRevert(this.token.vote( abi.rawEncode(['bytes32'],['Vote']), abi.rawEncode(['bytes32'],['Option B']),{from: initialHolder}),
-                    'VotingToken: Sender already voted'
+                    'Vote has ended.'
                 );
             });
         });
 
+        describe('when the enddate has passed', function () {
+            it('reverts', async function () {
 
+                await this.token.issue(initialHolder, 100, abi.rawEncode(['bytes'],['']));
+                await advanceBlock();
+                await this.token.createBallot( abi.rawEncode(['bytes32'],['Vote']), [abi.rawEncode(['bytes32'],['Option A']),abi.rawEncode(['bytes32'],['Option B'])],this.futureDate,{from: issuer});
+                await this.token.vote( abi.rawEncode(['bytes32'],['Vote']), abi.rawEncode(['bytes32'],['Option B']),{from: initialHolder});
+                await expectRevert(this.token.vote( abi.rawEncode(['bytes32'],['Vote']), abi.rawEncode(['bytes32'],['Option B']),{from: initialHolder}),
+                    'Sender already voted'
+                );
+            });
+        });
 
     });
 
@@ -176,7 +184,7 @@ contract('VotingToken', function ([deployer, initialHolder, recipient, votingOff
                 await this.token.issue(anotherAccount, new BN(101), abi.rawEncode(['bytes'],['']));
 
                 await advanceBlock();
-                await this.token.createBallot( abi.rawEncode(['bytes32'],['Vote']), [abi.rawEncode(['bytes32'],['Option A']),abi.rawEncode(['bytes32'],['Option B'])],{from: votingOfficial});
+                await this.token.createBallot( abi.rawEncode(['bytes32'],['Vote']), [abi.rawEncode(['bytes32'],['Option A']),abi.rawEncode(['bytes32'],['Option B'])],this.futureDate,{from: issuer});
                 await this.token.vote( abi.rawEncode(['bytes32'],['Vote']), abi.rawEncode(['bytes32'],['Option A']),{from: initialHolder});
                 await this.token.vote( abi.rawEncode(['bytes32'],['Vote']), abi.rawEncode(['bytes32'],['Option B']),{from: anotherAccount});
 
@@ -198,12 +206,12 @@ contract('VotingToken', function ([deployer, initialHolder, recipient, votingOff
                 await this.token.issue(anotherAccount, new BN(101), abi.rawEncode(['bytes'],['']));
 
                 await advanceBlock();
-                await this.token.createBallot( abi.rawEncode(['bytes32'],['Vote1']), [abi.rawEncode(['bytes32'],['Option A']),abi.rawEncode(['bytes32'],['Option B'])],{from: votingOfficial});
+                await this.token.createBallot( abi.rawEncode(['bytes32'],['Vote1']), [abi.rawEncode(['bytes32'],['Option A']),abi.rawEncode(['bytes32'],['Option B'])],this.futureDate,{from: issuer});
 
                 await this.token.issue(initialHolder, new BN(2), abi.rawEncode(['bytes'],['']));
 
                 await advanceBlock();
-                await this.token.createBallot( abi.rawEncode(['bytes32'],['Vote2']), [abi.rawEncode(['bytes32'],['Option C']),abi.rawEncode(['bytes32'],['Option D'])],{from: votingOfficial});
+                await this.token.createBallot( abi.rawEncode(['bytes32'],['Vote2']), [abi.rawEncode(['bytes32'],['Option C']),abi.rawEncode(['bytes32'],['Option D'])],this.futureDate,{from: issuer});
 
 
                 await this.token.vote( abi.rawEncode(['bytes32'],['Vote1']), abi.rawEncode(['bytes32'],['Option A']),{from: initialHolder});
@@ -233,7 +241,7 @@ contract('VotingToken', function ([deployer, initialHolder, recipient, votingOff
                 await this.token.issue(recipient, new BN(50), abi.rawEncode(['bytes'],['']));
 
                 await advanceBlock();
-                await this.token.createBallot( abi.rawEncode(['bytes32'],['Vote1']), [abi.rawEncode(['bytes32'],['Option A']),abi.rawEncode(['bytes32'],['Option B'])],{from: votingOfficial});
+                await this.token.createBallot( abi.rawEncode(['bytes32'],['Vote1']), [abi.rawEncode(['bytes32'],['Option A']),abi.rawEncode(['bytes32'],['Option B'])],this.futureDate,{from: issuer});
 
 
 
@@ -264,7 +272,7 @@ contract('VotingToken', function ([deployer, initialHolder, recipient, votingOff
                 await this.token.transferWithData(anotherAccount,2, abi.rawEncode(['bytes'],['']),{from:recipient});
 
                 await advanceBlock();
-                await this.token.createBallot( abi.rawEncode(['bytes32'],['Vote1']), [abi.rawEncode(['bytes32'],['Option A']),abi.rawEncode(['bytes32'],['Option B'])],{from: votingOfficial});
+                await this.token.createBallot( abi.rawEncode(['bytes32'],['Vote1']), [abi.rawEncode(['bytes32'],['Option A']),abi.rawEncode(['bytes32'],['Option B'])],this.futureDate,{from: issuer});
 
 
                 await this.token.vote( abi.rawEncode(['bytes32'],['Vote1']), abi.rawEncode(['bytes32'],['Option A']),{from: initialHolder});
@@ -276,9 +284,6 @@ contract('VotingToken', function ([deployer, initialHolder, recipient, votingOff
                 var result = (await this.token.currentlyWinningOption(abi.rawEncode(['bytes32'],['Vote1']),{from: initialHolder})); //abi.rawEncode(['bytes32'],['Vote'])
                 web3.utils.toAscii(result.winningOptionName).should.be.equal(abi.rawEncode(['bytes32'],['Option B']).toString("ascii"));
                 result.winningOptionVoteCount.should.be.bignumber.equal(new BN(102));
-
-
-
 
             });
         });
@@ -292,7 +297,7 @@ contract('VotingToken', function ([deployer, initialHolder, recipient, votingOff
                 await this.token.redeem(2, abi.rawEncode(['bytes'],['']),{from:initialHolder});
 
                 await advanceBlock();
-                await this.token.createBallot( abi.rawEncode(['bytes32'],['Vote1']), [abi.rawEncode(['bytes32'],['Option A']),abi.rawEncode(['bytes32'],['Option B'])],{from: votingOfficial});
+                await this.token.createBallot( abi.rawEncode(['bytes32'],['Vote1']), [abi.rawEncode(['bytes32'],['Option A']),abi.rawEncode(['bytes32'],['Option B'])],this.futureDate,{from: issuer});
 
 
                 await this.token.vote( abi.rawEncode(['bytes32'],['Vote1']), abi.rawEncode(['bytes32'],['Option A']),{from: initialHolder});

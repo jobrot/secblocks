@@ -4,7 +4,8 @@ import "../Openzeppelin/SafeMath.sol";
 import "../Openzeppelin/IERC20.sol";
 
 
-
+//Standard implementation of ERC20, extended with some ERC-1594 specific functions. Not to be deployed without additional
+//functionality of extending Tokens.
 contract ERC20 is IERC20 {
     using SafeMath for uint256;
 
@@ -51,6 +52,9 @@ contract ERC20 is IERC20 {
      * @param value The amount of tokens to be spent.
      */
     function approve(address spender, uint256 value) public returns (bool) {
+        //Future work: this could theoretically be used to work around aml restrictions (not directly, but possible)
+        //E.g. by acting as an I.O.U. that can only be spent once the current AML restrictions are gone. But this is
+        //practically the same as an out of system agreement between two malign actors, so it does open new attack vectors
         require(spender != address(0), "ERC20: approve to the zero address");
 
         _allowed[msg.sender][spender] = value;
@@ -82,9 +86,17 @@ contract ERC20 is IERC20 {
      * @param to The address to transfer to.
      * @param value The amount to be transferred.
      */
-    function transfer(address to, uint256 value) external returns (bool) { //TODO
-        _transfer(msg.sender, to, value);
+    function transfer(address to, uint256 value) external returns (bool) {
+        transferWithData(to, value,"");
         return true;
+    }
+
+    /**
+    * @dev this function is to be overridden in subcontracts, that can be called by the basic transfer function,
+    * on order to retain ERC-20 compatibility without loosing checks from subfunctions.
+    */
+    function transferWithData(address _to, uint256 _value, bytes memory  _data) public {
+        _transfer(msg.sender, _to, _value);
     }
 
     /**
@@ -93,9 +105,17 @@ contract ERC20 is IERC20 {
     * @param to address The address which you want to transfer to
     * @param value uint256 the amount of tokens to be transferred
     */
-    function transferFrom(address from, address to, uint256 value) public returns (bool) { //TODO these methods must be private!!!
-        _transferFrom(msg.sender, from, to, value);
+    function transferFrom(address from, address to, uint256 value) public returns (bool) {
+        transferFromWithData(from, to, value,"");
         return true;
+    }
+
+    /**
+   * @dev this function is to be overridden in subcontracts, that can be called by the basic transfer function,
+   * on order to retain ERC-20 compatibility without loosing checks from subfunctions.
+   */
+    function transferFromWithData(address _from, address _to, uint256 _value, bytes memory  _data) public {
+        _transferFrom(msg.sender, _from, _to, _value);
     }
 
     /**
@@ -161,7 +181,7 @@ contract ERC20 is IERC20 {
      * @param account The account that will receive the created tokens.
      * @param value The amount that will be created.
      */
-    function _mint(address account, uint256 value) internal { //Todo make sure these (mint, burn, burnfrom) are only accessed from erc1594
+    function _mint(address account, uint256 value) internal {
         require(account != address(0) , "ERC20: mint to the zero address");
         _totalSupply = _totalSupply.add(value);
         _balances[account] = _balances[account].add(value);

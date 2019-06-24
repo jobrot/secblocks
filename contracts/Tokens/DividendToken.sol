@@ -58,7 +58,7 @@ contract DividendToken is ERC1594 {
 
     /// @dev Distributes dividends whenever ether is paid to this contract.
     function() external payable {
-        distributeDividends();
+        distributeDividends(); //TODO maybe remove
     }
     /**
      * @notice Distributes ether to token holders as dividends.
@@ -76,7 +76,7 @@ contract DividendToken is ERC1594 {
      *     the saved ether, so we don't do that.
     */
     function distributeDividends() public payable {
-        require(totalSupply() > 0, "DividendToken: There are no Tokens currently owned");
+        require(totalSupply() > 0, "Currently, no tokens exist.");
 
         if (msg.value > 0) {
             magnifiedDividendPerShare = magnifiedDividendPerShare.add(

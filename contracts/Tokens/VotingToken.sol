@@ -1,14 +1,13 @@
 pragma solidity ^0.5.0;
 
 import "./DividendToken.sol";
-import "../Roles/VotingOfficialRole.sol";
 
 
 /**
  * @dev Inspiration by MiniMeToken https://github.com/Giveth/minime/blob/master/contracts/MiniMeToken.sol by giveEth
  * @notice this Token corresponds to common stock that enables dividends as well as voting
 */
-contract VotingToken is DividendToken, VotingOfficialRole {
+contract VotingToken is DividendToken {
 
     event BallotCreated(
         bytes32 ballotName
@@ -33,7 +32,7 @@ contract VotingToken is DividendToken, VotingOfficialRole {
         uint[] optionVoteCounts; //list of all resp. vote counts
         mapping(address => bool) voted; // record on which addresses already voted
         uint cutoffBlockNumber; // block number of the block, where the balances are counted for voting weight
-        // TODO future cutoffdate
+        uint endDate;
     }
 
     bytes32[] tempOptionNames;
@@ -57,13 +56,6 @@ contract VotingToken is DividendToken, VotingOfficialRole {
 
     }*/
 
-    /**
-     * @dev Function to be called
-     * @param votingOfficial The address designated as votingofficial
-    */
-    function addVotingOfficial(address votingOfficial) public onlyOrchestrator{
-        _addVotingOfficial(votingOfficial);
-    }
 
 
     /**
@@ -74,15 +66,15 @@ contract VotingToken is DividendToken, VotingOfficialRole {
      * @param _amount The amount of tokens to be transferred
     */
     function _transfer(address _from, address _to, uint _amount) internal {
-        require(_amount != 0, "VotingToken: Empty Transfers are not allowed.");
+        //require(_amount != 0, "VotingToken: Empty Transfers are not allowed.");
 
-        // Do not allow transfer to 0x0 or the token contract itself
-        require((_to != address(0)) && (_to != address(this)), "VotingToken: Transfers to the zero Address and Token Contract are not allowed.");
+        // Do not allow transfer to or from 0x0
+        require((_to != address(0)) && (_from != address(0)), "Transfer to or from 0x");
 
         uint previousBalanceSender = balanceOfAt(_from, block.number);
 
         // Check if amount exceeds funds
-        require(previousBalanceSender >= _amount, "VotingToken: Transferred amount exceeds available funds.");
+        //require(previousBalanceSender >= _amount, "VotingToken: Transferred amount exceeds available funds.");
 
 
         // update the balance array with the new value for the sender
@@ -111,11 +103,10 @@ contract VotingToken is DividendToken, VotingOfficialRole {
      * @param ballotName The name of the ballot resp. the asked Question
      * @param optionNames List of possible choices / answers to the question
     */
-    function createBallot(bytes32 ballotName, bytes32[] memory optionNames) public onlyVotingOfficial {
-
+    function createBallot(bytes32 ballotName, bytes32[] memory optionNames, uint endDate) public onlyIssuer {
         //Check the arguments for validity
-        require(ballotName[0] != 0, "VotingToken: The ballotName must not be empty!");
-        require(optionNames.length > 0, "VotingToken: The optionNames Array must not be empty!");
+        require(ballotName[0] != 0, "BallotName must not be empty!");
+        require(optionNames.length > 0, "OptionNames must not be empty!");
 
         delete tempOptionNames;
 
@@ -123,7 +114,7 @@ contract VotingToken is DividendToken, VotingOfficialRole {
             tempOptionNames.push(optionNames[i]);
         }
 
-        Ballot memory ballot = Ballot({name : ballotName, cutoffBlockNumber : block.number, optionNames : tempOptionNames, optionVoteCounts : new uint[](optionNames.length)});
+        Ballot memory ballot = Ballot({name : ballotName, cutoffBlockNumber : block.number,endDate : endDate, optionNames : tempOptionNames, optionVoteCounts : new uint[](optionNames.length)});
         ballots.push(ballot);
 
         emit BallotCreated(ballotName);
@@ -151,10 +142,13 @@ contract VotingToken is DividendToken, VotingOfficialRole {
 
         //check if User had tokens at the time of the ballot start == right to vote
         uint senderBalance = this.balanceOfAt(msg.sender, ballot.cutoffBlockNumber);
-        require(senderBalance > 0, "VotingToken: Sender did not own tokens at the Cutoff Time!");
+        require(senderBalance > 0, "Sender held no tokens at cutoff");
+
+        //check if endDate has not passed
+        require(ballot.endDate>now, "Vote has ended.");
 
         //check if User already voted
-        require(ballot.voted[msg.sender] == false, "VotingToken: Sender already voted");
+        require(ballot.voted[msg.sender] == false, "Sender already voted");
 
         //Search for the voted option in the ballot
 
@@ -165,7 +159,7 @@ contract VotingToken is DividendToken, VotingOfficialRole {
                 return;
             }
         }
-        require(false, "VotingToken: Chosen option does not exist in chosen Ballot.");
+        require(false, "Option does not exist in Ballot.");
     }
     /**
      * @notice Computes the winning proposal taking all votes up until now into account, exact tallying can be gotten from
@@ -246,8 +240,7 @@ contract VotingToken is DividendToken, VotingOfficialRole {
     * @param _account The account whose tokens will be burnt.
     * @param _value The amount that will be burnt.
     */
-    function _burn(address _account, uint _value
-    ) internal {
+    function _burn(address _account, uint _value) internal {
         //erc 20 checks
         require(_account != address(0));
         require(_value <= balanceOf(_account));
