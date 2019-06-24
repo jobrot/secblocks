@@ -13,7 +13,7 @@ contract GeneralControllerMock is IController{
         return false;
     }
 
-    function verifyTransferFrom(address _from, address _to, address _forwarder, uint256 _amount, bytes calldata _data) external view
+    function verifyTransferFrom(address _from, address _to, address _spender, uint256 _amount, bytes calldata _data) external view
     returns (bool allowed){
         return true;
     }

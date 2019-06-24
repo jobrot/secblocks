@@ -61,15 +61,15 @@ contract KYCController is IController, KYCVerifierRole {
 
     /**
     * @notice Verify if a transferFrom is allowed.
-    * @dev Allows transfer if _from, _to, and _forwarder are on the whitelist
+    * @dev Allows transfer if _from, _to, and _spender are on the whitelist
     * @return {
         "allowed": "Returns true if transferFrom is allowed, returns false otherwise."
     }
     */
-    function verifyTransferFrom(address _from, address _to, address _forwarder, uint256 _amount, bytes calldata _data) external view
+    function verifyTransferFrom(address _from, address _to, address _spender, uint256 _amount, bytes calldata _data) external view
     returns (bool allowed)
     {
-        if(_onWhitelist(_from) && _onWhitelist(_to) && _onWhitelist(_forwarder)){
+        if(_onWhitelist(_from) && _onWhitelist(_to) && _onWhitelist(_spender)){
             allowed = true;
             
         }
@@ -123,7 +123,7 @@ contract KYCController is IController, KYCVerifierRole {
     * @notice Add an address to the stored KYC whitelist
     * @dev Only addresses with the role @KYCVerifier are allowed to use this Function
     */
-    function addAddressToWhitelist(address _addr) external onlyKYCVerifier { //TODO do I have to set my instance of KYCVerifier somewhere central, or are they linked by deploying?
+    function addAddressToWhitelist(address _addr) external onlyKYCVerifier {
         whitelist[_addr] = true;
         emit AddedToWhitelist(_addr);
     }

@@ -11,7 +11,7 @@ import "../Controlling/Controller.sol";
  * @title AML aware implementation of ERC1594 (Subset of ERC1400 https://github.com/ethereum/EIPs/issues/1411)
  * adapted from the standard implementation of the spec: https://github.com/SecurityTokenStandard/EIP-Spec
  */
-contract ERC1594 is IERC1594, ERC20, IssuerRole, OrchestratorRole {
+contract ERC1594 is IERC1594, ERC20, IssuerRole, OrchestratorRole { //TODO comments in this file
     // Variable which tells whether issuance is ON or OFF forever
     bool internal issuanceClosed = false;
 
@@ -60,21 +60,18 @@ contract ERC1594 is IERC1594, ERC20, IssuerRole, OrchestratorRole {
      * (e.g. a dynamic whitelist) but is flexible enough to accomadate other use-cases.
      */
     function transferWithData(address _to, uint256 _value, bytes memory  _data) public {
-        bool verified;
         controller.verifyAllTransfer(msg.sender, _to, _value, _data);
+        _checkAMLConstraints(msg.sender,_value);
+        super._transfer(msg.sender, _to, _value);
+    }
 
-
-
-
-        //in our case, is always the case... so what is it? just implement a flagging service?
-        //if anything is done, it surely must also be stored, (alle ausgänge innerhalb einer woche oder so)
-        //kein ausgang x anderer, sondern generell ausgang, einfach zweite map
-         require(_updateTransferListAndCalculateSum(msg.sender,_value) < SPEND_CEILING,"ERC1594: The transfer exceeds the allowed quota within the retention period, and must be cosigned by an operator."); //TODO naming of operator with role
-
-
-
-        // Add a function to validate the `_data` parameter
-        _transfer(msg.sender, _to, _value);
+    /**
+     * @dev internal function that overrides and calls the super function, and executes checks
+     */
+    function _transfer(address from, address to, uint256 value) internal {
+        controller.verifyAllTransfer(from, to, value, "");
+        _checkAMLConstraints(from,value);
+        super._transfer(from, to, value);
     }
 
     /**
@@ -91,8 +88,19 @@ contract ERC1594 is IERC1594, ERC20, IssuerRole, OrchestratorRole {
      * (e.g. a dynamic whitelist) but is flexible enough to accomadate other use-cases.
      */
     function transferFromWithData(address _from, address _to, uint256 _value, bytes memory  _data) public {
-        // Add a function to validate the `_data` parameter
-        _transferFrom(msg.sender, _from, _to, _value);
+        controller.verifyAllTransferFrom(msg.sender, _from, _to, _value, _data);
+        _checkAMLConstraints(_from,_value);
+        super._transferFrom(msg.sender, _from, _to, _value);
+    }
+
+
+    /**
+     * @dev internal function that overrides and calls the super function, and executes checks
+     */
+    function _transferFrom(address spender, address from, address to, uint256 value) internal {
+        controller.verifyAllTransferFrom(spender, from, to, value, "");
+        _checkAMLConstraints(from,value);
+        super._transferFrom(spender,from, to, value);
     }
 
     /**
@@ -116,11 +124,18 @@ contract ERC1594 is IERC1594, ERC20, IssuerRole, OrchestratorRole {
      * @param _data The `bytes _data` allows arbitrary data to be submitted alongside the transfer.
      */
     function issue(address _tokenHolder, uint256 _value, bytes memory _data) public onlyIssuer {
-        // Add a function to validate the `_data` parameter
+
+        //There is no need to override the mint function here, as it is never accessed in the ERC20 contract and an internal function
         require(!issuanceClosed, "Issuance is closed");
+        controller.verifyAllIssue(_tokenHolder,_value,_data);
         _mint(_tokenHolder, _value);
+        //Future work: additional checks on issuing, but will most likely be primarily offchain, as there are no good
+        //one size fits all issuing checks
         emit Issued(msg.sender, _tokenHolder, _value, _data);
     }
+
+
+
 
     /**
      * @notice Closes the issuance forever, forbidding any more tokens to be minted as per ERC1594
@@ -136,23 +151,14 @@ contract ERC1594 is IERC1594, ERC20, IssuerRole, OrchestratorRole {
      * @param _data The `bytes _data` it can be used in the token contract to authenticate the redemption.
      */
     function redeem(uint256 _value, bytes memory  _data) public { //public instead of external so that subcontracts can call
-        // Add a function to validate the `_data` parameter
+        //There is no need to override the burn function here, as it is never accessed in the ERC20 contract and an internal function
+        controller.verifyAllRedeem(msg.sender,_value,_data);
         _burn(msg.sender, _value);
         emit Redeemed(address(0), msg.sender, _value, _data);
     }
 
-    /**
-     * @notice This function redeems an amount of the token of a msg.sender from a subcontract.
-     * @dev internal function only to be called by derived contracts, for subcontracts that can verify msg.sender
-     * @param _value The amount of tokens to be redeemed
-     * @param _data The `bytes _data` it can be used in the token contract to authenticate the redemption.
-   NOT NEEDED probably
-    function _redeemInternal(address _originalSender, uint256 _value, bytes calldata _data) internal {
-        // Add a function to validate the `_data` parameter
-        _burn(_originalSender, _value);
-        emit Redeemed(address(0), msg.sender, _value, _data);
-    }
-  */
+
+
 
     /**
      * @notice This function redeems an amount of the token of a msg.sender. For doing so msg.sender may incentivize
@@ -164,7 +170,8 @@ contract ERC1594 is IERC1594, ERC20, IssuerRole, OrchestratorRole {
      * @param _data The `bytes _data` it can be used in the token contract to authenticate the redemption.
      */
     function redeemFrom(address _tokenHolder, uint256 _value, bytes memory  _data) public {
-        // Add a function to validate the `_data` parameter
+        //There is no need to override the burn function here, as it is never accessed in the ERC20 contract and an internal function
+        controller.verifyAllRedeem(msg.sender,_value,_data);
         _burnFrom(_tokenHolder, _value);
         emit Redeemed(msg.sender, _tokenHolder, _value, _data);
     }
@@ -219,6 +226,14 @@ contract ERC1594 is IERC1594, ERC20, IssuerRole, OrchestratorRole {
         else return true;
     }
 
+
+    function _checkAMLConstraints(address from, uint value) private{
+        //actually, according to the aml law, for transactions over the limit the senders have to be authenticated
+        //in our case, is always the case... so what is it? just implement a flagging service?
+        //if anything is done, it surely must also be stored, (alle ausgänge innerhalb einer woche oder so)
+        //kein ausgang x anderer, sondern generell ausgang, einfach zweite map
+        require(_updateTransferListAndCalculateSum(from,value) < SPEND_CEILING,"ERC1594: The transfer exceeds the allowed quota within the retention period, and must be cosigned by an operator."); //TODO naming of operator with role
+    }
 
     /**
    * @dev Adds two numbers, return false on overflow, keeps transfer list ordered

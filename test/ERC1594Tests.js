@@ -90,14 +90,9 @@ contract('ERC1594, TransferQueues, Controller', function ([deployer, initialHold
 
     });
 
-    shouldBehaveLikeERC20('ERC20', initialSupply, initialHolder, recipient, anotherAccount);
-    shouldBehaveLikeERC20Approve('ERC20', initialSupply, initialHolder, recipient, anotherAccount);
 
     describe('transferWithData', function () {
 
-        shouldBehaveLikeERC20Transfer('ERC20', initialHolder, recipient, initialSupply, function (from, to, amount) {
-            return this.token.transferInternal(from, to, amount);
-        });
 
         //kyc
         describe('when the sender or recipient is not kycd', function () {

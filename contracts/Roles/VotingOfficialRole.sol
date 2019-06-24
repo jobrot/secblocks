@@ -17,8 +17,6 @@ contract VotingOfficialRole {
     }
 
     modifier onlyVotingOfficial() {
-        emit VotingOfficialChecked(msg.sender);
-        emit IsVotingOfficial(isVotingOfficial(msg.sender));
         require(isVotingOfficial(msg.sender), "VotingOfficialRole: caller does not have the VotingOfficial role");
         _;
     }

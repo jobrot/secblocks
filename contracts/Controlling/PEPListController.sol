@@ -55,15 +55,15 @@ contract PEPListController is IController, PEPListManagerRole {
 
     /**
     * @notice Verify if a transferFrom is allowed.
-    * @dev Allows transfer if _from, _to, and _forwarder are on the blacklist
+    * @dev Allows transfer if _from, _to, and _spender are on the blacklist
     * @return {
         "allowed": "Returns true if transferFrom is allowed, returns false otherwise."
     }
     */
-    function verifyTransferFrom(address _from, address _to, address _forwarder, uint256 _amount, bytes calldata _data) external view
+    function verifyTransferFrom(address _from, address _to, address _spender, uint256 _amount, bytes calldata _data) external view
     returns (bool allowed)
     {
-        if(_onBlacklist(_from) && _onBlacklist(_to) && _onBlacklist(_forwarder)){
+        if(_onBlacklist(_from) && _onBlacklist(_to) && _onBlacklist(_spender)){
             allowed = false;
             
         }

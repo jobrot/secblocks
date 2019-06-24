@@ -28,12 +28,12 @@ contract Controller is OrchestratorRole {
     event InsiderListControllerUpdated(address controller);
     event PEPListControllerUpdated(address controller);
 
-// reenable constructor, if deployment without proxy is needed
-//    constructor(KYCController _kycController, InsiderListController _insiderListController, PEPListController _pepListController) public {
-//        kycController = _kycController;
-//        insiderListController = _insiderListController;
-//        pepListController = _pepListController;
-//    }
+    // reenable constructor, if deployment without proxy is needed
+    //    constructor(KYCController _kycController, InsiderListController _insiderListController, PEPListController _pepListController) public {
+    //        kycController = _kycController;
+    //        insiderListController = _insiderListController;
+    //        pepListController = _pepListController;
+    //    }
 
 
     /**
@@ -59,7 +59,7 @@ contract Controller is OrchestratorRole {
     }
 
 
-    function getControllerCount() public view returns(uint) {
+    function getControllerCount() public view returns (uint) {
         return controllers.length;
     }
 
@@ -101,10 +101,10 @@ contract Controller is OrchestratorRole {
         @dev removes a single controller from the list of general controllers in the contract
     */
     function remove(IController _controllerToRemove) internal {
-        require(controllers.length>0, "Controllers list is empty.");
+        require(controllers.length > 0, "Controllers list is empty.");
         uint i = 0;
-        for(;i<controllers.length;i++){
-            if(address(controllers[i]) == address(_controllerToRemove)){
+        for (; i < controllers.length; i++) {
+            if (address(controllers[i]) == address(_controllerToRemove)) {
                 break;
             }
         }
@@ -112,18 +112,17 @@ contract Controller is OrchestratorRole {
         require(i != controllers.length, "Controller to remove is not in the controllers list.");
 
 
-            controllers[i]=controllers[controllers.length-1];
+        controllers[i] = controllers[controllers.length - 1];
 
 
-            controllers.length--;
+        controllers.length--;
         emit ControllerRemoved(address(_controllerToRemove));
-
 
 
     }
 
 
-    function verifyAllTransfer(address _from, address _to, uint _value, bytes memory _data) public{
+    function verifyAllTransfer(address _from, address _to, uint _value, bytes memory _data) public {
         bool verified;
         verified = kycController.verifyTransfer(_from, _to, _value, _data);
         require(verified, "The transfer is not allowed by the KYCController!");
@@ -133,13 +132,83 @@ contract Controller is OrchestratorRole {
         require(verified, "The transfer is not allowed by the PoliticallyExposedPersonController!");
 
         //this could be a problem, if there were enough complex controllers to run out of gas, but in this case the whole point of the system would be already defeated
-        for(uint i = 0; i<controllers.length; i++){
+        for (uint i = 0; i < controllers.length; i++) {
             IController controller = IController(address(controllers[i]));
-            verified= controller.verifyTransfer(_from, _to, _value, _data);
+            verified = controller.verifyTransfer(_from, _to, _value, _data);
             require(verified, "The transfer is not allowed by a general Controller!");
         }
-
     }
 
+
+    function verifyAllTransferFrom(address spender, address _from, address _to, uint _value, bytes memory _data) public {
+        bool verified;
+        verified = kycController.verifyTransferFrom(_from, _to, spender, _value, _data);
+        require(verified, "The transfer is not allowed by the KYCController!");
+        verified = insiderListController.verifyTransferFrom(_from, _to, spender, _value, _data);
+        require(verified, "The transfer is not allowed by the InsiderListController!");
+        verified = pepListController.verifyTransferFrom(_from, _to, spender, _value, _data);
+        require(verified, "The transfer is not allowed by the PoliticallyExposedPersonController!");
+
+        //this could be a problem, if there were enough complex controllers to run out of gas, but in this case the whole point of the system would be already defeated
+        for (uint i = 0; i < controllers.length; i++) {
+            IController controller = IController(address(controllers[i]));
+            verified = controller.verifyTransferFrom(_from, _to, spender, _value, _data);
+            require(verified, "The transfer is not allowed by a general Controller!");
+        }
+    }
+
+
+    function verifyAllRedeem(address _sender, uint _value, bytes memory _data) public {
+        bool verified;
+        verified = kycController.verifyRedeem(_sender, _value, _data);
+        require(verified, "The redeem is not allowed by the KYCController!");
+        verified = insiderListController.verifyRedeem(_sender, _value, _data);
+        require(verified, "The redeem is not allowed by the InsiderListController!");
+        verified = pepListController.verifyRedeem(_sender, _value, _data);
+        require(verified, "The redeem is not allowed by the PoliticallyExposedPersonController!");
+
+        //this could be a problem, if there were enough complex controllers to run out of gas, but in this case the whole point of the system would be already defeated
+        for (uint i = 0; i < controllers.length; i++) {
+            IController controller = IController(address(controllers[i]));
+            verified = controller.verifyRedeem(_sender, _value, _data);
+            require(verified, "The redeem is not allowed by a general Controller!");
+        }
+    }
+
+
+    function verifyAllRedeemFrom(address _sender, address _tokenholder, uint _value, bytes memory _data) public {
+        bool verified;
+        verified = kycController.verifyRedeemFrom(_sender, _tokenholder, _value, _data);
+        require(verified, "The redeem is not allowed by the KYCController!");
+        verified = insiderListController.verifyRedeemFrom(_sender, _tokenholder, _value, _data);
+        require(verified, "The redeem is not allowed by the InsiderListController!");
+        verified = pepListController.verifyRedeemFrom(_sender, _tokenholder, _value, _data);
+        require(verified, "The redeem is not allowed by the PoliticallyExposedPersonController!");
+
+        //this could be a problem, if there were enough complex controllers to run out of gas, but in this case the whole point of the system would be already defeated
+        for (uint i = 0; i < controllers.length; i++) {
+            IController controller = IController(address(controllers[i]));
+            verified = controller.verifyRedeemFrom(_sender, _tokenholder, _value, _data);
+            require(verified, "The redeem is not allowed by a general Controller!");
+        }
+    }
+
+
+    function verifyAllIssue( address _tokenholder, uint _value, bytes memory _data) public {
+        bool verified;
+        verified = kycController.verifyIssue(_tokenholder, _value, _data);
+        require(verified, "The issue is not allowed by the KYCController!");
+        verified = insiderListController.verifyIssue(_tokenholder, _value, _data);
+        require(verified, "The issue is not allowed by the InsiderListController!");
+        verified = pepListController.verifyIssue(_tokenholder, _value, _data);
+        require(verified, "The issue is not allowed by the PoliticallyExposedPersonController!");
+
+        //this could be a problem, if there were enough complex controllers to run out of gas, but in this case the whole point of the system would be already defeated
+        for (uint i = 0; i < controllers.length; i++) {
+            IController controller = IController(address(controllers[i]));
+            verified = controller.verifyIssue(_tokenholder, _value, _data);
+            require(verified, "The issue is not allowed by a general Controller!");
+        }
+    }
 
 }

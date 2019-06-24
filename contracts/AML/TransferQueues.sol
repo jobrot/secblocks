@@ -1,7 +1,9 @@
 pragma solidity ^0.5.0;
+import "../Openzeppelin/SafeMath.sol";
 
 
 contract TransferQueues {
+    using SafeMath for uint256;
 
     struct TransferQueue{
         mapping(uint => uint) timestampQueue;
@@ -47,7 +49,7 @@ contract TransferQueues {
     function sumOfTransfers(address user) public returns (uint sum) {
         sum = 0;
         for(uint i = queues[user].first; i<=queues[user].last; i++){
-            sum+=queues[user].amountQueue[i]; //TODO safemath
+            sum= sum.add(queues[user].amountQueue[i]);
         }
     }
 

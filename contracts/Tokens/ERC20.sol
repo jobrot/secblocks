@@ -82,7 +82,7 @@ contract ERC20 is IERC20 {
      * @param to The address to transfer to.
      * @param value The amount to be transferred.
      */
-    function transfer(address to, uint256 value) private returns (bool) {
+    function transfer(address to, uint256 value) external returns (bool) { //TODO
         _transfer(msg.sender, to, value);
         return true;
     }
@@ -161,7 +161,7 @@ contract ERC20 is IERC20 {
      * @param account The account that will receive the created tokens.
      * @param value The amount that will be created.
      */
-    function _mint(address account, uint256 value) internal {
+    function _mint(address account, uint256 value) internal { //Todo make sure these (mint, burn, burnfrom) are only accessed from erc1594
         require(account != address(0) , "ERC20: mint to the zero address");
         _totalSupply = _totalSupply.add(value);
         _balances[account] = _balances[account].add(value);
