@@ -2,7 +2,7 @@ import {Component, OnInit} from '@angular/core';
 import {Web3Service} from '../../util/web3.service';
 import { MatSnackBar } from '@angular/material';
 
-declare let require: any;
+declare let require: any; //declares that require is defined by external component, in this case web3.service
 const metacoin_artifacts = require('../../../../build/contracts/MetaCoin.json');
 
 @Component({

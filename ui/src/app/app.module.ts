@@ -14,10 +14,15 @@ import {
   MatInputModule,
   MatToolbarModule
 } from '@angular/material';
+import { HeaderComponent } from './header/header.component';
+import {AppRoutingModule} from "./app-routing/app-routing.module";
+import {RegistryModule} from "./registry/registry.module";
+import {RouterModule} from "@angular/router";
 
 @NgModule({
   declarations: [
-    AppComponent
+    AppComponent,
+    HeaderComponent,
   ],
   imports: [
     BrowserAnimationsModule,
@@ -30,7 +35,10 @@ import {
     BrowserModule,
     FormsModule,
     HttpClientModule,
-    MetaModule
+    RouterModule,
+    AppRoutingModule,
+    MetaModule,
+    RegistryModule
   ],
   providers: [],
   bootstrap: [AppComponent]

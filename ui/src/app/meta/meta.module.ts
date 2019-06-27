@@ -24,9 +24,9 @@ import {BrowserAnimationsModule} from '@angular/platform-browser/animations';
     MatOptionModule,
     MatSelectModule,
     MatSnackBarModule,
-    RouterModule,
     UtilModule
   ],
+ // entryComponents: [MetaSenderComponent], TODO hier
   declarations: [MetaSenderComponent],
   exports: [MetaSenderComponent]
 })
