@@ -33,21 +33,21 @@ module.exports = async function (deployer) {
 
     //--- Create all Subcontroller proxies ---
 
-    var kycControllerProxy = await UnstructuredProxy.at(await registrydeployed.createProxy(abi.rawEncode(['bytes32'], ['KYCController'])).then((result)=>{
+    var kycControllerProxy = await UnstructuredProxy.at(await registrydeployed.createProxy(abi.rawEncode(['bytes32'], ['KYC'])).then((result)=>{
         return result.logs[0].args.proxyAddress;
     }));
     kycControllerProxy.upgradeToInit(KYCController.address);
     var kycVerifier = await KYCController.at(kycControllerProxy.address); // this line is unneccessary, proxy address could also be used if we dont need functions of the controller itself
 
 
-    var insiderListControllerProxy = await UnstructuredProxy.at(await registrydeployed.createProxy(abi.rawEncode(['bytes32'], ['InsiderListControllerExampleCompany'])).then((result)=>{
+    var insiderListControllerProxy = await UnstructuredProxy.at(await registrydeployed.createProxy(abi.rawEncode(['bytes32'], ['InsiderListExampleCompany'])).then((result)=>{
         return result.logs[0].args.proxyAddress;
     }));
     insiderListControllerProxy.upgradeToInit(InsiderListController.address);
     var insiderListVerifier = await InsiderListController.at(insiderListControllerProxy.address);
 
 
-    var pepListControllerProxy = await UnstructuredProxy.at(await registrydeployed.createProxy(abi.rawEncode(['bytes32'], ['PEPListController'])).then((result)=>{
+    var pepListControllerProxy = await UnstructuredProxy.at(await registrydeployed.createProxy(abi.rawEncode(['bytes32'], ['PEPList'])).then((result)=>{
         return result.logs[0].args.proxyAddress;
     }));
     pepListControllerProxy.upgradeToInit(PEPListController.address);
