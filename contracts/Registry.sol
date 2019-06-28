@@ -23,12 +23,12 @@ contract Registry is OrchestratorRole {
     /**
       @notice maps unique proxyIdentifiers to concrete Addresses of the proxy Contracts
       the Identifier consists of:
-        * the type of contract this proxy contains (KYCController, TransferQueues, VótingToken ...) as
+        * the type of contract this proxy contains (KYCVerifier, TransferQueues, VótingToken ...) as
           defined by name of the initially deployed Contract behind the proxy, as all future Contracts have to
           subtypes of this contract
         * if applicable, the company name, or other issuing Entity. This is only relevant for contracts that differ
-          for different tokens, such as TransferQueues, the actual token contracts, insiderListController and general
-          Controllers. It does not apply to PEPListController, KYCController and Libraries that might be proxied in future.
+          for different tokens, such as TransferQueues, the actual token contracts, insiderListVerifier and general
+          Verifiers. It does not apply to PEPListVerifier, KYCVerifier and Libraries that might be proxied in future.
        The Parts of the identifier are Capitalized in CamelCase as given by the contracts and joined in the order given
        above. As the proxys themselves are never upgraded, version names are unnecessary.
     */ //TODO new mapping with shorter names, after renaming controller, or rename them

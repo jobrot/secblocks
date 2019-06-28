@@ -8,9 +8,9 @@ const MockContract = artifacts.require("../contracts/Mocks/MockContract.sol"); /
 
 
 const DividendToken = artifacts.require("../contracts/Tokens/DividendToken.sol");
-const KYCController = artifacts.require("../contracts/Controlling/KYCController.sol");
-const InsiderListController = artifacts.require("../contracts/Controlling/InsiderListController.sol");
-const PEPListController = artifacts.require("../contracts/Controlling/PEPListController.sol");
+const KYCVerifier = artifacts.require("../contracts/Controlling/KYCVerifier.sol");
+const InsiderListVerifier = artifacts.require("../contracts/Controlling/InsiderListVerifier.sol");
+const PEPListVerifier = artifacts.require("../contracts/Controlling/PEPListVerifier.sol");
 const TransferQueues = artifacts.require("../contracts/AML/TransferQueues.sol");
 const Controller = artifacts.require("../contracts/Controlling/Controller.sol");
 const UnstructuredProxy = artifacts.require("../contracts/Proxy/UnstructuredProxy.sol");
@@ -37,7 +37,7 @@ contract('DividendToken', function ([deployer, initialHolder, distributer, recip
 
 
         //create SUT
-        this.transferQueues = await TransferQueues.new();
+        this.transferQueues = await TransferQueues.new(); //TODO if bored, maybe proxy transferqueues in tests
         this.controller = await Controller.new(); //this.kycMock.address, this.insiderListMock.address, this.pepListMock.address
 
         //not via mocked Token and initial supply, because erc20 functionality tests are not required anymore here, and
@@ -48,9 +48,9 @@ contract('DividendToken', function ([deployer, initialHolder, distributer, recip
         this.controllerProxy = await UnstructuredProxy.new(deployer);
         await this.controllerProxy.upgradeToInit(this.controller.address);
         this.controller = await Controller.at(this.controllerProxy.address);
-        this.controller.setKYCController(this.kycMock.address);
-        this.controller.setPEPListController(this.pepListMock.address);
-        this.controller.setInsiderListController(this.insiderListMock.address);
+        this.controller.setKYCVerifier(this.kycMock.address);
+        this.controller.setPEPListVerifier(this.pepListMock.address);
+        this.controller.setInsiderListVerifier(this.insiderListMock.address);
 
         this.proxy = await UnstructuredProxy.new(deployer);
         await this.proxy.upgradeToInit(this.token.address);
@@ -58,6 +58,7 @@ contract('DividendToken', function ([deployer, initialHolder, distributer, recip
         await this.token.setController(this.controller.address);
         await this.token.setTransferQueues(this.transferQueues.address);
         await this.token.addIssuer(deployer);
+        await this.transferQueues.transferOwnership(this.token.address);
 
 
     });

@@ -1,7 +1,7 @@
 pragma solidity ^0.5.0;
 
 
-interface IController { //TODO rename (verifier?)
+interface IVerifier {
     function verifyIssue(address _tokenHolder, uint256 _value, bytes calldata _data) external view
         returns (bool allowed);
 

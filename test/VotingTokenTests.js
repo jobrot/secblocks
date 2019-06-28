@@ -45,9 +45,9 @@ contract('VotingToken', function ([deployer, initialHolder, recipient, issuer, a
         this.controllerProxy = await UnstructuredProxy.new(deployer);
         await this.controllerProxy.upgradeToInit(this.controller.address);
         this.controller = await Controller.at(this.controllerProxy.address);
-        this.controller.setKYCController(this.kycMock.address);
-        this.controller.setPEPListController(this.pepListMock.address);
-        this.controller.setInsiderListController(this.insiderListMock.address);
+        this.controller.setKYCVerifier(this.kycMock.address);
+        this.controller.setPEPListVerifier(this.pepListMock.address);
+        this.controller.setInsiderListVerifier(this.insiderListMock.address);
 
         this.proxy = await UnstructuredProxy.new(deployer);
         await this.proxy.upgradeToInit(this.token.address);
@@ -56,6 +56,7 @@ contract('VotingToken', function ([deployer, initialHolder, recipient, issuer, a
         await this.token.setTransferQueues(this.transferQueues.address);
         await this.token.addIssuer(deployer);
         await this.token.addIssuer(issuer);
+        await this.transferQueues.transferOwnership(this.token.address);
         
         this.futureDate = (await web3.eth.getBlock('latest')).timestamp + 1000000;
 

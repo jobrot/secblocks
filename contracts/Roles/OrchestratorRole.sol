@@ -4,7 +4,7 @@ pragma solidity ^0.5.0;
 import "../Openzeppelin/Roles.sol";
 import "../Proxy/Initializable.sol";
 
-// A role for the Deployer of the Token Smart Contracts, that is allowed to add Controllers to the Tokens
+// A role for the Deployer of the Token Smart Contracts, that is allowed to add Controller and AML Features to the Tokens
 contract OrchestratorRole is Initializable {
     using Roles for Roles.Role;
 

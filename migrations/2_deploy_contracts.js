@@ -37,21 +37,21 @@ module.exports = async function (deployer) {
         return result.logs[0].args.proxyAddress;
     }));
     kycControllerProxy.upgradeToInit(KYCController.address);
-    var kycController = await KYCController.at(kycControllerProxy.address); // this line is unneccessary, proxy address could also be used if we dont need functions of the controller itself
+    var kycVerifier = await KYCController.at(kycControllerProxy.address); // this line is unneccessary, proxy address could also be used if we dont need functions of the controller itself
 
 
     var insiderListControllerProxy = await UnstructuredProxy.at(await registrydeployed.createProxy(abi.rawEncode(['bytes32'], ['InsiderListControllerExampleCompany'])).then((result)=>{
         return result.logs[0].args.proxyAddress;
     }));
     insiderListControllerProxy.upgradeToInit(InsiderListController.address);
-    var insiderListController = await InsiderListController.at(insiderListControllerProxy.address);
+    var insiderListVerifier = await InsiderListController.at(insiderListControllerProxy.address);
 
 
     var pepListControllerProxy = await UnstructuredProxy.at(await registrydeployed.createProxy(abi.rawEncode(['bytes32'], ['PEPListController'])).then((result)=>{
         return result.logs[0].args.proxyAddress;
     }));
     pepListControllerProxy.upgradeToInit(PEPListController.address);
-    var pepListController = await PEPListController.at(pepListControllerProxy.address);
+    var pepListVerifier = await PEPListController.at(pepListControllerProxy.address);
 
     //--- create controller proxy ---
 
@@ -71,9 +71,9 @@ module.exports = async function (deployer) {
 
     // add subcontroller proxies to controller proxy
 
-    controller.setKYCController(kycController.address);
-    controller.setPEPListController(pepListController.address);
-    controller.setInsiderListController(insiderListController.address);
+    controller.setKYCVerifier(kycVerifier.address);
+    controller.setPEPListVerifier(pepListVerifier.address);
+    controller.setInsiderListVerifier(insiderListVerifier.address);
 
     //--- Deploying the main Token contract (in real world use, this would happen for each token that is listed
 

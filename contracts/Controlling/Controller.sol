@@ -3,120 +3,120 @@ pragma solidity ^0.5.4;
 //import "openzeppelin-solidity/contracts/utils/Address.sol";
 import "../Openzeppelin/Address.sol";
 
-import "../Interfaces/IController.sol";
+import "../Interfaces/IVerifier.sol";
 import "../Roles/OrchestratorRole.sol";
-import "./KYCController.sol";
-import "./PEPListController.sol";
-import "./InsiderListController.sol";
+import "./KYCVerifier.sol";
+import "./PEPListVerifier.sol";
+import "./InsiderListVerifier.sol";
 
 
 /**
-  A controlled Contract is an entity, that has multiple Controllers implementing IController, which can verify
-  Transactions, issues etc. It must have exactly one KYC-, PEP- and an InsiderController, as they are mandated
-  by law, and might have an arbitrary number of additional controllers, that are consulted sequentially on
+  A controlled Contract is an entity, that has multiple Verifiers implementing IVerifier, which can verify
+  Transactions, issues etc. It must have exactly one KYC-, PEP- and an InsiderVerifier, as they are mandated
+  by law, and might have an arbitrary number of additional verifiers, that are consulted sequentially on
   all operations. (This has to be done by the implementing Contract)
 */
 contract Controller is OrchestratorRole {
-    IController[] public controllers; // External controller contract
-    KYCController public kycController;
-    InsiderListController public insiderListController;
-    PEPListController public pepListController;
+    IVerifier[] public verifiers; // External verifier contract
+    KYCVerifier public kycVerifier;
+    InsiderListVerifier public insiderListVerifier;
+    PEPListVerifier public pepListVerifier;
 
-    event ControllerAdded(address controller);
-    event ControllerRemoved(address controller);
-    event KYCControllerUpdated(address controller);
-    event InsiderListControllerUpdated(address controller);
-    event PEPListControllerUpdated(address controller);
+    event VerifierAdded(address verifier);
+    event VerifierRemoved(address verifier);
+    event KYCVerifierUpdated(address verifier);
+    event InsiderListVerifierUpdated(address verifier);
+    event PEPListVerifierUpdated(address verifier);
 
     // reenable constructor, if deployment without proxy is needed
-    //    constructor(KYCController _kycController, InsiderListController _insiderListController, PEPListController _pepListController) public {
-    //        kycController = _kycController;
-    //        insiderListController = _insiderListController;
-    //        pepListController = _pepListController;
+    //    constructor(KYCVerifier _kycVerifier, InsiderListVerifier _insiderListVerifier, PEPListVerifier _pepListVerifier) public {
+    //        kycVerifier = _kycVerifier;
+    //        insiderListVerifier = _insiderListVerifier;
+    //        pepListVerifier = _pepListVerifier;
     //    }
 
 
     /**
-    * @notice Adds a Controller contract to this contract.
+    * @notice Adds a Verifier contract to this contract.
     * @dev does not control for duplicate entries
-    * @param _controller Controller contract address.
+    * @param _verifier Verifier contract address.
     */
-    function addController(IController _controller) external onlyOrchestrator {
-        require(address(_controller) != address(0), "Controller address must not be a zero address.");
-        require(Address.isContract(address(_controller)), "Address must point to a contract.");
-        controllers.push(_controller);
-        emit ControllerAdded(address(_controller));
+    function addVerifier(IVerifier _verifier) external onlyOrchestrator {
+        require(address(_verifier) != address(0), "Verifier address must not be a zero address.");
+        require(Address.isContract(address(_verifier)), "Address must point to a contract.");
+        verifiers.push(_verifier);
+        emit VerifierAdded(address(_verifier));
     }
 
     /**
-    * @notice Remove a Controller contract from this contract.
-    * @param _controller Controller contract address.
+    * @notice Remove a Verifier contract from this contract.
+    * @param _verifier Verifier contract address.
     */
-    function removeController(IController _controller) external onlyOrchestrator {
-        require(address(_controller) != address(0), "Controller address must not be a zero address.");
-        require(Address.isContract(address(_controller)), "Address must point to a contract.");
-        remove(_controller);
+    function removeVerifier(IVerifier _verifier) external onlyOrchestrator {
+        require(address(_verifier) != address(0), "Verifier address must not be a zero address.");
+        require(Address.isContract(address(_verifier)), "Address must point to a contract.");
+        remove(_verifier);
     }
 
 
-    function getControllerCount() public view returns (uint) {
-        return controllers.length;
-    }
-
-    /**
-     * @notice Set a KYC Controller contract for this contract.
-     * @param _controller Controller contract address.
-    */
-    function setKYCController(KYCController _controller) external onlyOrchestrator {
-        require(address(_controller) != address(0), "Controller address must not be a zero address.");
-        require(Address.isContract(address(_controller)), "Address must point to a contract.");
-        kycController = _controller;
-        emit KYCControllerUpdated(address(_controller));
+    function getVerifierCount() public view returns (uint) {
+        return verifiers.length;
     }
 
     /**
-     * @notice Set a PEPList Controller contract for this contract.
-     * @param _controller Controller contract address.
+     * @notice Set a KYC Verifier contract for this contract.
+     * @param _verifier Verifier contract address.
     */
-    function setPEPListController(PEPListController _controller) external onlyOrchestrator {
-        require(address(_controller) != address(0), "Controller address must not be a zero address.");
-        require(Address.isContract(address(_controller)), "Address must point to a contract.");
-        pepListController = _controller;
-        emit PEPListControllerUpdated(address(_controller));
+    function setKYCVerifier(KYCVerifier _verifier) external onlyOrchestrator {
+        require(address(_verifier) != address(0), "Verifier address must not be a zero address.");
+        require(Address.isContract(address(_verifier)), "Address must point to a contract.");
+        kycVerifier = _verifier;
+        emit KYCVerifierUpdated(address(_verifier));
     }
 
     /**
-     * @notice Set a InsiderList Controller contract for this contract.
-     * @param _controller Controller contract address.
+     * @notice Set a PEPList Verifier contract for this contract.
+     * @param _verifier Verifier contract address.
     */
-    function setInsiderListController(InsiderListController _controller) external onlyOrchestrator {
-        require(address(_controller) != address(0), "Controller address must not be a zero address.");
-        require(Address.isContract(address(_controller)), "Address must point to a contract.");
-        insiderListController = _controller;
-        emit InsiderListControllerUpdated(address(_controller));
+    function setPEPListVerifier(PEPListVerifier _verifier) external onlyOrchestrator {
+        require(address(_verifier) != address(0), "Verifier address must not be a zero address.");
+        require(Address.isContract(address(_verifier)), "Address must point to a contract.");
+        pepListVerifier = _verifier;
+        emit PEPListVerifierUpdated(address(_verifier));
+    }
+
+    /**
+     * @notice Set a InsiderList Verifier contract for this contract.
+     * @param _verifier Verifier contract address.
+    */
+    function setInsiderListVerifier(InsiderListVerifier _verifier) external onlyOrchestrator {
+        require(address(_verifier) != address(0), "Verifier address must not be a zero address.");
+        require(Address.isContract(address(_verifier)), "Address must point to a contract.");
+        insiderListVerifier = _verifier;
+        emit InsiderListVerifierUpdated(address(_verifier));
     }
 
 
     /**
-        @dev removes a single controller from the list of general controllers in the contract
+        @dev removes a single verifier from the list of general verifiers in the contract
     */
-    function remove(IController _controllerToRemove) internal {
-        require(controllers.length > 0, "Controllers list is empty.");
+    function remove(IVerifier _verifierToRemove) internal {
+        require(verifiers.length > 0, "Verifiers list is empty.");
         uint i = 0;
-        for (; i < controllers.length; i++) {
-            if (address(controllers[i]) == address(_controllerToRemove)) {
+        for (; i < verifiers.length; i++) {
+            if (address(verifiers[i]) == address(_verifierToRemove)) {
                 break;
             }
         }
 
-        require(i != controllers.length, "Controller to remove is not in the controllers list.");
+        require(i != verifiers.length, "Verifier to remove is not in the verifiers list.");
 
 
-        controllers[i] = controllers[controllers.length - 1];
+        verifiers[i] = verifiers[verifiers.length - 1];
 
 
-        controllers.length--;
-        emit ControllerRemoved(address(_controllerToRemove));
+        verifiers.length--;
+        emit VerifierRemoved(address(_verifierToRemove));
 
 
     }
@@ -124,90 +124,90 @@ contract Controller is OrchestratorRole {
 
     function verifyAllTransfer(address _from, address _to, uint _value, bytes memory _data) public {
         bool verified;
-        verified = kycController.verifyTransfer(_from, _to, _value, _data);
-        require(verified, "The transfer is not allowed by the KYCController!");
-        verified = insiderListController.verifyTransfer(_from, _to, _value, _data);
-        require(verified, "The transfer is not allowed by the InsiderListController!");
-        verified = pepListController.verifyTransfer(_from, _to, _value, _data);
-        require(verified, "The transfer is not allowed by the PoliticallyExposedPersonController!");
+        verified = kycVerifier.verifyTransfer(_from, _to, _value, _data);
+        require(verified, "The transfer is not allowed by the KYCVerifier!");
+        verified = insiderListVerifier.verifyTransfer(_from, _to, _value, _data);
+        require(verified, "The transfer is not allowed by the InsiderListVerifier!");
+        verified = pepListVerifier.verifyTransfer(_from, _to, _value, _data);
+        require(verified, "The transfer is not allowed by the PoliticallyExposedPersonVerifier!");
 
-        //this could be a problem, if there were enough complex controllers to run out of gas, but in this case the whole point of the system would be already defeated
-        for (uint i = 0; i < controllers.length; i++) {
-            IController controller = IController(address(controllers[i]));
-            verified = controller.verifyTransfer(_from, _to, _value, _data);
-            require(verified, "The transfer is not allowed by a general Controller!");
+        //this could be a problem, if there were enough complex verifiers to run out of gas, but in this case the whole point of the system would be already defeated
+        for (uint i = 0; i < verifiers.length; i++) {
+            IVerifier verifier = IVerifier(address(verifiers[i]));
+            verified = verifier.verifyTransfer(_from, _to, _value, _data);
+            require(verified, "The transfer is not allowed by a general Verifier!");
         }
     }
 
 
     function verifyAllTransferFrom(address spender, address _from, address _to, uint _value, bytes memory _data) public {
         bool verified;
-        verified = kycController.verifyTransferFrom(_from, _to, spender, _value, _data);
-        require(verified, "The transfer is not allowed by the KYCController!");
-        verified = insiderListController.verifyTransferFrom(_from, _to, spender, _value, _data);
-        require(verified, "The transfer is not allowed by the InsiderListController!");
-        verified = pepListController.verifyTransferFrom(_from, _to, spender, _value, _data);
-        require(verified, "The transfer is not allowed by the PoliticallyExposedPersonController!");
+        verified = kycVerifier.verifyTransferFrom(_from, _to, spender, _value, _data);
+        require(verified, "The transfer is not allowed by the KYCVerifier!");
+        verified = insiderListVerifier.verifyTransferFrom(_from, _to, spender, _value, _data);
+        require(verified, "The transfer is not allowed by the InsiderListVerifier!");
+        verified = pepListVerifier.verifyTransferFrom(_from, _to, spender, _value, _data);
+        require(verified, "The transfer is not allowed by the PoliticallyExposedPersonVerifier!");
 
-        //this could be a problem, if there were enough complex controllers to run out of gas, but in this case the whole point of the system would be already defeated
-        for (uint i = 0; i < controllers.length; i++) {
-            IController controller = IController(address(controllers[i]));
-            verified = controller.verifyTransferFrom(_from, _to, spender, _value, _data);
-            require(verified, "The transfer is not allowed by a general Controller!");
+        //this could be a problem, if there were enough complex verifiers to run out of gas, but in this case the whole point of the system would be already defeated
+        for (uint i = 0; i < verifiers.length; i++) {
+            IVerifier verifier = IVerifier(address(verifiers[i]));
+            verified = verifier.verifyTransferFrom(_from, _to, spender, _value, _data);
+            require(verified, "The transfer is not allowed by a general Verifier!");
         }
     }
 
 
     function verifyAllRedeem(address _sender, uint _value, bytes memory _data) public {
         bool verified;
-        verified = kycController.verifyRedeem(_sender, _value, _data);
-        require(verified, "The redeem is not allowed by the KYCController!");
-        verified = insiderListController.verifyRedeem(_sender, _value, _data);
-        require(verified, "The redeem is not allowed by the InsiderListController!");
-        verified = pepListController.verifyRedeem(_sender, _value, _data);
-        require(verified, "The redeem is not allowed by the PoliticallyExposedPersonController!");
+        verified = kycVerifier.verifyRedeem(_sender, _value, _data);
+        require(verified, "The redeem is not allowed by the KYCVerifier!");
+        verified = insiderListVerifier.verifyRedeem(_sender, _value, _data);
+        require(verified, "The redeem is not allowed by the InsiderListVerifier!");
+        verified = pepListVerifier.verifyRedeem(_sender, _value, _data);
+        require(verified, "The redeem is not allowed by the PoliticallyExposedPersonVerifier!");
 
-        //this could be a problem, if there were enough complex controllers to run out of gas, but in this case the whole point of the system would be already defeated
-        for (uint i = 0; i < controllers.length; i++) {
-            IController controller = IController(address(controllers[i]));
-            verified = controller.verifyRedeem(_sender, _value, _data);
-            require(verified, "The redeem is not allowed by a general Controller!");
+        //this could be a problem, if there were enough complex verifiers to run out of gas, but in this case the whole point of the system would be already defeated
+        for (uint i = 0; i < verifiers.length; i++) {
+            IVerifier verifier = IVerifier(address(verifiers[i]));
+            verified = verifier.verifyRedeem(_sender, _value, _data);
+            require(verified, "The redeem is not allowed by a general Verifier!");
         }
     }
 
 
     function verifyAllRedeemFrom(address _sender, address _tokenholder, uint _value, bytes memory _data) public {
         bool verified;
-        verified = kycController.verifyRedeemFrom(_sender, _tokenholder, _value, _data);
-        require(verified, "The redeem is not allowed by the KYCController!");
-        verified = insiderListController.verifyRedeemFrom(_sender, _tokenholder, _value, _data);
-        require(verified, "The redeem is not allowed by the InsiderListController!");
-        verified = pepListController.verifyRedeemFrom(_sender, _tokenholder, _value, _data);
-        require(verified, "The redeem is not allowed by the PoliticallyExposedPersonController!");
+        verified = kycVerifier.verifyRedeemFrom(_sender, _tokenholder, _value, _data);
+        require(verified, "The redeem is not allowed by the KYCVerifier!");
+        verified = insiderListVerifier.verifyRedeemFrom(_sender, _tokenholder, _value, _data);
+        require(verified, "The redeem is not allowed by the InsiderListVerifier!");
+        verified = pepListVerifier.verifyRedeemFrom(_sender, _tokenholder, _value, _data);
+        require(verified, "The redeem is not allowed by the PoliticallyExposedPersonVerifier!");
 
-        //this could be a problem, if there were enough complex controllers to run out of gas, but in this case the whole point of the system would be already defeated
-        for (uint i = 0; i < controllers.length; i++) {
-            IController controller = IController(address(controllers[i]));
-            verified = controller.verifyRedeemFrom(_sender, _tokenholder, _value, _data);
-            require(verified, "The redeem is not allowed by a general Controller!");
+        //this could be a problem, if there were enough complex verifiers to run out of gas, but in this case the whole point of the system would be already defeated
+        for (uint i = 0; i < verifiers.length; i++) {
+            IVerifier verifier = IVerifier(address(verifiers[i]));
+            verified = verifier.verifyRedeemFrom(_sender, _tokenholder, _value, _data);
+            require(verified, "The redeem is not allowed by a general Verifier!");
         }
     }
 
 
     function verifyAllIssue( address _tokenholder, uint _value, bytes memory _data) public {
         bool verified;
-        verified = kycController.verifyIssue(_tokenholder, _value, _data);
-        require(verified, "The issue is not allowed by the KYCController!");
-        verified = insiderListController.verifyIssue(_tokenholder, _value, _data);
-        require(verified, "The issue is not allowed by the InsiderListController!");
-        verified = pepListController.verifyIssue(_tokenholder, _value, _data);
-        require(verified, "The issue is not allowed by the PoliticallyExposedPersonController!");
+        verified = kycVerifier.verifyIssue(_tokenholder, _value, _data);
+        require(verified, "The issue is not allowed by the KYCVerifier!");
+        verified = insiderListVerifier.verifyIssue(_tokenholder, _value, _data);
+        require(verified, "The issue is not allowed by the InsiderListVerifier!");
+        verified = pepListVerifier.verifyIssue(_tokenholder, _value, _data);
+        require(verified, "The issue is not allowed by the PoliticallyExposedPersonVerifier!");
 
-        //this could be a problem, if there were enough complex controllers to run out of gas, but in this case the whole point of the system would be already defeated
-        for (uint i = 0; i < controllers.length; i++) {
-            IController controller = IController(address(controllers[i]));
-            verified = controller.verifyIssue(_tokenholder, _value, _data);
-            require(verified, "The issue is not allowed by a general Controller!");
+        //this could be a problem, if there were enough complex verifiers to run out of gas, but in this case the whole point of the system would be already defeated
+        for (uint i = 0; i < verifiers.length; i++) {
+            IVerifier verifier = IVerifier(address(verifiers[i]));
+            verified = verifier.verifyIssue(_tokenholder, _value, _data);
+            require(verified, "The issue is not allowed by a general Verifier!");
         }
     }
 

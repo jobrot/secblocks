@@ -4,13 +4,13 @@ const should = require('chai').should();
 const abi = require('ethereumjs-abi');
 
 const MockContract = artifacts.require("../contracts/Mocks/MockContract.sol"); //Gnosis Mock contract framework
-const GeneralControllerMock = artifacts.require("../contracts/Mocks/GeneralControllerMock.sol");
+const GeneralVerifierMock = artifacts.require("../contracts/Mocks/GeneralVerifierMock.sol");
 
 const ERC1594 = artifacts.require("../contracts/Tokens/ERC1594.sol");
 const VotingToken = artifacts.require("../contracts/Tokens/VotingToken.sol");
-const KYCController = artifacts.require("../contracts/Controlling/KYCController.sol");
-const InsiderListController = artifacts.require("../contracts/Controlling/InsiderListController.sol");
-const PEPListController = artifacts.require("../contracts/Controlling/PEPListController.sol");
+const KYCVerifier = artifacts.require("../contracts/Controlling/KYCVerifier.sol");
+const InsiderListVerifier = artifacts.require("../contracts/Controlling/InsiderListVerifier.sol");
+const PEPListVerifier = artifacts.require("../contracts/Controlling/PEPListVerifier.sol");
 const TransferQueues = artifacts.require("../contracts/AML/TransferQueues.sol");
 const Controller = artifacts.require("../contracts/Controlling/Controller.sol");
 const UnstructuredProxy = artifacts.require("../contracts/Proxy/UnstructuredProxy.sol");
@@ -36,9 +36,9 @@ contract('ERC1594, TransferQueues, Controller', function ([deployer, initialHold
 
 
     beforeEach(async function () {
-        this.kycController = await KYCController.new();
-        this.insiderListController = await InsiderListController.new();
-        this.pepListController = await PEPListController.new();
+        this.kycVerifier = await KYCVerifier.new();
+        this.insiderListVerifier = await InsiderListVerifier.new();
+        this.pepListVerifier = await PEPListVerifier.new();
 
 
         this.kycMock = await MockContract.new();
@@ -49,20 +49,20 @@ contract('ERC1594, TransferQueues, Controller', function ([deployer, initialHold
         await this.kycMock.givenAnyReturnBool(true);
         await this.insiderListMock.givenAnyReturnBool(true);
         await this.pepListMock.givenAnyReturnBool(true);
-        //const verifyTransfer = this.kycController.contract.methods.verifyTransfer(0, 0, 0,0).encodeABI();
+        //const verifyTransfer = this.kycVerifier.contract.methods.verifyTransfer(0, 0, 0,0).encodeABI();
         //await this.kycMock.givenMethodReturn(verifyTransfer,abi.rawEncode(['bool','bytes'], ['true','0x51']))
         //await this.insiderMock.givenAnyReturn(abi.rawEncode(['bool','bytes'], ['true','0x51']));
         //await this.pepListMock.givenAnyReturn(abi.rawEncode(['bool','bytes'], ['true','0x51']));
 
         //console.log(await this.kycMock.test("x"));
 
-        /*console.log("kycController:");
-        console.log(this.kycController);
+        /*console.log("kycVerifier:");
+        console.log(this.kycVerifier);
         console.log("DG:");
         console.log(this.kycControllerDG);
         await this.kycControllerDG.deploy(deployer);*/
-        //this.insiderListController = await InsiderListController.new();
-        //this.pepListController =  await PEPListController.new();
+        //this.insiderListVerifier = await InsiderListVerifier.new();
+        //this.pepListVerifier =  await PEPListVerifier.new();
 
         //create SUT
         this.transferQueues = await TransferQueues.new();
@@ -74,15 +74,16 @@ contract('ERC1594, TransferQueues, Controller', function ([deployer, initialHold
         this.controllerProxy = await UnstructuredProxy.new(deployer);
         await this.controllerProxy.upgradeToInit(this.controller.address);
         this.controller = await Controller.at(this.controllerProxy.address);
-        this.controller.setKYCController(this.kycMock.address);
-        this.controller.setPEPListController(this.pepListMock.address);
-        this.controller.setInsiderListController(this.insiderListMock.address);
+        this.controller.setKYCVerifier(this.kycMock.address);
+        this.controller.setPEPListVerifier(this.pepListMock.address);
+        this.controller.setInsiderListVerifier(this.insiderListMock.address);
 
         this.proxy = await UnstructuredProxy.new(deployer);
         await this.proxy.upgradeToInit(this.token.address);
         this.token = await ERC1594Mock.at(this.proxy.address);
         await this.token.setController(this.controller.address);
         await this.token.setTransferQueues(this.transferQueues.address);
+        await this.transferQueues.transferOwnership(this.token.address);
         await this.token.addIssuer(deployer);
         await this.token.mint(initialHolder, initialSupply);
 
@@ -97,11 +98,11 @@ contract('ERC1594, TransferQueues, Controller', function ([deployer, initialHold
         //kyc
         describe('when the sender or recipient is not kycd', function () {
             it('reverts', async function () {
-                const transferFromInitialHolder = this.kycController.contract.methods.verifyTransfer(initialHolder, recipient, 1, abi.rawEncode(['bytes'], [''])).encodeABI();
+                const transferFromInitialHolder = this.kycVerifier.contract.methods.verifyTransfer(initialHolder, recipient, 1, abi.rawEncode(['bytes'], [''])).encodeABI();
                 await this.kycMock.givenMethodReturnBool(transferFromInitialHolder, false);
 
                 await expectRevert(this.token.transferWithData(recipient, 1, abi.rawEncode(['bytes'], ['']), {from: initialHolder}),
-                    'The transfer is not allowed by the KYCController!'
+                    'The transfer is not allowed by the KYCVerifier!'
                 );
             });
         });
@@ -120,11 +121,11 @@ contract('ERC1594, TransferQueues, Controller', function ([deployer, initialHold
         // insiderlist
         describe('when the sender or recipient are insiders', function () {
             it('reverts', async function () {
-                const transferFromInitialHolder = this.insiderListController.contract.methods.verifyTransfer(initialHolder, recipient, 1, abi.rawEncode(['bytes'], [''])).encodeABI();
+                const transferFromInitialHolder = this.insiderListVerifier.contract.methods.verifyTransfer(initialHolder, recipient, 1, abi.rawEncode(['bytes'], [''])).encodeABI();
                 await this.insiderListMock.givenMethodReturnBool(transferFromInitialHolder, false);
 
                 await expectRevert(this.token.transferWithData(recipient, 1, abi.rawEncode(['bytes'], ['']), {from: initialHolder}),
-                    'The transfer is not allowed by the InsiderListController!'
+                    'The transfer is not allowed by the InsiderListVerifier!'
                 );
             });
         });
@@ -143,11 +144,11 @@ contract('ERC1594, TransferQueues, Controller', function ([deployer, initialHold
         // peplist
         describe('when the sender or recipient are politically exposed persons', function () {
             it('reverts', async function () {
-                const transferFromInitialHolder = this.pepListController.contract.methods.verifyTransfer(initialHolder, recipient, 1, abi.rawEncode(['bytes'], [''])).encodeABI();
+                const transferFromInitialHolder = this.pepListVerifier.contract.methods.verifyTransfer(initialHolder, recipient, 1, abi.rawEncode(['bytes'], [''])).encodeABI();
                 await this.pepListMock.givenMethodReturnBool(transferFromInitialHolder, false);
 
                 await expectRevert(this.token.transferWithData(recipient, 1, abi.rawEncode(['bytes'], ['']), {from: initialHolder}),
-                    'The transfer is not allowed by the PoliticallyExposedPersonController!'
+                    'The transfer is not allowed by the PoliticallyExposedPersonVerifier!'
                 );
             });
         });
@@ -365,16 +366,16 @@ contract('ERC1594, TransferQueues, Controller', function ([deployer, initialHold
 
 
 
-    describe('Controllers General Adding and Removing', function () {
+    describe('Verifiers General Adding and Removing', function () {
 
 
-        describe('when a general controller is added', function () {
+        describe('when a general verifier is added', function () {
             it('an event is emitted', async function () {
-                this.generalcontrollerMock = await GeneralControllerMock.new();
+                this.generalVerifierMock = await GeneralVerifierMock.new();
 
 
-                var { logs } = await this.controller.addController(this.generalcontrollerMock.address);
-                expectEvent.inLogs(logs, 'ControllerAdded', { controller: this.generalcontrollerMock.address });
+                var { logs } = await this.controller.addVerifier(this.generalVerifierMock.address);
+                expectEvent.inLogs(logs, 'VerifierAdded', { verifier: this.generalVerifierMock.address });
 
             });
         });
@@ -382,53 +383,53 @@ contract('ERC1594, TransferQueues, Controller', function ([deployer, initialHold
 
 
 
-        describe('when a non existing general controller is removed', function () {
+        describe('when a non existing general verifiers is removed', function () {
             it('reverts', async function () {
-                this.generalcontrollerMock = await GeneralControllerMock.new();
-                await expectRevert(this.controller.removeController(this.generalcontrollerMock.address),
-                    'Controllers list is empty.'
+                this.generalVerifierMock = await GeneralVerifierMock.new();
+                await expectRevert(this.controller.removeVerifier(this.generalVerifierMock.address),
+                    'Verifiers list is empty.'
                 );
             });
         });
 
 
-        describe('when multiple general controllers are added and removed', function () {
+        describe('when multiple general verifiers are added and removed', function () {
             it('all adds and removes work as expected', async function () {
-                this.generalcontrollerMock1 = await GeneralControllerMock.new();
-                this.generalcontrollerMock2 = await GeneralControllerMock.new();
-                this.generalcontrollerMock3 = await GeneralControllerMock.new();
-                this.generalcontrollerMock4 = await GeneralControllerMock.new();
+                this.generalVerifierMock1 = await GeneralVerifierMock.new();
+                this.generalVerifierMock2 = await GeneralVerifierMock.new();
+                this.generalVerifierMock3 = await GeneralVerifierMock.new();
+                this.generalVerifierMock4 = await GeneralVerifierMock.new();
 
 
-                var { logs } = await this.controller.addController(this.generalcontrollerMock1.address);
-                expectEvent.inLogs(logs, 'ControllerAdded', { controller: this.generalcontrollerMock1.address });
+                var { logs } = await this.controller.addVerifier(this.generalVerifierMock1.address);
+                expectEvent.inLogs(logs, 'VerifierAdded', { verifier: this.generalVerifierMock1.address });
 
-               var { logs } = await this.controller.addController(this.generalcontrollerMock2.address);
-                expectEvent.inLogs(logs, 'ControllerAdded', { controller: this.generalcontrollerMock2.address });
+               var { logs } = await this.controller.addVerifier(this.generalVerifierMock2.address);
+                expectEvent.inLogs(logs, 'VerifierAdded', { verifier: this.generalVerifierMock2.address });
 
-                var { logs } = await this.controller.addController(this.generalcontrollerMock3.address);
-                expectEvent.inLogs(logs, 'ControllerAdded', { controller: this.generalcontrollerMock3.address });
+                var { logs } = await this.controller.addVerifier(this.generalVerifierMock3.address);
+                expectEvent.inLogs(logs, 'VerifierAdded', { verifier: this.generalVerifierMock3.address });
 
-                assert((await this.controller.getControllerCount())==3);
+                assert((await this.controller.getVerifierCount())==3);
 
-                var { logs } = await this.controller.removeController(this.generalcontrollerMock1.address);
-                expectEvent.inLogs(logs, 'ControllerRemoved', { controller: this.generalcontrollerMock1.address });
+                var { logs } = await this.controller.removeVerifier(this.generalVerifierMock1.address);
+                expectEvent.inLogs(logs, 'VerifierRemoved', { verifier: this.generalVerifierMock1.address });
 
-                assert((await this.controller.getControllerCount())==2);
+                assert((await this.controller.getVerifierCount())==2);
 
-                var { logs } = await this.controller.removeController(this.generalcontrollerMock2.address);
-                expectEvent.inLogs(logs, 'ControllerRemoved', { controller: this.generalcontrollerMock2.address });
+                var { logs } = await this.controller.removeVerifier(this.generalVerifierMock2.address);
+                expectEvent.inLogs(logs, 'VerifierRemoved', { verifier: this.generalVerifierMock2.address });
 
-                assert((await this.controller.getControllerCount())==1);
+                assert((await this.controller.getVerifierCount())==1);
 
-                await expectRevert(this.controller.removeController(this.generalcontrollerMock1.address),
-                    'Controller to remove is not in the controllers list.'
+                await expectRevert(this.controller.removeVerifier(this.generalVerifierMock1.address),
+                    'Verifier to remove is not in the verifiers list.'
                 );
 
-                assert((await this.controller.getControllerCount())==1);
+                assert((await this.controller.getVerifierCount())==1);
 
-                var { logs } = await this.controller.addController(this.generalcontrollerMock4.address);
-                expectEvent.inLogs(logs, 'ControllerAdded', { controller: this.generalcontrollerMock4.address });
+                var { logs } = await this.controller.addVerifier(this.generalVerifierMock4.address);
+                expectEvent.inLogs(logs, 'VerifierAdded', { verifier: this.generalVerifierMock4.address });
 
 
 
@@ -437,16 +438,16 @@ contract('ERC1594, TransferQueues, Controller', function ([deployer, initialHold
 
 
         describe('when verifyall is called', function () {
-            it('general Controllers are also called', async function () {
-                this.generalcontrollerMock = await GeneralControllerMock.new();
+            it('general Verifiers are also called', async function () {
+                this.generalVerifierMock = await GeneralVerifierMock.new();
 
 
-                var { logs } = await this.controller.addController(this.generalcontrollerMock.address);
-                expectEvent.inLogs(logs, 'ControllerAdded', { controller: this.generalcontrollerMock.address });
+                var { logs } = await this.controller.addVerifier(this.generalVerifierMock.address);
+                expectEvent.inLogs(logs, 'VerifierAdded', { verifier: this.generalVerifierMock.address });
 
 
                 await expectRevert(this.token.transferWithData(recipient,1 ,abi.rawEncode(['bytes'], ['']),{from: initialHolder}),
-                    'The transfer is not allowed by a general Controller!'
+                    'The transfer is not allowed by a general Verifier!'
                 );
 
 

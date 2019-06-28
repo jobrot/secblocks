@@ -6,7 +6,7 @@ import "../Proxy/Initializable.sol";
 
 
 // A role for the global Verifiers for KYC information, who are allowed to enter
-contract KYCVerifierRole is Initializable {
+contract KYCListManagerRole is Initializable {
     using Roles for Roles.Role;
 
     event KYCVerifierAdded(address indexed account);

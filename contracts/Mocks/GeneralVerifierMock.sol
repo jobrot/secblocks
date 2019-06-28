@@ -1,8 +1,8 @@
 pragma solidity ^0.5.0;
 
-import "../Interfaces/IController.sol";
+import "../Interfaces/IVerifier.sol";
 
-contract GeneralControllerMock is IController{
+contract GeneralVerifierMock is IVerifier {
     function verifyIssue(address _tokenHolder, uint256 _value, bytes calldata _data) external view
     returns (bool allowed){
         return true;

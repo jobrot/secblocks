@@ -1,12 +1,12 @@
 pragma solidity ^0.5.4;
 
-import "../Interfaces/IController.sol";
+import "../Interfaces/IVerifier.sol";
 import "../Roles/KYCVerifierRole.sol";
 
 
-//CENTRAL controller that stores addresses in a whitelist,
+//CENTRAL Verifier that stores addresses in a whitelist,
 //Allows all actions for all whitelisted addresses (sender and recipient, if applicable)
-contract KYCController is IController, KYCVerifierRole {
+contract KYCVerifier is IVerifier, KYCListManagerRole {
     byte internal constant STATUS_SUCCESS = 0x51; // Uses status codes from ERC-1066
     byte internal constant STATUS_FAIL = 0x50;
 
