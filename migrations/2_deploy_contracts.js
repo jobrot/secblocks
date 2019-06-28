@@ -33,21 +33,21 @@ module.exports = async function (deployer) {
 
     //--- Create all Subcontroller proxies ---
 
-    var kycControllerProxy = await UnstructuredProxy.at(await registrydeployed.createProxy("KYCController").then((result)=>{
+    var kycControllerProxy = await UnstructuredProxy.at(await registrydeployed.createProxy(abi.rawEncode(['bytes32'], ['KYCController'])).then((result)=>{
         return result.logs[0].args.proxyAddress;
     }));
     kycControllerProxy.upgradeToInit(KYCController.address);
     var kycController = await KYCController.at(kycControllerProxy.address); // this line is unneccessary, proxy address could also be used if we dont need functions of the controller itself
 
 
-    var insiderListControllerProxy = await UnstructuredProxy.at(await registrydeployed.createProxy("InsiderListControllerExampleCompany").then((result)=>{
+    var insiderListControllerProxy = await UnstructuredProxy.at(await registrydeployed.createProxy(abi.rawEncode(['bytes32'], ['InsiderListControllerExampleCompany'])).then((result)=>{
         return result.logs[0].args.proxyAddress;
     }));
     insiderListControllerProxy.upgradeToInit(InsiderListController.address);
     var insiderListController = await InsiderListController.at(insiderListControllerProxy.address);
 
 
-    var pepListControllerProxy = await UnstructuredProxy.at(await registrydeployed.createProxy("PEPListController").then((result)=>{
+    var pepListControllerProxy = await UnstructuredProxy.at(await registrydeployed.createProxy(abi.rawEncode(['bytes32'], ['PEPListController'])).then((result)=>{
         return result.logs[0].args.proxyAddress;
     }));
     pepListControllerProxy.upgradeToInit(PEPListController.address);
@@ -55,11 +55,19 @@ module.exports = async function (deployer) {
 
     //--- create controller proxy ---
 
-    var controllerProxy = await UnstructuredProxy.at(await registrydeployed.createProxy("ControllerExampleCompany").then((result)=>{
+    var controllerProxy = await UnstructuredProxy.at(await registrydeployed.createProxy(abi.rawEncode(['bytes32'], ['ControllerExampleCompany'])).then((result)=>{
         return result.logs[0].args.proxyAddress;
     }));
     controllerProxy.upgradeToInit(Controller.address);
     var controller = await Controller.at(controllerProxy.address);
+
+    //--- create TransferQueues proxy ---
+    var transferQueuesProxy = await UnstructuredProxy.at(await registrydeployed.createProxy(abi.rawEncode(['bytes32'], ['TransferQueuesExampleCompany'])).then((result)=>{
+        return result.logs[0].args.proxyAddress;
+    }));
+    transferQueuesProxy.upgradeToInit(TransferQueues.address);
+    var transferQueues = await TransferQueues.at(transferQueuesProxy.address);
+
 
     // add subcontroller proxies to controller proxy
 
@@ -69,11 +77,14 @@ module.exports = async function (deployer) {
 
     //--- Deploying the main Token contract (in real world use, this would happen for each token that is listed
 
-    var votingTokenProxy = await UnstructuredProxy.at(await registrydeployed.createProxy("VotingTokenExampleCompany").then((result)=>{
+    var votingTokenProxy = await UnstructuredProxy.at(await registrydeployed.createProxy(abi.rawEncode(['bytes32'], ['VotingTokenExampleCompany'])).then((result)=>{
         return result.logs[0].args.proxyAddress;
     }));
     votingTokenProxy.upgradeToInit(VotingToken.address);
     var votingToken = await VotingToken.at(votingTokenProxy.address);
+
+    votingToken.setController(controller.address);
+    votingToken.setTransferQueues(transferQueues.address);
 
     /*
         this.proxy = await UnstructuredProxy.new(deployer);
@@ -95,7 +106,7 @@ module.exports = async function (deployer) {
                             return deployer.deploy(Registry).then((registrydeployed) => {
                                 //VotingToken.deployed.totalsupply();
                                 //proxydeployed.upgradeToInit(VotingToken.address);
-                                registrydeployed.createProxy(abi.rawEncode(['bytes32'],['VotingTokenExampleCompany'])).then((result)=>{
+                                registrydeployed.createProxy(abi.rawEncode(['bytes3232'],['VotingTokenExampleCompany'])).then((result)=>{
                                     console.log(result);
                                     console.log("hier");
                                     console.log(result.logs[0].address);

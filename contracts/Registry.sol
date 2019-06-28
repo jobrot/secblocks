@@ -15,7 +15,7 @@ contract Registry is OrchestratorRole {
     }
 
     event ProxyCreated(
-        string proxyId,
+        bytes32 proxyId,
         address proxyAddress
     );
 
@@ -31,24 +31,30 @@ contract Registry is OrchestratorRole {
           Controllers. It does not apply to PEPListController, KYCController and Libraries that might be proxied in future.
        The Parts of the identifier are Capitalized in CamelCase as given by the contracts and joined in the order given
        above. As the proxys themselves are never upgraded, version names are unnecessary.
-    */
-    mapping(string => ProxyStruct) public proxies;
-    string[] public proxyIdList;
+    */ //TODO new mapping with shorter names, after renaming controller, or rename them
+    mapping(bytes32 => ProxyStruct) public proxies;
+    bytes32[] public proxyIdList;
 
-    function exists(string memory proxyId) public view returns (bool) {
+    function exists(bytes32 proxyId) public view returns (bool) {
         return proxies[proxyId].exists;
     }
 
     function getProxyCount() public view returns (uint) {
         return proxyIdList.length;
     }
+
+
+    function getProxyIdList() public view returns( bytes32 [] memory){
+        return proxyIdList;
+    }
+
     /**
         @notice create a new Proxy with the id @param proxyId, for the exact form of the Id see above notice
       */
-    function createProxy(string memory proxyId) public onlyOrchestrator returns (address proxyAddress){
+    function createProxy(bytes32 proxyId) public onlyOrchestrator returns (address proxyAddress){
         require(!exists(proxyId), "Proxy ID is already present in Registry");
         proxyAddress = address(new UnstructuredProxy(msg.sender));
-
+        proxyIdList.push(proxyId);
         emit ProxyCreated(proxyId,proxyAddress);
 
         proxies[proxyId].proxyAddress = proxyAddress;
@@ -59,7 +65,7 @@ contract Registry is OrchestratorRole {
         @notice add a preexisting proxy with the id @param proxyId to the registry by passing
         the address of the deployed proxy @param proxyAddress
       */
-    function addProxy(string memory proxyId, address proxyAddress) public onlyOrchestrator returns (address){
+    function addProxy(bytes32 proxyId, address proxyAddress) public onlyOrchestrator returns (address){
         require(!exists(proxyId), "Proxy ID is already present in Registry");
         proxies[proxyId].proxyAddress = proxyAddress;
         proxies[proxyId].exists = true;
@@ -69,7 +75,7 @@ contract Registry is OrchestratorRole {
         @dev this option should not really be needed in real world use, but as the registry is intended to
         last, it is prudent to have the possibility of upgrading
       */
-    function updateProxy(string memory proxyId, address proxyAddress) public onlyOrchestrator {
+    function updateProxy(bytes32 proxyId, address proxyAddress) public onlyOrchestrator {
         require(exists(proxyId), "Proxy ID does not exist in Registry");
         proxies[proxyId].proxyAddress = proxyAddress;
     }

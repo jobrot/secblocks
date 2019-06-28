@@ -10,14 +10,15 @@ import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import {
   MatButtonModule,
   MatCardModule,
-  MatFormFieldModule,
-  MatInputModule,
+  MatFormFieldModule, MatIconModule,
+  MatInputModule, MatMenuModule,
   MatToolbarModule
 } from '@angular/material';
 import { HeaderComponent } from './header/header.component';
 import {AppRoutingModule} from "./app-routing/app-routing.module";
 import {RegistryModule} from "./registry/registry.module";
 import {RouterModule} from "@angular/router";
+import {NgbModule} from "@ng-bootstrap/ng-bootstrap";
 
 @NgModule({
   declarations: [
@@ -26,6 +27,7 @@ import {RouterModule} from "@angular/router";
   ],
   imports: [
     BrowserAnimationsModule,
+    //NgbModule,
     CommonModule,
     MatButtonModule,
     MatCardModule,
@@ -38,7 +40,9 @@ import {RouterModule} from "@angular/router";
     RouterModule,
     AppRoutingModule,
     MetaModule,
-    RegistryModule
+    RegistryModule,
+    MatMenuModule,
+    MatIconModule
   ],
   providers: [],
   bootstrap: [AppComponent]

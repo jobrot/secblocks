@@ -1,3 +1,19 @@
-<p>
-  registry works!
-</p>
+
+
+<mat-card>
+  <mat-card-header>Registered Proxy Contracts</mat-card-header>
+  <mat-card-content>
+    <mat-nav-list>
+      <mat-list-item *ngFor="let proxy of proxyList">
+        <a matLine (click)="openContract(proxy.id, proxy.address)"><p align="left">{{ proxy.id }}</p>  <p align="right">{{proxy.address.proxyAddress}}</p></a>
+
+       <!-- <mat-divider></mat-divider>
+        <button mat-icon-button (click)="openContract(proxy.id, proxy.address)">
+          <mat-icon>info</mat-icon>
+        </button>-->
+      </mat-list-item>
+    </mat-nav-list>
+  </mat-card-content>
+</mat-card>
+
+
