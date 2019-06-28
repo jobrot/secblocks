@@ -1,7 +1,7 @@
 const VotingToken = artifacts.require("../contracts/Tokens/VotingToken.sol");
-const KYCController = artifacts.require("../contracts/Controlling/KYCController.sol");
-const InsiderListController = artifacts.require("../contracts/Controlling/InsiderListController.sol");
-const PEPListController = artifacts.require("../contracts/Controlling/PEPListController.sol");
+const KYCVerifier = artifacts.require("../contracts/Controlling/KYCVerifier.sol");
+const InsiderListVerifier = artifacts.require("../contracts/Controlling/InsiderListVerifier.sol");
+const PEPListVerifier = artifacts.require("../contracts/Controlling/PEPListVerifier.sol");
 const TransferQueues = artifacts.require("../contracts/AML/TransferQueues.sol");
 const Controller = artifacts.require("../contracts/Controlling/Controller.sol");
 const Registry = artifacts.require("../contracts/registry.sol");
@@ -16,11 +16,11 @@ const abi = require('ethereumjs-abi');
 module.exports = async function (deployer) {
 
 
-    await deployer.deploy(KYCController);
-    await deployer.deploy(InsiderListController);
-    await deployer.deploy(PEPListController);
+    await deployer.deploy(KYCVerifier);
+    await deployer.deploy(InsiderListVerifier);
+    await deployer.deploy(PEPListVerifier);
     await deployer.deploy(TransferQueues);
-    await deployer.deploy(Controller, KYCController.address, InsiderListController.address, PEPListController.address);
+    await deployer.deploy(Controller, KYCVerifier.address, InsiderListVerifier.address, PEPListVerifier.address);
     await deployer.deploy(VotingToken, Controller.address,  TransferQueues.address);
     var registrydeployed = await deployer.deploy(Registry);
 
@@ -36,22 +36,22 @@ module.exports = async function (deployer) {
     var kycControllerProxy = await UnstructuredProxy.at(await registrydeployed.createProxy(abi.rawEncode(['bytes32'], ['KYC'])).then((result)=>{
         return result.logs[0].args.proxyAddress;
     }));
-    kycControllerProxy.upgradeToInit(KYCController.address);
-    var kycVerifier = await KYCController.at(kycControllerProxy.address); // this line is unneccessary, proxy address could also be used if we dont need functions of the controller itself
+    kycControllerProxy.upgradeToInit(KYCVerifier.address);
+    var kycVerifier = await KYCVerifier.at(kycControllerProxy.address); // this line is unneccessary, proxy address could also be used if we dont need functions of the controller itself
 
 
     var insiderListControllerProxy = await UnstructuredProxy.at(await registrydeployed.createProxy(abi.rawEncode(['bytes32'], ['InsiderListExampleCompany'])).then((result)=>{
         return result.logs[0].args.proxyAddress;
     }));
-    insiderListControllerProxy.upgradeToInit(InsiderListController.address);
-    var insiderListVerifier = await InsiderListController.at(insiderListControllerProxy.address);
+    insiderListControllerProxy.upgradeToInit(InsiderListVerifier.address);
+    var insiderListVerifier = await InsiderListVerifier.at(insiderListControllerProxy.address);
 
 
     var pepListControllerProxy = await UnstructuredProxy.at(await registrydeployed.createProxy(abi.rawEncode(['bytes32'], ['PEPList'])).then((result)=>{
         return result.logs[0].args.proxyAddress;
     }));
-    pepListControllerProxy.upgradeToInit(PEPListController.address);
-    var pepListVerifier = await PEPListController.at(pepListControllerProxy.address);
+    pepListControllerProxy.upgradeToInit(PEPListVerifier.address);
+    var pepListVerifier = await PEPListVerifier.at(pepListControllerProxy.address);
 
     //--- create controller proxy ---
 
@@ -99,11 +99,11 @@ module.exports = async function (deployer) {
 
 
 
-  /*  deployer.deploy(KYCController).then(() => {
-        return deployer.deploy(InsiderListController).then(() => {
-            return deployer.deploy(PEPListController).then(() => {
+  /*  deployer.deploy(KYCVerifier).then(() => {
+        return deployer.deploy(InsiderListVerifier).then(() => {
+            return deployer.deploy(PEPListVerifier).then(() => {
                 return deployer.deploy(TransferQueues).then(() => {
-                    return deployer.deploy(Controller, KYCController.address, InsiderListController.address, PEPListController.address,).then(() => {
+                    return deployer.deploy(Controller, KYCVerifier.address, InsiderListVerifier.address, PEPListVerifier.address,).then(() => {
                         return deployer.deploy(VotingToken, Controller.address,  TransferQueues.address).then(() => {
                             return deployer.deploy(registry).then((registrydeployed) => {
                                 //VotingToken.deployed.totalsupply();

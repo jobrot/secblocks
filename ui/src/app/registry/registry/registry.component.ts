@@ -67,11 +67,15 @@ export class RegistryComponent implements OnInit {
   }
 
 
-  async createProxy(proxyId) {
+  async createProxy(createForm: NgForm) {
+    if(!createForm.valid){
+      this.setStatus('Form invalid');
+    }
     if (!this.registry) {
       this.setStatus('registry is not loaded, unable to create Proxy');
       return;
     }
+    let proxyId = createForm.value.proxyId;
 
     console.log('Creating proxy with id' + proxyId);
     try {
@@ -87,15 +91,66 @@ export class RegistryComponent implements OnInit {
       console.log(e);
       this.setStatus('Error creating proxy; see log.');
     }
-
-
   }
 
-  onSubmit(create: NgForm) {
-    if(create.valid){
-      this.createProxy(create.value.proxyId);
+
+  async addProxy(addForm: NgForm) {
+    if(!addForm.valid){
+      this.setStatus('Form invalid');
+    }
+    if (!this.registry) {
+      this.setStatus('registry is not loaded, unable to add Proxy');
+      return;
+    }
+    let proxyId = addForm.value.proxyId;
+    let address = addForm.value.address;
+
+    console.log('Adding proxy with id' + proxyId);
+    try {
+
+      const transaction = await this.deployed.addProxy.sendTransaction(Web3.utils.fromAscii(proxyId),Web3.utils.toChecksumAddress(address), {from: this.model.account});
+      if (!transaction) {
+        this.setStatus('Proxy Adding Failed.');
+      } else {
+        this.setStatus('Proxy' + proxyId + ' added at '+ transaction.logs[0].args.proxyAddress);
+        this.updateProxies()
+      }
+    } catch (e) {
+      console.log(e);
+      this.setStatus('Error adding proxy; see log.');
     }
   }
+
+
+  async updateProxy(updateForm: NgForm) {
+    if(!updateForm.valid){
+      this.setStatus('Form invalid');
+    }
+    if (!this.registry) {
+      this.setStatus('registry is not loaded, unable to update Proxy');
+      return;
+    }
+    let proxyId = updateForm.value.proxyId;
+    let address = updateForm.value.address;
+
+    console.log('Updating proxy with id' + proxyId);
+    try {
+
+      const transaction = await this.deployed.updateProxy.sendTransaction(Web3.utils.fromAscii(proxyId),Web3.utils.toChecksumAddress(address), {from: this.model.account});
+      // console.log("t");
+      // console.log(transaction);
+      if (!transaction) {
+        this.setStatus('Proxy Updating Failed.');
+      } else {
+        this.setStatus('Proxy' + proxyId + ' updated at '+ transaction.logs[0].args.proxyAddress);
+        this.updateProxies()
+      }
+    } catch (e) {
+      console.log(e);
+      this.setStatus('Error updating proxy; see log.');
+    }
+  }
+
 
   setStatus(status) {
     this.matSnackBar.open(status, null, {duration: 3000});

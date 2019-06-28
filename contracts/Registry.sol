@@ -19,6 +19,15 @@ contract Registry is OrchestratorRole {
         address proxyAddress
     );
 
+    event ProxyAdded(
+        bytes32 proxyId,
+        address proxyAddress
+    );
+
+    event ProxyUpdated(
+        bytes32 proxyId,
+        address proxyAddress
+    );
 
     /**
       @notice maps unique proxyIdentifiers to concrete Addresses of the proxy Contracts
@@ -69,6 +78,7 @@ contract Registry is OrchestratorRole {
         require(!exists(proxyId), "Proxy ID is already present in Registry");
         proxies[proxyId].proxyAddress = proxyAddress;
         proxies[proxyId].exists = true;
+        emit ProxyAdded(proxyId,proxyAddress);
         return proxyAddress;
     }
     /**
@@ -78,5 +88,6 @@ contract Registry is OrchestratorRole {
     function updateProxy(bytes32 proxyId, address proxyAddress) public onlyOrchestrator {
         require(exists(proxyId), "Proxy ID does not exist in Registry");
         proxies[proxyId].proxyAddress = proxyAddress;
+        emit ProxyUpdated(proxyId,proxyAddress);
     }
 }

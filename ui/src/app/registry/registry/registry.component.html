@@ -1,13 +1,16 @@
-
-
 <mat-card>
-  <mat-card-header><mat-card-title>  <mat-icon mat-card-avatar>view_list</mat-icon> Registered Proxy Contracts</mat-card-title>
+  <mat-card-header>
+    <mat-card-title>
+      <mat-icon mat-card-avatar>view_list</mat-icon>
+      Registered Proxy Contracts
+    </mat-card-title>
 
   </mat-card-header>
   <mat-card-content>
     <mat-nav-list>
       <mat-list-item *ngFor="let proxy of proxyList">
-        <a matLine href="/kyc/{{ proxy.address.proxyAddress}}">{{ proxy.id }}  <span style=" float:right; font-size:0.75em " >{{proxy.address.proxyAddress}}</span></a>
+        <a matLine href="/kyc/{{ proxy.address.proxyAddress}}">{{ proxy.id }}  <span
+          style=" float:right; font-size:0.75em ">{{proxy.address.proxyAddress}}</span></a>
 
 
       </mat-list-item>
@@ -16,26 +19,61 @@
 </mat-card>
 
 <mat-card *ngIf="isOrchestrator" style="text-align: center;">
-  <mat-card-header><mat-card-title>  <mat-icon mat-card-avatar>add</mat-icon> Create new Proxy </mat-card-title>
+  <mat-card-header>
+    <mat-card-title>
+      <mat-icon mat-card-avatar>add</mat-icon>
+      Create new Proxy
+    </mat-card-title>
   </mat-card-header>
   <mat-card-content>
-  <form   #create="ngForm" (ngSubmit)="onSubmit(create)">
-
-      <!--<input type="text" matInput [(ngModel)]="model.newproxy.proxyId" #ctrl="ngModel" required id="proxyId" placeholder="Amount" (change)="setAmount($event)">
--->
-
-
-
+    <form #createForm="ngForm" (ngSubmit)="createProxy(createForm)">
       <mat-form-field hintLabel="ContracttypeCompanyName, max 32 chars">
-
-  <input matInput type="text" [maxLength]="32" ngModel  name="proxyId" placeholder="ProxyID" required>
+        <input matInput type="text" [maxLength]="32" ngModel name="proxyId" placeholder="ProxyID" required>
       </mat-form-field>
-      <button mat-button id="submit" >Create</button> <!--(click)="sendCoin()"-->
-
-   </form>
-
+      <button mat-button>Create</button>
+    </form>
   </mat-card-content>
-
 </mat-card>
 
+
+<mat-card *ngIf="isOrchestrator" style="text-align: center;">
+  <mat-card-header>
+    <mat-card-title>
+      <mat-icon mat-card-avatar>add</mat-icon>
+      Add existing Proxy to Registry
+    </mat-card-title>
+  </mat-card-header>
+  <mat-card-content>
+    <form #addForm="ngForm" (ngSubmit)="addProxy(addForm)">
+      <mat-form-field hintLabel="ContracttypeCompanyName, max 32 chars">
+        <input matInput type="text" [maxLength]="32" ngModel name="proxyId" placeholder="ProxyID" required>
+      </mat-form-field>
+      <mat-form-field hintLabel="Deployed address of proxy">
+        <input matInput type="text" [maxLength]="42" ngModel name="address" placeholder="Address" required>
+      </mat-form-field>
+      <button mat-button type="submit">Add</button>
+    </form>
+  </mat-card-content>
+</mat-card>
+
+
+<mat-card *ngIf="isOrchestrator" style="text-align: center;">
+  <mat-card-header>
+    <mat-card-title>
+      <mat-icon mat-card-avatar>update</mat-icon>
+      Update existing Proxy to Registry
+    </mat-card-title>
+  </mat-card-header>
+  <mat-card-content>
+    <form #updateForm="ngForm" (ngSubmit)="updateProxy(updateForm)">
+      <mat-form-field hintLabel="ContracttypeCompanyName, max 32 chars">
+        <input matInput type="text" [maxLength]="32" ngModel name="proxyId" placeholder="ProxyID" required>
+      </mat-form-field>
+      <mat-form-field hintLabel="Deployed address of proxy">
+        <input matInput type="text" [maxLength]="42" ngModel name="address" placeholder="Address" required>
+      </mat-form-field>
+      <button mat-button type="submit">Update</button>
+    </form>
+  </mat-card-content>
+</mat-card>
 
