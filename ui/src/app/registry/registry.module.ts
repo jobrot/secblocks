@@ -15,7 +15,6 @@ import {FormsModule} from "@angular/forms";
 
 @NgModule({
   declarations: [RegistryComponent],
-  //entryComponents: [RegistryComponent],
   imports: [
     CommonModule,
     MatCardModule,

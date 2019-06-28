@@ -17,25 +17,21 @@ const registry_artifacts = require('../../../../../build/contracts/Registry.json
 
 
 export class RegistryComponent implements OnInit {
-  accounts: string[];
+
   proxyList: { id, address }[] = [];
   registry: any;
   deployed: any;
   isOrchestrator: boolean;
+  account='';
 
-  model = {
-    account: ''
-  };
 
   status = '';
 
 
   constructor(private web3Service: Web3Service, private matSnackBar: MatSnackBar) {
-    console.log('Constructor: ' + web3Service);
   }
 
-  ngOnInit(): void {
-    console.log('OnInit: ' + this.web3Service);
+  ngOnInit() {
 
     this.web3Service.artifactsToContract(registry_artifacts)
       .then((RegistryAbstraction) => {
@@ -57,7 +53,7 @@ export class RegistryComponent implements OnInit {
     const deployed = this.deployed;
 
 
-    for (let id of await deployed.getProxyIdList.call({from: this.model.account})) {
+    for (let id of await deployed.getProxyIdList.call({from: this.account})) {
       let asciiid = Web3.utils.toUtf8(id);
       let address = await deployed.proxies.call(id);
       this.proxyList.push({id: asciiid, address: address});
@@ -80,7 +76,7 @@ export class RegistryComponent implements OnInit {
     console.log('Creating proxy with id' + proxyId);
     try {
 
-      const transaction = await this.deployed.createProxy.sendTransaction(Web3.utils.fromAscii(proxyId), {from: this.model.account});
+      const transaction = await this.deployed.createProxy.sendTransaction(Web3.utils.fromAscii(proxyId), {from: this.account});
       if (!transaction) {
         this.setStatus('Proxy Creation Failed.');
       } else {
@@ -108,7 +104,7 @@ export class RegistryComponent implements OnInit {
     console.log('Adding proxy with id' + proxyId);
     try {
 
-      const transaction = await this.deployed.addProxy.sendTransaction(Web3.utils.fromAscii(proxyId),Web3.utils.toChecksumAddress(address), {from: this.model.account});
+      const transaction = await this.deployed.addProxy.sendTransaction(Web3.utils.fromAscii(proxyId),Web3.utils.toChecksumAddress(address), {from: this.account});
       if (!transaction) {
         this.setStatus('Proxy Adding Failed.');
       } else {
@@ -136,7 +132,7 @@ export class RegistryComponent implements OnInit {
     console.log('Updating proxy with id' + proxyId);
     try {
 
-      const transaction = await this.deployed.updateProxy.sendTransaction(Web3.utils.fromAscii(proxyId),Web3.utils.toChecksumAddress(address), {from: this.model.account});
+      const transaction = await this.deployed.updateProxy.sendTransaction(Web3.utils.fromAscii(proxyId),Web3.utils.toChecksumAddress(address), {from: this.account});
       // console.log("t");
       // console.log(transaction);
       if (!transaction) {
@@ -158,14 +154,14 @@ export class RegistryComponent implements OnInit {
 
   watchAccount() {
     this.web3Service.accountsObservable.subscribe((accounts) => {
-      this.accounts = accounts;
-      this.model.account = accounts[0];
+
+      this.account = accounts[0];
       this.checkRole();
     });
   }
 
   checkRole(){
-    this.deployed.isOrchestrator.call(this.model.account, {from: this.model.account}).then((is) =>{
+    this.deployed.isOrchestrator.call(this.account, {from: this.account}).then((is) =>{
       console.log("Is Orchestrator:");
       console.log(is);
       this.isOrchestrator = is;

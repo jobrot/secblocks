@@ -12,41 +12,41 @@ contract KYCListManagerRole is Initializable {
     event KYCListManagerAdded(address indexed account);
     event KYCListManagerRemoved(address indexed account);
 
-    Roles.Role private _kycVerifiers;
+    Roles.Role private _kYCListManagers;
 
     constructor () internal {
-        _addKYCVerifier(msg.sender);
+        _addKYCListManager(msg.sender);
         initialized = true;
     }
 
     function _initialize(address _initialManager) internal{
-        _addKYCVerifier(_initialManager);
+        _addKYCListManager(_initialManager);
     }
 
-    modifier onlyKYCVerifier() {
-        require(isKYCVerifier(msg.sender), "KYCListManagerRole: caller does not have the KYCVerifier role");
+    modifier onlyKYCListManager() {
+        require(isKYCListManager(msg.sender), "KYCListManagerRole: caller does not have the KYCListManager role");
         _;
     }
 
-    function isKYCVerifier(address account) public view returns (bool) {
-        return _kycVerifiers.has(account);
+    function isKYCListManager(address account) public view returns (bool) {
+        return _kYCListManagers.has(account);
     }
 
-    function addKYCVerifier(address account) public onlyKYCVerifier {
-        _addKYCVerifier(account);
+    function addKYCListManager(address account) public onlyKYCListManager {
+        _addKYCListManager(account);
     }
 
-    function renounceKYCVerifier() public {
-        _removeKYCVerifier(msg.sender);
+    function renounceKYCListManager() public {
+        _removeKYCListManager(msg.sender);
     }
 
-    function _addKYCVerifier(address account) internal {
-        _kycVerifiers.add(account);
+    function _addKYCListManager(address account) internal {
+        _kYCListManagers.add(account);
         emit KYCListManagerAdded(account);
     }
 
-    function _removeKYCVerifier(address account) internal {
-        _kycVerifiers.remove(account);
+    function _removeKYCListManager(address account) internal {
+        _kYCListManagers.remove(account);
         emit KYCListManagerRemoved(account);
     }
 }

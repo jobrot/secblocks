@@ -123,7 +123,7 @@ contract KYCVerifier is IVerifier, KYCListManagerRole {
     * @notice Add an address to the stored KYC whitelist
     * @dev Only addresses with the role @KYCVerifier are allowed to use this Function
     */
-    function addAddressToWhitelist(address _addr) external onlyKYCVerifier {
+    function addAddressToWhitelist(address _addr) external onlyKYCListManager {
         whitelist[_addr] = true;
         emit AddedToWhitelist(_addr);
     }
@@ -132,7 +132,7 @@ contract KYCVerifier is IVerifier, KYCListManagerRole {
     * @notice Remove an address to the stored KYC whitelist
     * @dev Only addresses with the role @KYCVerifier are allowed to use this Function
     */
-    function removeAddressFromWhitelist(address _addr) external onlyKYCVerifier {
+    function removeAddressFromWhitelist(address _addr) external onlyKYCListManager {
         whitelist[_addr] = false;
         emit RemovedFromWhitelist(_addr);
     }
