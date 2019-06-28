@@ -5,6 +5,7 @@ import { MetaModule } from '../meta/meta.module'
 import {RegistryModule} from "../registry/registry.module";
 import {MetaSenderComponent} from "../meta/meta-sender/meta-sender.component";
 import {RegistryComponent} from "../registry/registry/registry.component";
+import {KycComponent} from "../kyc/kyc/kyc.component";
 
 const routes: Routes = [
   {
@@ -14,6 +15,10 @@ const routes: Routes = [
   {
     path: 'registry',
     component: RegistryComponent
+  },
+  {
+    path: 'kyc/:address',
+    component: KycComponent
   }
 ];
 

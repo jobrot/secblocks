@@ -2524,10 +2524,26 @@
       },
       "address": "0x6aAC78Cc82D464DEdBB55AcDAd27f042C0405054",
       "transactionHash": "0xbed7e0cd22275b5b4656f4e141b7ab9c9a7d6651779de6350e7ae3bb65144c71"
+    },
+    "1561717292374": {
+      "events": {},
+      "links": {
+        "ConvertLib": "0x6f0945f66AD1A27ed5F433CdDd246C0A08836110"
+      },
+      "address": "0x7E6Ac712e938A2f626E28ceAa256b1aD2b207B0A",
+      "transactionHash": "0xc58603777332f63039d71395981aaf7e0b2853d8848ff850f30c9663dbc35e80"
+    },
+    "1561719368505": {
+      "events": {},
+      "links": {
+        "ConvertLib": "0x458680Cbf3e9cc94B66f0CfA5736F319ad4e829a"
+      },
+      "address": "0x054646acdBa248cD9194C0061a2E1009FF4ac88f",
+      "transactionHash": "0xd6b1e8dfabbe3669f84a8b75fc46fa3d002b365ca2fca6bf5e9734d40405ee33"
     }
   },
   "schemaVersion": "3.0.9",
-  "updatedAt": "2019-06-27T16:54:46.151Z",
+  "updatedAt": "2019-06-28T11:38:57.995Z",
   "devdoc": {
     "methods": {}
   },

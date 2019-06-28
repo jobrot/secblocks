@@ -9,7 +9,7 @@ const should = require('chai').should();
 
 const NULLBYTE=abi.rawEncode(['bytes'],['']);
 
-contract(['KYCVerifier', 'KYCVerifierRole'], (accounts) => {
+contract(['KYCVerifier', 'KYCListManagerRole'], (accounts) => {
     let origSut;
     let sut;
     let proxy;
@@ -36,9 +36,9 @@ contract(['KYCVerifier', 'KYCVerifierRole'], (accounts) => {
 
     it('unrelated accounts should not be able to add new verifiers', async () => {
         //await expectThrow(this.moderator.addModerator(moderatorRole, { from: unrelatedAccount }));
-        await tryExpectCatch(sut.addKYCVerifier(verifier, {from: unrelatedAccount}), 'KYCVerifierRole: caller does not have the KYCVerifier role');
+        await tryExpectCatch(sut.addKYCVerifier(verifier, {from: unrelatedAccount}), 'KYCListManagerRole: caller does not have the KYCVerifier role');
         await truffleAssert.reverts(
-            sut.addKYCVerifier(verifier, {from: unrelatedAccount}), 'KYCVerifierRole: caller does not have the KYCVerifier role');
+            sut.addKYCVerifier(verifier, {from: unrelatedAccount}), 'KYCListManagerRole: caller does not have the KYCVerifier role');
 
 
         const result = await sut.isKYCVerifier(verifier);
@@ -48,7 +48,7 @@ contract(['KYCVerifier', 'KYCVerifierRole'], (accounts) => {
     it('verifiers should be able to add new verifiers', async () => {
         const result1 = await sut.addKYCVerifier(verifier, {from: deployer});
 
-        truffleAssert.eventEmitted(result1, 'KYCVerifierAdded', (ev) => {
+        truffleAssert.eventEmitted(result1, 'KYCListManagerAdded', (ev) => {
             return ev.account === verifier;
         });
 
@@ -58,7 +58,7 @@ contract(['KYCVerifier', 'KYCVerifierRole'], (accounts) => {
 
         const result2 = await sut.addKYCVerifier(otherAccount, {from: verifier});
 
-        truffleAssert.eventEmitted(result2, 'KYCVerifierAdded', (ev) => {
+        truffleAssert.eventEmitted(result2, 'KYCListManagerAdded', (ev) => {
             return ev.account === otherAccount;
         });
 

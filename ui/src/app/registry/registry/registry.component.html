@@ -1,19 +1,41 @@
 
 
 <mat-card>
-  <mat-card-header>Registered Proxy Contracts</mat-card-header>
+  <mat-card-header><mat-card-title>  <mat-icon mat-card-avatar>view_list</mat-icon> Registered Proxy Contracts</mat-card-title>
+
+  </mat-card-header>
   <mat-card-content>
     <mat-nav-list>
       <mat-list-item *ngFor="let proxy of proxyList">
-        <a matLine (click)="openContract(proxy.id, proxy.address)"><p align="left">{{ proxy.id }}</p>  <p align="right">{{proxy.address.proxyAddress}}</p></a>
+        <a matLine href="/kyc/{{ proxy.address.proxyAddress}}">{{ proxy.id }}  <span style=" float:right; font-size:0.75em " >{{proxy.address.proxyAddress}}</span></a>
 
-       <!-- <mat-divider></mat-divider>
-        <button mat-icon-button (click)="openContract(proxy.id, proxy.address)">
-          <mat-icon>info</mat-icon>
-        </button>-->
+
       </mat-list-item>
     </mat-nav-list>
   </mat-card-content>
+</mat-card>
+
+<mat-card *ngIf="isOrchestrator" style="text-align: center;">
+  <mat-card-header><mat-card-title>  <mat-icon mat-card-avatar>add</mat-icon> Create new Proxy </mat-card-title>
+  </mat-card-header>
+  <mat-card-content>
+  <form   #create="ngForm" (ngSubmit)="onSubmit(create)">
+
+      <!--<input type="text" matInput [(ngModel)]="model.newproxy.proxyId" #ctrl="ngModel" required id="proxyId" placeholder="Amount" (change)="setAmount($event)">
+-->
+
+
+
+      <mat-form-field hintLabel="ContracttypeCompanyName, max 32 chars">
+
+  <input matInput type="text" [maxLength]="32" ngModel  name="proxyId" placeholder="ProxyID" required>
+      </mat-form-field>
+      <button mat-button id="submit" >Create</button> <!--(click)="sendCoin()"-->
+
+   </form>
+
+  </mat-card-content>
+
 </mat-card>
 
 

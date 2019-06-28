@@ -1,7 +1,7 @@
 pragma solidity ^0.5.4;
 
 import "../Interfaces/IVerifier.sol";
-import "../Roles/KYCVerifierRole.sol";
+import "../Roles/KYCListManagerRole.sol";
 
 
 //CENTRAL Verifier that stores addresses in a whitelist,

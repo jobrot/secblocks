@@ -1,7 +1,16 @@
 import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RegistryComponent } from './registry/registry.component';
-import {MatCardModule, MatFormFieldModule, MatIconModule, MatListModule, MatSelectModule} from "@angular/material";
+import {
+  MatButtonModule,
+  MatCardModule,
+  MatFormFieldModule,
+  MatIconModule,
+  MatInputModule,
+  MatListModule,
+  MatSelectModule
+} from "@angular/material";
+import {FormsModule} from "@angular/forms";
 
 
 @NgModule({
@@ -11,6 +20,9 @@ import {MatCardModule, MatFormFieldModule, MatIconModule, MatListModule, MatSele
     CommonModule,
     MatCardModule,
     MatFormFieldModule,
+    MatInputModule,
+    MatButtonModule,
+    FormsModule,
     MatSelectModule,
     MatListModule,
     MatIconModule

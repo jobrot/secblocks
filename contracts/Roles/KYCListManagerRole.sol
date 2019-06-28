@@ -9,8 +9,8 @@ import "../Proxy/Initializable.sol";
 contract KYCListManagerRole is Initializable {
     using Roles for Roles.Role;
 
-    event KYCVerifierAdded(address indexed account);
-    event KYCVerifierRemoved(address indexed account);
+    event KYCListManagerAdded(address indexed account);
+    event KYCListManagerRemoved(address indexed account);
 
     Roles.Role private _kycVerifiers;
 
@@ -24,7 +24,7 @@ contract KYCListManagerRole is Initializable {
     }
 
     modifier onlyKYCVerifier() {
-        require(isKYCVerifier(msg.sender), "KYCVerifierRole: caller does not have the KYCVerifier role");
+        require(isKYCVerifier(msg.sender), "KYCListManagerRole: caller does not have the KYCVerifier role");
         _;
     }
 
@@ -42,11 +42,11 @@ contract KYCListManagerRole is Initializable {
 
     function _addKYCVerifier(address account) internal {
         _kycVerifiers.add(account);
-        emit KYCVerifierAdded(account);
+        emit KYCListManagerAdded(account);
     }
 
     function _removeKYCVerifier(address account) internal {
         _kycVerifiers.remove(account);
-        emit KYCVerifierRemoved(account);
+        emit KYCListManagerRemoved(account);
     }
 }

@@ -19,6 +19,7 @@ import {AppRoutingModule} from "./app-routing/app-routing.module";
 import {RegistryModule} from "./registry/registry.module";
 import {RouterModule} from "@angular/router";
 import {NgbModule} from "@ng-bootstrap/ng-bootstrap";
+import {KycModule} from "./kyc/kyc.module";
 
 @NgModule({
   declarations: [
@@ -31,6 +32,7 @@ import {NgbModule} from "@ng-bootstrap/ng-bootstrap";
     CommonModule,
     MatButtonModule,
     MatCardModule,
+    MatIconModule,
     MatFormFieldModule,
     MatInputModule,
     MatToolbarModule,
@@ -41,6 +43,7 @@ import {NgbModule} from "@ng-bootstrap/ng-bootstrap";
     AppRoutingModule,
     MetaModule,
     RegistryModule,
+    KycModule,
     MatMenuModule,
     MatIconModule
   ],

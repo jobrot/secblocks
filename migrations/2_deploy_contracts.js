@@ -4,7 +4,7 @@ const InsiderListController = artifacts.require("../contracts/Controlling/Inside
 const PEPListController = artifacts.require("../contracts/Controlling/PEPListController.sol");
 const TransferQueues = artifacts.require("../contracts/AML/TransferQueues.sol");
 const Controller = artifacts.require("../contracts/Controlling/Controller.sol");
-const Registry = artifacts.require("../contracts/Registry.sol");
+const Registry = artifacts.require("../contracts/registry.sol");
 
 const UnstructuredProxy = artifacts.require("../contracts/Proxy/UnstructuredProxy.sol");
 
@@ -105,7 +105,7 @@ module.exports = async function (deployer) {
                 return deployer.deploy(TransferQueues).then(() => {
                     return deployer.deploy(Controller, KYCController.address, InsiderListController.address, PEPListController.address,).then(() => {
                         return deployer.deploy(VotingToken, Controller.address,  TransferQueues.address).then(() => {
-                            return deployer.deploy(Registry).then((registrydeployed) => {
+                            return deployer.deploy(registry).then((registrydeployed) => {
                                 //VotingToken.deployed.totalsupply();
                                 //proxydeployed.upgradeToInit(VotingToken.address);
                                 registrydeployed.createProxy(abi.rawEncode(['bytes3232'],['VotingTokenExampleCompany'])).then((result)=>{

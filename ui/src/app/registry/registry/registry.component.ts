@@ -1,9 +1,10 @@
-import { Component, OnInit } from '@angular/core';
+import {Component, OnInit} from '@angular/core';
 import {Web3Service} from '../../util/web3.service';
-import { MatSnackBar } from '@angular/material';
+import {MatSnackBar} from '@angular/material';
+import {NgForm} from "@angular/forms";
+
 const abi = require('ethereumjs-abi');
 const Web3 = require('web3');
-//const utils = require('web3-utils');
 
 declare let require: any; //declares that require is defined by external component, in this case web3.service
 const registry_artifacts = require('../../../../../build/contracts/Registry.json');
@@ -15,30 +16,18 @@ const registry_artifacts = require('../../../../../build/contracts/Registry.json
 })
 
 
-
-
 export class RegistryComponent implements OnInit {
-   accounts: string[];
-   //proxy: [string, string];
-   proxyList: {id, address}[]= [];
-  //let proxylist: proxy[];
-  Registry: any;
+  accounts: string[];
+  proxyList: { id, address }[] = [];
+  registry: any;
+  deployed: any;
+  isOrchestrator: boolean;
 
   model = {
-    newproxy: {
-      proxyid: '',
-      address: ''
-    },
-    viewproxy: {
-      proxyid: '',
-      address: ''
-    },
-    proxycount: 0,
     account: ''
   };
 
   status = '';
-
 
 
   constructor(private web3Service: Web3Service, private matSnackBar: MatSnackBar) {
@@ -47,108 +36,85 @@ export class RegistryComponent implements OnInit {
 
   ngOnInit(): void {
     console.log('OnInit: ' + this.web3Service);
-    console.log(this);
-    //this.watchAccount();
+
     this.web3Service.artifactsToContract(registry_artifacts)
       .then((RegistryAbstraction) => {
-        this.Registry = RegistryAbstraction;
-        this.Registry.deployed().then(deployed => {
+        this.registry = RegistryAbstraction;
+        this.registry.deployed().then(deployed => {
           console.log(deployed);
-          /*deployed.getProxyIdList.call({from: this.model.account}).then((list) =>{
-            //this.proxyIdList = list;
-            console.log("List:");
-            console.log(list);
-          });*/
+          this.deployed = deployed;
+          this.watchAccount();
           this.updateProxies();
-          /*deployed.Transfer({}, (err, ev) => {
-            console.log('Transfer event came in, refreshing balance');
-            this.refreshBalance();
-          });*/
         });
 
       });
   }
 
 
-/*  deployed.proxies.call('VotingTokenExampleCompany').then((transaction) =>{
-  console.log("hier!");
-  console.log(transaction);
-});*/
-  async updateProxies(){
-      console.log("Updating Proxies..");
-/*    let isPresent: boolean = true;
-    let i: number = 0;*/
-    //while(isPresent){
-    const deployed = await this.Registry.deployed();
-/*    let proxyName;
-    console.log(deployed);
-    console.log("checking proxy");
-    proxyName = await deployed.proxyIdList.call(1,{from: this.model.account});
-    //proxyName = deployed.proxies.call(abi.rawEncode(['bytes32'], ['VotingTokenExampleCompany']),{from: this.model.account});
+  async updateProxies() {
+    console.log("Updating Proxies..");
 
-    console.log("proxyname:");
-    console.log(proxyName);
-
-    console.log( Web3.utils.toAscii(proxyName));*/
+    const deployed = this.deployed;
 
 
-
-    for(let id of await deployed.getProxyIdList.call({from: this.model.account})){
-     let asciiid = Web3.utils.toUtf8(id);
-
+    for (let id of await deployed.getProxyIdList.call({from: this.model.account})) {
+      let asciiid = Web3.utils.toUtf8(id);
       let address = await deployed.proxies.call(id);
-      /*console.log(asciiid +": ");
-      console.log(address);
-*/
-
-      this.proxyList.push({id: asciiid,address: address});
-
+      this.proxyList.push({id: asciiid, address: address});
     }
     console.log(this.proxyList);
 
-
-
-    //}
   }
 
 
-  openContract(id, address){
-    console.log(id);
-    console.log(address);
-    //TODO open relevant with route parameter in http format
-  }
-
-
-
-  async createProxy() {
-    if (!this.Registry) {
-      this.setStatus('Registry is not loaded, unable to create Proxy');
+  async createProxy(proxyId) {
+    if (!this.registry) {
+      this.setStatus('registry is not loaded, unable to create Proxy');
       return;
     }
 
-    const proxyid = this.model.newproxy.proxyid;
-
-
-    console.log('Creating proxy with id' + proxyid);
-
-    this.setStatus('Initiating transaction... (please wait)');
+    console.log('Creating proxy with id' + proxyId);
     try {
-      const deployedRegistry = await this.Registry.deployed(); //TODO maybe replace by global variable for deployed instance to speed up
-      const transaction = await deployedRegistry.createProxy.sendTransaction(proxyid, {from: this.model.account});
 
+      const transaction = await this.deployed.createProxy.sendTransaction(Web3.utils.fromAscii(proxyId), {from: this.model.account});
       if (!transaction) {
         this.setStatus('Proxy Creation Failed.');
       } else {
-        this.setStatus('Proxy'+proxyid+'created at ' );
+        this.setStatus('Proxy' + proxyId + ' created at '+ transaction.logs[0].args.proxyAddress);
+        this.updateProxies()
       }
     } catch (e) {
       console.log(e);
-      this.setStatus('Error sending coin; see log.');
+      this.setStatus('Error creating proxy; see log.');
+    }
+
+
+  }
+
+  onSubmit(create: NgForm) {
+    if(create.valid){
+      this.createProxy(create.value.proxyId);
     }
   }
 
   setStatus(status) {
     this.matSnackBar.open(status, null, {duration: 3000});
+  }
+
+  watchAccount() {
+    this.web3Service.accountsObservable.subscribe((accounts) => {
+      this.accounts = accounts;
+      this.model.account = accounts[0];
+      this.checkRole();
+    });
+  }
+
+  checkRole(){
+    this.deployed.isOrchestrator.call(this.model.account, {from: this.model.account}).then((is) =>{
+      console.log("Is Orchestrator:");
+      console.log(is);
+      this.isOrchestrator = is;
+    });
   }
 
 }
