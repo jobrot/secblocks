@@ -77,7 +77,10 @@ export class RegistryComponent implements OnInit {
       this.router.navigate(['kyc/'+address]);
     }
     else if(id.startsWith("ERC1495")){
-      this.router.navigate(['erc1495/'+address]);
+      this.router.navigate(['erc1594/'+address]);
+    }
+    else if(id.startsWith("VotingToken")){
+      this.router.navigate(['erc1594/'+address]); //TODO
     }
     else {
       this.setStatusFailure("Could not Recognize this kind of Proxy. Please rename it according to the conventions in Registry.sol.")

@@ -1,0 +1,23 @@
+<mat-card>
+  <mat-card-header>Balance</mat-card-header>
+  <mat-card-content>
+    <p>You are currently holding {{balance}} of <em>{{name}}</em> Shares.</p>
+  </mat-card-content>
+</mat-card>
+
+<mat-card>
+  <mat-card-header>Send {{name}} Shares</mat-card-header>
+  <mat-card-content>
+    <form #createForm="ngForm" (ngSubmit)="sendTokens(createForm)">
+    <mat-form-field >
+      <input type="text" matInput name="amount" placeholder="Amount" ngModel>
+    </mat-form-field>
+    <mat-form-field class="address-field">
+      <input type="text" matInput name="receiver" placeholder="Receiver Address" ngModel>
+    </mat-form-field>
+    <button mat-button id="send">Send Tokens</button>
+    </form>
+  </mat-card-content>
+</mat-card>
+
+

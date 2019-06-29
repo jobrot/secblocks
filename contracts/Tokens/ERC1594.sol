@@ -14,6 +14,9 @@ import "../Controlling/Controller.sol";
 contract ERC1594 is IERC1594, ERC20, IssuerRole, OrchestratorRole { //TODO comments in this file
     // Variable which tells whether issuance is ON or OFF forever
     bool internal issuanceClosed = false;
+    bool internal nameSet=false;
+
+    bytes32 public name;
 
     // Variable that stores stores a mapping of the last transfers of the account
     // in order to comply with AML regulations
@@ -46,6 +49,11 @@ contract ERC1594 is IERC1594, ERC20, IssuerRole, OrchestratorRole { //TODO comme
     }
     function addIssuer(address issuer) public onlyOrchestrator{
         _addIssuer(issuer);
+    }
+    function setName(bytes32 _name) public onlyOrchestrator{
+        require(!nameSet);
+        name = _name;
+        nameSet = true;
     }
 
     /**
