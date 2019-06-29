@@ -19,7 +19,6 @@ export class KycComponent implements OnInit, OnDestroy {
   address: string;
   sub: any;
 
-  proxyList: { id, address }[] = [];
   kyc: any;
   deployed: any;
   isListManager: boolean;
@@ -30,24 +29,30 @@ export class KycComponent implements OnInit, OnDestroy {
 
 
   constructor(private route: ActivatedRoute, private web3Service: Web3Service, private matSnackBar: MatSnackBar) {
+    this.sub = this.route.params.subscribe(params => {
+      this.address = '' + params['address'];
+
+
+    });
   }
 
 
   ngOnInit() {
-    this.sub = this.route.params.subscribe(params => {
-      this.address = '' + params['address'];
-    });
-
     this.web3Service.artifactsToContract(kyc_artifacts)
       .then((KYCAbstraction) => {
         this.kyc = KYCAbstraction;
 
-        this.kyc.at(Web3.utils.toChecksumAddress(this.address)).then(deployed => { //TODO if this does not work, kyc update also needs fixing
+        this.kyc.at(Web3.utils.toChecksumAddress(this.address)).then(deployed => {
           console.log(deployed);
           this.deployed = deployed;
-          this.watchAccount();
-        });
 
+
+          this.web3Service.getAccounts().then(accs => {
+            this.account = accs[0];
+            this.checkRole();
+            this.watchAccount();
+          }); //fallback if the observable does not publish
+        });
       });
 
   }
@@ -115,12 +120,11 @@ export class KycComponent implements OnInit, OnDestroy {
 
     console.log('Checking ' + address + ' on whitelist.');
 
-
     const onWhitelist = await this.deployed._onWhitelist.call(Web3.utils.toChecksumAddress(address), {from: this.account});
     if (!onWhitelist) {
-      this.setStatusSuccess(address + ' is not on Whitelist');
+      this.setStatusFailure(address + ' is not on Whitelist');
     } else {
-      this.setStatusFailure(address + ' is on Whitelist');
+      this.setStatusSuccess(address + ' is on Whitelist');
     }
 
   }
@@ -147,11 +151,14 @@ export class KycComponent implements OnInit, OnDestroy {
   }
 
   checkRole() {
-    this.deployed.isKYCListManager.call(this.account, {from: this.account}).then((is) => {
-      console.log("Is ListManager:");
-      console.log(is);
-      this.isListManager = is;
-    });
+    console.log("CheckingRole..");
+    if(this.account) {
+      this.deployed.isKYCListManager.call(this.account, {from: this.account}).then((is) => {
+        console.log("Is ListManager:");
+        console.log(is);
+        this.isListManager = is;
+      });
+    }
   }
 
   ngOnDestroy() {

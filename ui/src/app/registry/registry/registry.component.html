@@ -9,9 +9,9 @@
   <mat-card-content>
     <mat-nav-list>
       <mat-list-item *ngFor="let proxy of proxyList">
-        <a matLine href="/kyc/{{ proxy.address.proxyAddress}}">{{ proxy.id }}  <span
+        <a matLine (click)="route(proxy.id,proxy.address.proxyAddress)" >{{ proxy.id }}  <span
           style=" float:right; font-size:0.75em ">{{proxy.address.proxyAddress}}</span></a>
-
+<!--href="/kyc/{{ proxy.address.proxyAddress}}"-->
 
       </mat-list-item>
     </mat-nav-list>

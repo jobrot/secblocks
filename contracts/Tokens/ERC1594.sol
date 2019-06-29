@@ -136,7 +136,7 @@ contract ERC1594 is IERC1594, ERC20, IssuerRole, OrchestratorRole { //TODO comme
      * @param _value The amount of tokens to be redeemed
      * @param _data The `bytes _data` it can be used in the token contract to authenticate the redemption.
      */
-    function redeem(uint256 _value, bytes memory  _data) public { //public instead of external so that subcontracts can call
+    function redeem(uint256 _value, bytes memory  _data) public { //public instead of external so that subcontracts can call TODO maybe not necessary
         //There is no need to override the burn function here, as it is never accessed in the ERC20 contract and an internal function
         controller.verifyAllRedeem(msg.sender,_value,_data);
         _burn(msg.sender, _value);

@@ -9,7 +9,7 @@ import { CommonModule } from '@angular/common';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import {
   MatButtonModule,
-  MatCardModule,
+  MatCardModule, MatExpansionModule,
   MatFormFieldModule, MatIconModule,
   MatInputModule, MatMenuModule,
   MatToolbarModule
@@ -20,6 +20,7 @@ import {RegistryModule} from "./registry/registry.module";
 import {RouterModule} from "@angular/router";
 import {NgbModule} from "@ng-bootstrap/ng-bootstrap";
 import {KycModule} from "./kyc/kyc.module";
+import {TokenModule} from "./token/token.module";
 
 @NgModule({
   declarations: [
@@ -44,8 +45,10 @@ import {KycModule} from "./kyc/kyc.module";
     MetaModule,
     RegistryModule,
     KycModule,
+    TokenModule,
     MatMenuModule,
-    MatIconModule
+    MatIconModule,
+    MatExpansionModule
   ],
   providers: [],
   bootstrap: [AppComponent]

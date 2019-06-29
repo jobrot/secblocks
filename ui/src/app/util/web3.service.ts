@@ -75,4 +75,27 @@ export class Web3Service {
       this.ready = true;
     });
   }
+
+  async getAccounts() : Promise<any>{
+    return new Promise((resolve) => {
+      this.web3.eth.getAccounts((err, accs) => {
+        let emptyAccs: string[];
+        console.log('Getting accounts');
+        if (err != null) {
+          console.warn('There was an error fetching your accounts.');
+          resolve(['']);
+        }
+
+        // Get the initial account balance so it can be displayed.
+        if (accs.length === 0) {
+          console.warn('Couldn\'t get any accounts! Make sure your Ethereum client is configured correctly.');
+          resolve(['']);
+        }
+        console.log(accs);
+        resolve(accs);
+      });
+    });
+
+  }
+
 }

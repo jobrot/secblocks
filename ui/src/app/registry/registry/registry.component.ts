@@ -2,6 +2,7 @@ import {Component, OnInit} from '@angular/core';
 import {Web3Service} from '../../util/web3.service';
 import {MatSnackBar} from '@angular/material';
 import {NgForm} from "@angular/forms";
+import {Router} from "@angular/router";
 
 const abi = require('ethereumjs-abi');
 const Web3 = require('web3');
@@ -28,7 +29,7 @@ export class RegistryComponent implements OnInit {
   status = '';
 
 
-  constructor(private web3Service: Web3Service, private matSnackBar: MatSnackBar) {
+  constructor(private web3Service: Web3Service, private matSnackBar: MatSnackBar, private router: Router) {
   }
 
   ngOnInit() {
@@ -39,7 +40,13 @@ export class RegistryComponent implements OnInit {
         this.registry.deployed().then(deployed => {
           console.log(deployed);
           this.deployed = deployed;
-          this.watchAccount();
+
+          this.web3Service.getAccounts().then(accs => {
+            this.account = accs[0];
+            this.checkRole();
+            this.watchAccount();
+          }); //fallback if the observable does not publish
+
           this.updateProxies();
         });
 
@@ -60,6 +67,21 @@ export class RegistryComponent implements OnInit {
     }
     console.log(this.proxyList);
 
+  }
+
+  route(id: string, address: string){
+    console.log(id);
+    console.log(address);
+
+    if(id.startsWith("KYC")){
+      this.router.navigate(['kyc/'+address]);
+    }
+    else if(id.startsWith("ERC1495")){
+      this.router.navigate(['erc1495/'+address]);
+    }
+    else {
+      this.setStatusFailure("Could not Recognize this kind of Proxy. Please rename it according to the conventions in Registry.sol.")
+    }
   }
 
 
@@ -152,6 +174,10 @@ export class RegistryComponent implements OnInit {
     this.matSnackBar.open(status, null, {duration: 3000});
   }
 
+  setStatusFailure(status) {
+    this.matSnackBar.open(status, null, {duration: 3000, panelClass: ['style-failure'],});
+  }
+
   watchAccount() {
     this.web3Service.accountsObservable.subscribe((accounts) => {
 
@@ -161,11 +187,13 @@ export class RegistryComponent implements OnInit {
   }
 
   checkRole(){
-    this.deployed.isOrchestrator.call(this.account, {from: this.account}).then((is) =>{
-      console.log("Is Orchestrator:");
-      console.log(is);
-      this.isOrchestrator = is;
-    });
+    if(this.account) {
+      this.deployed.isOrchestrator.call(this.account, {from: this.account}).then((is) => {
+        console.log("Is Orchestrator:");
+        console.log(is);
+        this.isOrchestrator = is;
+      });
+    }
   }
 
 }
