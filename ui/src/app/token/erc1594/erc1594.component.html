@@ -13,11 +13,36 @@
       <input type="text" matInput name="amount" placeholder="Amount" ngModel>
     </mat-form-field>
     <mat-form-field class="address-field">
-      <input type="text" matInput name="receiver" placeholder="Receiver Address" ngModel>
+      <input type="text" matInput [maxLength]="42" name="receiver" placeholder="Receiver Address" ngModel>
     </mat-form-field>
     <button mat-button id="send">Send Tokens</button>
     </form>
   </mat-card-content>
 </mat-card>
 
+<mat-card mat-card *ngIf="isIssuer" > <!--style="text-align: center;"-->
+  <mat-card-header>Issue {{name}} Shares</mat-card-header>
+  <mat-card-content>
+    <form #issueForm="ngForm" (ngSubmit)="issue(issueForm)">
+      <mat-form-field >
+        <input type="text" matInput name="amount" placeholder="Amount" ngModel>
+      </mat-form-field>
+      <mat-form-field class="address-field">
+        <input type="text" matInput [maxLength]="42" name="receiver" placeholder="Receiver Address" ngModel>
+      </mat-form-field>
+      <button mat-button id="issue">Issue Tokens</button> <!--Todo check if removable-->
+    </form>
+  </mat-card-content>
+</mat-card>
 
+<mat-card mat-card *ngIf="isOrchestrator" > <!--style="text-align: center;"-->
+  <mat-card-header>Add issuer to token</mat-card-header>
+  <mat-card-content>
+    <form #issuerForm="ngForm" (ngSubmit)="addIssuer(issuerForm)">
+      <mat-form-field class="address-field">
+        <input type="text" matInput [maxLength]="42" name="issuer" placeholder="Issuer Address" ngModel>
+      </mat-form-field>
+      <button mat-button id="issuer">Add Issuer</button>
+    </form>
+  </mat-card-content>
+</mat-card>

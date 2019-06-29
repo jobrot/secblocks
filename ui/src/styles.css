@@ -10,3 +10,7 @@
 .style-failure {
   background-color: #DC143C;
 }
+
+.address-field {
+  width: 400px;
+}

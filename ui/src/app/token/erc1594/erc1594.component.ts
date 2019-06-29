@@ -70,10 +70,10 @@ export class Erc1594Component implements OnInit, OnDestroy {
 
   async sendTokens(sendForm: NgForm) {
     if(!sendForm.valid){
-      this.setStatus('Form invalid');
+      this.setStatusFailure('Form invalid');
     }
     if (!this.deployed) {
-      this.setStatus('contract is not loaded, unable to send');
+      this.setStatusFailure('contract is not loaded, unable to send');
       return;
     }
     let amount = sendForm.value.amount;
@@ -83,20 +83,74 @@ export class Erc1594Component implements OnInit, OnDestroy {
       console.log("Trying to send "+ amount + " to " + receiver);
       const transaction = await this.deployed.transfer(Web3.utils.toChecksumAddress(receiver),amount, {from: this.account});
       if (!transaction) {
-        this.setStatus('Sending Token Failed.');
+        this.setStatusFailure('Sending Token Failed.');
       } else {
-        this.setStatus( amount + 'Tokens sent to '+ receiver);
+        this.setStatusSuccess( amount + 'Tokens sent to '+ receiver);
       }
     } catch (e) {
-      console.log(e);
-      this.setStatus('Error sending tokens; see log.');
+      this.showError(e);
     }
+    this.updateRolesAndBalance();
   }
 
+  async addIssuer(form: NgForm) {
+    if(!form.valid){
+      this.setStatusFailure('Form invalid');
+    }
+    if (!this.deployed) {
+      this.setStatusFailure('contract is not loaded, unable to send');
+      return;
+    }
+    let issuer = form.value.issuer;
 
+    try {
+      console.log("Trying to add " + issuer + " as issuer.");
+      const transaction = await this.deployed.addIssuer(Web3.utils.toChecksumAddress(issuer), {from: this.account});
+      if (!transaction) {
+        this.setStatusFailure('Adding Issuer Failed.');
+      } else {
+        this.setStatusSuccess( issuer+ ' set as Issuer.');
+      }
+    } catch (e) {
+      this.showError(e);
+    }
+    this.updateRolesAndBalance();
+  }
 
+  async issue(form: NgForm) {
+    if(!form.valid){
+      this.setStatusFailure('Form invalid');
+    }
+    if (!this.deployed) {
+      this.setStatusFailure('contract is not loaded, unable to issue');
+      return;
+    }
+    let amount = form.value.amount;
+    let receiver = form.value.receiver;
 
+    try {
+      console.log("Trying to issue "+ amount + " to " + receiver);
+      const transaction = await this.deployed.issue(Web3.utils.toChecksumAddress(receiver),amount,Web3.utils.fromAscii(""), {from: this.account});
+      if (!transaction) {
+        this.setStatusFailure('Issuing Token Failed.');
+      } else {
+        this.setStatusSuccess( amount + 'Tokens issued to '+ receiver);
+      }
+    } catch (e) {
+      this.showError(e);
+    }
+    this.updateRolesAndBalance();
+  }
 
+  showError(e){
+    let errorstring = new String(e);
+    let index:number =  errorstring.indexOf("VM Exception while processing transaction: revert");
+    if(index!=-1){
+      this.setStatusFailure( errorstring.substring(index+49));
+    }
+    else this.setStatusFailure('Error sending tokens; see log.');
+    console.log(e);
+  }
 
   setStatus(status) {
     this.matSnackBar.open(status, null, {duration: 3000});
@@ -114,9 +168,13 @@ export class Erc1594Component implements OnInit, OnDestroy {
   watchAccount() {
     this.web3Service.accountsObservable.subscribe((accounts) => {
       this.account = accounts[0];
-      this.checkRole();
-      this.refreshBalance();
+      this.updateRolesAndBalance();
     });
+  }
+
+  updateRolesAndBalance(){
+    this.checkRole();
+    this.refreshBalance();
   }
 
   async refreshBalance() {
