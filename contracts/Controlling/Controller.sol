@@ -211,4 +211,42 @@ contract Controller is OrchestratorRole {
         }
     }
 
+
+    function checkAllTransfer(address _from, address _to, uint _value, bytes memory _data) public view returns(bool, bytes32) {
+        bool verified;
+        verified = kycVerifier.verifyTransfer(_from, _to, _value, _data);
+        if(!verified) return (verified, bytes32("Not allowed by KYCVerifier!"));
+        verified =  insiderListVerifier.verifyTransfer(_from, _to, _value, _data);
+        if(!verified) return (verified, bytes32("Not allowed by InsiderVerifier!"));
+        verified =  pepListVerifier.verifyTransfer(_from, _to, _value, _data);
+        if(!verified) return (verified, bytes32("Not allowed by PEPVerifier!"));
+
+        //this could be a problem, if there were enough complex verifiers to run out of gas, but in this case the whole point of the system would be already defeated
+        for (uint i = 0; i < verifiers.length; i++) {
+            IVerifier verifier = IVerifier(address(verifiers[i]));
+            verified = verifier.verifyTransfer(_from, _to, _value, _data);
+            if(!verified) return (verified, bytes32("Not allowed by other Verifier!"));
+        }
+        return (verified, bytes32(""));
+    }
+
+
+    function checkAllTransferFrom(address spender, address _from, address _to, uint _value, bytes memory _data) public view returns(bool, bytes32) {
+        bool verified;
+        verified = kycVerifier.verifyTransferFrom(_from, _to, spender, _value, _data);
+        if(!verified) return (verified, bytes32("Not allowed by KYCVerifier!"));
+        verified = insiderListVerifier.verifyTransferFrom(_from, _to, spender, _value, _data);
+        if(!verified) return (verified, bytes32("Not allowed by InsiderVerifier!"));
+        verified = pepListVerifier.verifyTransferFrom(_from, _to, spender, _value, _data);
+        if(!verified) return (verified, bytes32("Not allowed by PEPVerifier!"));
+
+        //this could be a problem, if there were enough complex verifiers to run out of gas, but in this case the whole point of the system would be already defeated
+        for (uint i = 0; i < verifiers.length; i++) {
+            IVerifier verifier = IVerifier(address(verifiers[i]));
+            verified = verifier.verifyTransferFrom(_from, _to, spender, _value, _data);
+            if(!verified) return (verified, bytes32("Not allowed by other Verifier!"));
+        }
+        return (verified, bytes32(""));
+    }
+
 }

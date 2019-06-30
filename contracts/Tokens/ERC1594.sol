@@ -47,7 +47,7 @@ contract ERC1594 is IERC1594, ERC20, IssuerRole, OrchestratorRole { //TODO comme
     function setController(Controller _controller) public onlyOrchestrator{
         controller = _controller;
     }
-    function addIssuer(address issuer) public onlyOrchestrator{
+    function addIssuerOrchestrator(address issuer) public onlyOrchestrator{
         _addIssuer(issuer);
     }
     function setName(bytes32 _name) public onlyOrchestrator{
@@ -173,20 +173,23 @@ contract ERC1594 is IERC1594, ERC20, IssuerRole, OrchestratorRole { //TODO comme
     /**
      * @notice Transfers of securities may fail for a number of reasons. So this function will used to understand the
      * cause of failure by getting the byte value. Which will be the ESC that follows the EIP 1066. ESC can be mapped
-     * with a reson string to understand the failure cause, table of Ethereum status code will always reside off-chain
+     * with a reason string to understand the failure cause, table of Ethereum status code will always reside off-chain
+     * Does not take AML into account, as this depends on timing of the transaction
      * @param _to address The address which you want to transfer to
      * @param _value uint256 the amount of tokens to be transferred
      * @param _data The `bytes _data` allows arbitrary data to be submitted alongside the transfer.
      * @return bool It signifies whether the transaction will be executed or not.
-     * @return byte Ethereum status code (ESC) TODO
+     * @return byte Ethereum status code (ESC)
      * @return bytes32 Application specific reason code
      */
     function canTransfer(address _to, uint256 _value, bytes calldata _data) external view returns (bool, byte, bytes32) {
-        // Add a function to validate the `_data` parameter
-        //TODO add checks on controllers
-        if (balanceOf(msg.sender) < _value) return (false, 0x52, bytes32(0));
-        else if (_to == address(0)) return (false, 0x57, bytes32(0));
-        else if (!_checkAdd(balanceOf(_to), _value)) return (false, 0x50, bytes32(0));
+        bool can;
+        bytes32 reason;
+        (can, reason)=controller.checkAllTransfer(msg.sender,  _to,  _value,  _data);
+        if (balanceOf(msg.sender) < _value) return (false, 0x54, bytes32(0));
+        /*else if (_to == address(0)) return (false, 0x57, bytes32(0));*/
+        /*else if (!_checkAdd(balanceOf(_to), _value)) return (false, 0x50, bytes32(0));*/
+        else if (!can) return (false, 0x59, reason);
         return (true, 0x51, bytes32(0));
     }
 
@@ -194,6 +197,7 @@ contract ERC1594 is IERC1594, ERC20, IssuerRole, OrchestratorRole { //TODO comme
      * @notice Transfers of securities may fail for a number of reasons. So this function will used to understand the
      * cause of failure by getting the byte value. Which will be the ESC that follows the EIP 1066. ESC can be mapped
      * with a reason string to understand the failure cause, table of Ethereum status code will always reside off-chain
+     * Does not take AML into account, as this depends on timing of the transaction
      * @param _from address The address which you want to send tokens from
      * @param _to address The address which you want to transfer to
      * @param _value uint256 the amount of tokens to be transferred
@@ -203,22 +207,27 @@ contract ERC1594 is IERC1594, ERC20, IssuerRole, OrchestratorRole { //TODO comme
      * @return bytes32 Application specific reason code
      */
     function canTransferFrom(address _from, address _to, uint256 _value, bytes calldata _data) external view returns (bool, byte, bytes32) {
-        // Add a function to validate the `_data` parameter
+        bool can;
+        bytes32 reason;
+        (can, reason)=controller.checkAllTransfer(msg.sender,  _to,  _value,  _data);
         if (_value > _allowed[_from][msg.sender]) return (false, 0x53, bytes32(0));
-        else if (balanceOf(_from) < _value) return (false, 0x52, bytes32(0));
-        else if (_to == address(0)) return (false, 0x57, bytes32(0));
-        else if (!_checkAdd(balanceOf(_to), _value)) return (false, 0x50, bytes32(0));
+        else if (balanceOf(_from) < _value) return (false, 0x54, bytes32(0));
+        /*else if (_to == address(0)) return (false, 0x57, bytes32(0));*/
+        /*else if (!_checkAdd(balanceOf(_to), _value)) return (false, 0x50, bytes32(0));*/
+        else if (!can) return (false, 0x59, reason);
         return (true, 0x51, bytes32(0));
     }
 
     /**
    * @dev Adds two numbers, return false on overflow.
    */
+/*
     function _checkAdd(uint256 _a, uint256 _b) private pure returns (bool) {
         uint256 c = _a + _b;
         if (c < _a) return false;
         else return true;
     }
+*/
 
 
     function _checkAMLConstraints(address from, uint value) private{

@@ -83,7 +83,7 @@ module.exports = async function (deployer) {
     votingTokenProxy.upgradeToInit(VotingToken.address);
     var votingToken = await VotingToken.at(votingTokenProxy.address);
 
-    await transferQueues.transferOwnership(VotingToken.address);
+    await transferQueues.transferOwnership(votingToken.address);
 
     votingToken.setController(controller.address);
     votingToken.setTransferQueues(transferQueues.address);

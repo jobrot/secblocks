@@ -6,8 +6,9 @@ import "../Roles/KYCListManagerRole.sol";
 
 //CENTRAL Verifier that stores addresses in a whitelist,
 //Allows all actions for all whitelisted addresses (sender and recipient, if applicable)
+//Future work: Bulk add and remove
 contract KYCVerifier is IVerifier, KYCListManagerRole {
-    byte internal constant STATUS_SUCCESS = 0x51; // Uses status codes from ERC-1066
+    byte internal constant STATUS_SUCCESS = 0x51; // Uses status codes from ERC-1066 TODO
     byte internal constant STATUS_FAIL = 0x50;
 
     event AddedToWhitelist(address added);
