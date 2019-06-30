@@ -1,48 +1,182 @@
 <mat-card>
-  <mat-card-header>Balance</mat-card-header>
+  <mat-card-header>Overview</mat-card-header>
   <mat-card-content>
-    <p>You are currently holding {{balance}} of <em>{{name}}</em> Shares.</p>
+    <p>Balance: You are currently holding {{balance}}  <em>{{name}}</em> shares.</p>
+    <p>This token is currently <span *ngIf="!issuable">not </span>issuable.
+
+      <button style="margin-left: 100px;" mat-icon-button *ngIf="issuable && isIssuer" (click)="closeIssuance()">
+        <mat-icon>pan_tool</mat-icon>
+        Close Issuance (Irreversible)
+      </button>
+
+    </p>
   </mat-card-content>
 </mat-card>
 
-<mat-card>
-  <mat-card-header>Send {{name}} Shares</mat-card-header>
-  <mat-card-content>
-    <form #createForm="ngForm" (ngSubmit)="sendTokens(createForm)">
-    <mat-form-field >
-      <input type="text" matInput name="amount" placeholder="Amount" ngModel>
-    </mat-form-field>
-    <mat-form-field class="address-field">
-      <input type="text" matInput [maxLength]="42" name="receiver" placeholder="Receiver Address" ngModel>
-    </mat-form-field>
-    <button mat-button id="send">Send Tokens</button>
-    </form>
-  </mat-card-content>
-</mat-card>
 
-<mat-card mat-card *ngIf="isIssuer" > <!--style="text-align: center;"-->
-  <mat-card-header>Issue {{name}} Shares</mat-card-header>
-  <mat-card-content>
-    <form #issueForm="ngForm" (ngSubmit)="issue(issueForm)">
-      <mat-form-field >
-        <input type="text" matInput name="amount" placeholder="Amount" ngModel>
-      </mat-form-field>
-      <mat-form-field class="address-field">
-        <input type="text" matInput [maxLength]="42" name="receiver" placeholder="Receiver Address" ngModel>
-      </mat-form-field>
-      <button mat-button id="issue">Issue Tokens</button> <!--Todo check if removable-->
-    </form>
-  </mat-card-content>
-</mat-card>
+<mat-expansion-panel>
+  <mat-expansion-panel-header>
+    <mat-panel-title>
+      Basic Functions
+    </mat-panel-title>
+    <mat-panel-description>
+      Transferring and Redeeming of your own Tokens
+    </mat-panel-description>
+  </mat-expansion-panel-header>
+  <mat-card>
+    <mat-card-header>Transfer {{name}} shares</mat-card-header>
+    <mat-card-content>
+      <form #sendForm="ngForm" (ngSubmit)="sendTokens(sendForm)">
+        <mat-form-field>
+          <input type="text" matInput name="amount" placeholder="Amount" ngModel>
+        </mat-form-field>
+        <mat-form-field class="address-field">
+          <input type="text" matInput [maxLength]="42" name="receiver" placeholder="Receiver Address" ngModel>
+        </mat-form-field>
+        <button mat-button>Send Tokens</button>
+      </form>
+    </mat-card-content>
+  </mat-card>
 
-<mat-card mat-card *ngIf="isOrchestrator" > <!--style="text-align: center;"-->
-  <mat-card-header>Add issuer to token</mat-card-header>
-  <mat-card-content>
-    <form #issuerForm="ngForm" (ngSubmit)="addIssuer(issuerForm)">
-      <mat-form-field class="address-field">
-        <input type="text" matInput [maxLength]="42" name="issuer" placeholder="Issuer Address" ngModel>
-      </mat-form-field>
-      <button mat-button id="issuer">Add Issuer</button>
-    </form>
-  </mat-card-content>
-</mat-card>
+
+  <mat-card>
+    <mat-card-header>Check Ability to Transfer {{name}} shares</mat-card-header>
+    <mat-card-content>
+      <form #checkSendForm="ngForm" (ngSubmit)="checkSendTokens(checkSendForm)">
+        <mat-form-field>
+          <input type="text" matInput name="amount" placeholder="Amount" ngModel>
+        </mat-form-field>
+        <mat-form-field class="address-field">
+          <input type="text" matInput [maxLength]="42" name="receiver" placeholder="Receiver Address" ngModel>
+        </mat-form-field>
+        <button mat-button>Check Send Tokens</button>
+      </form>
+    </mat-card-content>
+  </mat-card>
+
+
+  <mat-card>
+    <mat-card-header>Redeem {{name}} shares</mat-card-header>
+    <mat-card-content>
+      <form #redeemForm="ngForm" (ngSubmit)="redeemTokens(redeemForm)">
+        <mat-form-field>
+          <input type="text" matInput name="amount" placeholder="Amount" ngModel>
+        </mat-form-field>
+        <button mat-button>Redeem Tokens</button>
+      </form>
+    </mat-card-content>
+  </mat-card>
+</mat-expansion-panel>
+
+<mat-expansion-panel>
+  <mat-expansion-panel-header>
+    <mat-panel-title>
+      Allowance
+    </mat-panel-title>
+    <mat-panel-description>
+      Using allowance and approving additional Allowances
+    </mat-panel-description>
+  </mat-expansion-panel-header>
+  <mat-card>
+    <mat-card-header>Transfer {{name}} shares from Allowance</mat-card-header>
+    <mat-card-content>
+      <form #sendFromForm="ngForm" (ngSubmit)="sendTokensFrom(sendFromForm)">
+        <mat-form-field>
+          <input type="text" matInput name="amount" placeholder="Amount" ngModel>
+        </mat-form-field>
+        <mat-form-field class="address-field">
+          <input type="text" matInput [maxLength]="42" name="from" placeholder="Address of Allowance" ngModel>
+        </mat-form-field>
+        <mat-form-field class="address-field">
+          <input type="text" matInput [maxLength]="42" name="receiver" placeholder="Receiver Address" ngModel>
+        </mat-form-field>
+        <button mat-button>Send Tokens</button>
+      </form>
+    </mat-card-content>
+  </mat-card>
+
+  <mat-card>
+    <mat-card-header>Check Ability to Transfer {{name}} shares from Allowance</mat-card-header>
+    <mat-card-content>
+      <form #checkSendFromForm="ngForm" (ngSubmit)="checkSendTokensFrom(checkSendFromForm)">
+        <mat-form-field>
+          <input type="text" matInput name="amount" placeholder="Amount" ngModel>
+        </mat-form-field>
+        <mat-form-field class="address-field">
+          <input type="text" matInput [maxLength]="42" name="from" placeholder="Address of Allowance" ngModel>
+        </mat-form-field>
+        <mat-form-field class="address-field">
+          <input type="text" matInput [maxLength]="42" name="receiver" placeholder="Receiver Address" ngModel>
+        </mat-form-field>
+        <button mat-button>Check Send Tokens</button>
+      </form>
+    </mat-card-content>
+  </mat-card>
+
+  <mat-card>
+    <mat-card-header>Redeem {{name}} shares from Allowance</mat-card-header>
+    <mat-card-content>
+      <form #redeemFromForm="ngForm" (ngSubmit)="redeemTokensFrom(redeemFromForm)">
+        <mat-form-field>
+          <input type="text" matInput name="amount" placeholder="Amount" ngModel>
+        </mat-form-field>
+        <mat-form-field class="address-field">
+          <input type="text" matInput [maxLength]="42" name="from" placeholder="Address of Allowance" ngModel>
+        </mat-form-field>
+        <button mat-button>Redeem Tokens</button>
+      </form>
+    </mat-card-content>
+  </mat-card>
+
+  <mat-card mat-card>
+    <mat-card-header>Approve {{name}} shares to a Spender that may spend your tokens</mat-card-header>
+    <mat-card-content>
+      <form #approveForm="ngForm" (ngSubmit)="approve(approveForm)">
+        <mat-form-field>
+          <input type="text" matInput name="amount" placeholder="Amount" ngModel>
+        </mat-form-field>
+        <mat-form-field class="address-field">
+          <input type="text" matInput [maxLength]="42" name="spender" placeholder="Spender Address" ngModel>
+        </mat-form-field>
+        <button mat-button>Approve Tokens</button>
+      </form>
+    </mat-card-content>
+  </mat-card>
+</mat-expansion-panel>
+
+<mat-expansion-panel *ngIf="isIssuer">
+  <mat-expansion-panel-header>
+    <mat-panel-title>
+      Issuing
+    </mat-panel-title>
+    <mat-panel-description>
+      Adding Issuers and Issuing of Tokens
+    </mat-panel-description>
+  </mat-expansion-panel-header>
+  <mat-card mat-card *ngIf="isIssuer"> <!--style="text-align: center;"-->
+    <mat-card-header>Issue {{name}} shares</mat-card-header>
+    <mat-card-content>
+      <form #issueForm="ngForm" (ngSubmit)="issue(issueForm)">
+        <mat-form-field>
+          <input type="text" matInput name="amount" placeholder="Amount" ngModel>
+        </mat-form-field>
+        <mat-form-field class="address-field">
+          <input type="text" matInput [maxLength]="42" name="receiver" placeholder="Receiver Address" ngModel>
+        </mat-form-field>
+        <button mat-button id="issue">Issue Tokens</button> <!--Todo check if removable-->
+      </form>
+    </mat-card-content>
+  </mat-card>
+
+  <mat-card mat-card *ngIf="isOrchestrator || isIssuer"> <!--style="text-align: center;"-->
+    <mat-card-header>Add issuer to token</mat-card-header>
+    <mat-card-content>
+      <form #issuerForm="ngForm" (ngSubmit)="addIssuer(issuerForm)">
+        <mat-form-field class="address-field">
+          <input type="text" matInput [maxLength]="42" name="issuer" placeholder="Issuer Address" ngModel>
+        </mat-form-field>
+        <button mat-button id="issuer">Add Issuer</button>
+      </form>
+    </mat-card-content>
+  </mat-card>
+</mat-expansion-panel>
