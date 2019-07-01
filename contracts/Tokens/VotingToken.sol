@@ -20,6 +20,7 @@ contract VotingToken is DividendToken {
         uint128 value;
     }
 
+    event Test(uint timestamp, string msg); //TODO
 
     /*
      * @notice a ballot is a structure that corresponds to a single decision that can be
@@ -56,7 +57,23 @@ contract VotingToken is DividendToken {
 
     }*/
 
+    /*
+    * @info get all optionNames for a single ballot, indicated by its index in the public ballot array
+    * @param ballotIndex ballot to get optionNames from
+    * @returns all options of the ballot at the given index
+    */
+    function getOptionNames(uint ballotIndex) external view returns (bytes32[] memory){
+        return ballots[ballotIndex].optionNames;
+    }
 
+    /*
+    * @info get all voteCounts for a single ballot, indicated by its index in the public ballot array
+    * @param ballotIndex ballot to get voteCounts from
+    * @returns all voteCounts of the ballot at the given index, corresponding to the names from getOptionNames
+    */
+    function getOptionVoteCounts(uint ballotIndex) external view returns (uint256[] memory){
+        return ballots[ballotIndex].optionVoteCounts;
+    }
 
     /**
      * @dev Overwrites the ERC-20 function so that it will be used
@@ -104,6 +121,7 @@ contract VotingToken is DividendToken {
      * @param optionNames List of possible choices / answers to the question
     */
     function createBallot(bytes32 ballotName, bytes32[] memory optionNames, uint endDate) public onlyIssuer {
+        emit Test(endDate, "create");
         //Check the arguments for validity
         require(ballotName[0] != 0, "BallotName must not be empty!");
         require(optionNames.length > 0, "OptionNames must not be empty!");
@@ -114,7 +132,7 @@ contract VotingToken is DividendToken {
             tempOptionNames.push(optionNames[i]);
         }
 
-        Ballot memory ballot = Ballot({name : ballotName, cutoffBlockNumber : block.number,endDate : endDate, optionNames : tempOptionNames, optionVoteCounts : new uint[](optionNames.length)});
+        Ballot memory ballot = Ballot({name : ballotName, cutoffBlockNumber : block.number, endDate : endDate, optionNames : tempOptionNames, optionVoteCounts : new uint[](optionNames.length)});
         ballots.push(ballot);
 
         emit BallotCreated(ballotName);
@@ -128,6 +146,8 @@ contract VotingToken is DividendToken {
     */
     function vote(bytes32 ballotName, bytes32 optionName) public {
         //Search through all Ballots backwards, so that the recent ones are found first
+
+
         int found = - 1;
 
         for (int i = UIntConverterLib.toIntSafe(ballots.length); i > 0; i--) {//could still be optimized for gas
@@ -144,8 +164,11 @@ contract VotingToken is DividendToken {
         uint senderBalance = this.balanceOfAt(msg.sender, ballot.cutoffBlockNumber);
         require(senderBalance > 0, "Sender held no tokens at cutoff");
 
+        emit Test(ballot.endDate, "create");
+        emit Test(now, "create");
+
         //check if endDate has not passed
-        require(ballot.endDate>now, "Vote has ended.");
+        //require(ballot.endDate < now, "Vote has ended."); TODO
 
         //check if User already voted
         require(ballot.voted[msg.sender] == false, "Sender already voted");
@@ -169,9 +192,10 @@ contract VotingToken is DividendToken {
      * a time when to decide the winners, as the time may change due to not all voters being on chain
      * ATTENTION: does not deal with votes where two options are equal, this must be decided by the user via getBallot(bytes32 ballotName)
      * @param ballotName ballot to be queried
-    * @return name of the winning option and resp. vote count
+    * @return name of the winning option and resp. vote count, if it can be calculated, else returns error message and 0
     */
-    function currentlyWinningOption(bytes32 ballotName) public view returns (bytes32 winningOptionName, uint winningOptionVoteCount){
+    /*function currentlyWinningOption(bytes32 ballotName) public view returns (bytes32 winningOptionName, uint winningOptionVoteCount){
+
         Ballot memory ballot;
         //Search through all Ballots backwards, so that the recent ones are found first
         for (int i = UIntConverterLib.toIntSafe(ballots.length); i > 0; i--) {
@@ -179,8 +203,11 @@ contract VotingToken is DividendToken {
                 ballot = ballots[SafeMathInt.toUintSafe(i - 1)];
             }
         }
-        require(ballot.name.length > 0, "Ballot not found!");
-
+        //require(ballot.name.length > 0, "Ballot not found!");
+        //This is because some clients apparently can not deal with requires on view functions
+        if (ballot.name.length < 0) {
+            return (bytes32("Ballot not found!"), 0);
+        }
         uint winningVoteCount = 0;
         int winningOptionIndex = - 1;
         for (uint p = 0; p < ballot.optionVoteCounts.length; p++) {
@@ -189,12 +216,14 @@ contract VotingToken is DividendToken {
                 winningOptionIndex = UIntConverterLib.toIntSafe(p);
             }
         }
-        require(winningOptionIndex != - 1, "No votes yet!");
-
+        //require(winningOptionIndex != - 1,"No votes yet!");
+        if (winningOptionIndex == - 1) {
+            return (bytes32("No votes yet!"), 0);
+        }
 
         winningOptionName = ballot.optionNames[SafeMathInt.toUintSafe(winningOptionIndex)];
         winningOptionVoteCount = ballot.optionVoteCounts[SafeMathInt.toUintSafe(winningOptionIndex)];
-    }
+    }*/
 
 
     /**

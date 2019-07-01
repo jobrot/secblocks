@@ -9,7 +9,7 @@ import { CommonModule } from '@angular/common';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import {
   MatButtonModule,
-  MatCardModule, MatExpansionModule,
+  MatCardModule, MatChipsModule, MatExpansionModule,
   MatFormFieldModule, MatIconModule,
   MatInputModule, MatMenuModule,
   MatToolbarModule
@@ -29,7 +29,6 @@ import {TokenModule} from "./token/token.module";
   ],
   imports: [
     BrowserAnimationsModule,
-    //NgbModule,
     CommonModule,
     MatButtonModule,
     MatCardModule,
@@ -48,7 +47,8 @@ import {TokenModule} from "./token/token.module";
     TokenModule,
     MatMenuModule,
     MatIconModule,
-    MatExpansionModule
+    MatExpansionModule,
+    MatChipsModule
   ],
   providers: [],
   bootstrap: [AppComponent]

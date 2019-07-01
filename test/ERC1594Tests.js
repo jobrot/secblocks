@@ -84,7 +84,7 @@ contract('ERC1594, TransferQueues, Controller', function ([deployer, initialHold
         await this.token.setController(this.controller.address);
         await this.token.setTransferQueues(this.transferQueues.address);
         await this.transferQueues.transferOwnership(this.token.address);
-        await this.token.addIssuer(deployer);
+        await this.token.addIssuerOrchestrator(deployer);
         await this.token.mint(initialHolder, initialSupply);
 
 

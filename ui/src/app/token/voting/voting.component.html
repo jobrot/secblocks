@@ -1,0 +1,67 @@
+<app-dividend></app-dividend>
+
+<mat-expansion-panel>
+  <mat-expansion-panel-header>
+    <mat-panel-title>
+      Voting Functions
+    </mat-panel-title>
+    <mat-panel-description>
+      Voting and Creation of Ballots
+    </mat-panel-description>
+  </mat-expansion-panel-header>
+  <mat-card *ngIf="isIssuer">
+    <mat-card-header>Create new Ballots</mat-card-header>
+    <mat-card-content>
+      <form #createBallotForm="ngForm" (ngSubmit)="createBallot(createBallotForm)">
+        <mat-form-field>
+          <input type="text" matInput name="name" placeholder="Name of the Ballot" ngModel>
+        </mat-form-field>
+        <mat-form-field>
+          <input matInput type="datetime-local" name="endTime" placeholder="End of the Ballot" ngModel>
+        </mat-form-field>
+
+        <mat-form-field>
+          <mat-chip-list #chipList aria-label="Ballot Options">
+            <mat-chip *ngFor="let option of optionNames" [selectable]=true
+                      [removable]=true (removed)="removeChip(option)">
+              {{option}}
+              <mat-icon matChipRemove>cancel</mat-icon>
+            </mat-chip>
+            <input placeholder="New option..."
+                   [matChipInputFor]="chipList"
+                   [matChipInputSeparatorKeyCodes]="separatorKeysCodes"
+                   [matChipInputAddOnBlur]=true
+                   (matChipInputTokenEnd)="addChip($event)">
+          </mat-chip-list>
+        </mat-form-field>
+
+        <button mat-button>Create</button>
+      </form>
+    </mat-card-content>
+  </mat-card>
+  <mat-card>
+    <mat-card-header>Vote for Option in Ballot</mat-card-header>
+    <mat-card-content>
+      <form #voteForm="ngForm" (ngSubmit)="vote(voteForm)">
+        <mat-form-field>
+          <input type="text" matInput name="ballotName" placeholder="Ballot" ngModel>
+        </mat-form-field>
+        <mat-form-field>
+          <input type="text" matInput name="optionName" placeholder="Option" ngModel>
+        </mat-form-field>
+        <button mat-button>Vote</button>
+      </form>
+    </mat-card-content>
+  </mat-card>
+  <mat-card>
+    <mat-card-header>Check currently winning Option in Ballot</mat-card-header>
+    <mat-card-content>
+      <form #checkWinningForm="ngForm" (ngSubmit)="currentlyWinningOption(checkWinningForm)">
+        <mat-form-field>
+          <input type="text" matInput name="ballotName" placeholder="Ballot" ngModel>
+        </mat-form-field>
+        <button mat-button>Check</button>
+      </form>
+    </mat-card-content>
+  </mat-card>
+</mat-expansion-panel>

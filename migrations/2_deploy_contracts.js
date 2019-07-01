@@ -89,8 +89,8 @@ module.exports = async function (deployer) {
     votingToken.setTransferQueues(transferQueues.address);
     votingToken.setName(abi.rawEncode(['bytes32'], ['ExampleCompany']));
 
-    console.log("Deployer: ");
-    console.log(deployer); //TODO add address of deployer to votingtoken as issuer
+    //console.log("Deployer: ");
+    //console.log(deployer); //TODO add address of deployer to votingtoken as issuer
     //votingToken.addIssuer()
 
     /*

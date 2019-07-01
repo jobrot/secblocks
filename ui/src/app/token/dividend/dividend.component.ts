@@ -9,7 +9,7 @@ const Web3 = require('web3');
 
 declare let require: any; //declares that require in code is defined by external component, in this case web3.service
 const dividendToken_artifacts = require('../../../../../build/contracts/DividendToken.json');
-const emptyBytes = Web3.utils.fromAscii("");
+
 
 @Component({
   selector: 'app-dividend',

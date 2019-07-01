@@ -57,7 +57,7 @@ contract('DividendToken', function ([deployer, initialHolder, distributer, recip
         this.token = await DividendToken.at(this.proxy.address);
         await this.token.setController(this.controller.address);
         await this.token.setTransferQueues(this.transferQueues.address);
-        await this.token.addIssuer(deployer);
+        await this.token.addIssuerOrchestrator(deployer);
         await this.transferQueues.transferOwnership(this.token.address);
 
 

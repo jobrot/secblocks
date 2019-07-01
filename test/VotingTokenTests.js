@@ -54,7 +54,7 @@ contract('VotingToken', function ([deployer, initialHolder, recipient, issuer, a
         this.token = await VotingToken.at(this.proxy.address);
         await this.token.setController(this.controller.address);
         await this.token.setTransferQueues(this.transferQueues.address);
-        await this.token.addIssuer(deployer);
+        await this.token.addIssuerOrchestrator(deployer);
         await this.token.addIssuer(issuer);
         await this.transferQueues.transferOwnership(this.token.address);
         

@@ -8,6 +8,7 @@ import {RegistryComponent} from "../registry/registry/registry.component";
 import {KycComponent} from "../kyc/kyc/kyc.component";
 import {Erc1594Component} from "../token/erc1594/erc1594.component";
 import {DividendComponent} from "../token/dividend/dividend.component";
+import {VotingComponent} from "../token/voting/voting.component";
 
 const routes: Routes = [
   {
@@ -29,6 +30,10 @@ const routes: Routes = [
   {
     path: 'dividendToken/:address',
     component: DividendComponent
+  },
+  {
+    path: 'votingToken/:address',
+    component: VotingComponent
   }
 ];
 

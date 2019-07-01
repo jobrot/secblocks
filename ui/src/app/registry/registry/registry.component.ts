@@ -83,7 +83,7 @@ export class RegistryComponent implements OnInit {
       this.router.navigate(['dividendToken/'+address]);
     }
     else if(id.startsWith("VotingToken")){
-      this.router.navigate(['dividendToken/'+address]); //TODO
+      this.router.navigate(['votingToken/'+address]);
     }
     else {
       this.setStatusFailure("Could not Recognize this kind of Proxy. Please rename it according to the conventions in Registry.sol.")
