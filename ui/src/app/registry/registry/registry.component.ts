@@ -79,8 +79,11 @@ export class RegistryComponent implements OnInit {
     else if(id.startsWith("ERC1495")){
       this.router.navigate(['erc1594/'+address]);
     }
+    else if(id.startsWith("DividendToken")){
+      this.router.navigate(['dividendToken/'+address]);
+    }
     else if(id.startsWith("VotingToken")){
-      this.router.navigate(['erc1594/'+address]); //TODO
+      this.router.navigate(['dividendToken/'+address]); //TODO
     }
     else {
       this.setStatusFailure("Could not Recognize this kind of Proxy. Please rename it according to the conventions in Registry.sol.")

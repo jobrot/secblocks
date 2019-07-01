@@ -10,9 +10,10 @@ import {
   MatSelectModule
 } from "@angular/material";
 import {FormsModule} from "@angular/forms";
+import { DividendComponent } from './dividend/dividend.component';
 
 @NgModule({
-  declarations: [Erc1594Component],
+  declarations: [Erc1594Component, DividendComponent],
   imports: [
     CommonModule,
     MatCardModule,

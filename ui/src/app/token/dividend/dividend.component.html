@@ -1,0 +1,42 @@
+<app-erc1594></app-erc1594>
+
+<mat-expansion-panel>
+  <mat-expansion-panel-header>
+    <mat-panel-title>
+      Dividend Functions
+    </mat-panel-title>
+    <mat-panel-description>
+      Distributing and Withdrawing of Dividends
+    </mat-panel-description>
+  </mat-expansion-panel-header>
+  <mat-card>
+    <mat-card-header>Distribute ether dividends to {{name}} shareholders</mat-card-header>
+    <mat-card-content>
+      <form #dividendsForm="ngForm" (ngSubmit)="distributeDividends(dividendsForm)">
+        <mat-form-field>
+          <input type="text" matInput name="amount" placeholder="Dividends in ether" ngModel>
+        </mat-form-field>
+        <button mat-button>Distribute</button>
+      </form>
+    </mat-card-content>
+  </mat-card>
+  <mat-card>
+    <mat-card-header>Withdraw all dividends that you are enitled to</mat-card-header>
+    <mat-card-content>
+      <form #withdrawForm="ngForm" (ngSubmit)="withdrawDividends(withdrawForm)">
+        <button mat-button>Withdraw</button>
+      </form>
+    </mat-card-content>
+  </mat-card>
+  <mat-card>
+    <mat-card-header>Check withdrawable dividends of an address</mat-card-header>
+    <mat-card-content>
+      <form #checkDividendsForm="ngForm" (ngSubmit)="dividendOf(checkDividendsForm)">
+        <mat-form-field class="address-field">
+          <input type="text" matInput [maxLength]="42" name="owner" placeholder="Address" ngModel>
+        </mat-form-field>
+        <button mat-button>Check</button>
+      </form>
+    </mat-card-content>
+  </mat-card>
+</mat-expansion-panel>

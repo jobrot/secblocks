@@ -8,7 +8,7 @@ import {NgForm} from "@angular/forms";
 const abi = require('ethereumjs-abi');
 const Web3 = require('web3');
 
-declare let require: any; //declares that require is defined by external component, in this case web3.service
+declare let require: any; //declares that require in code is defined by external component, in this case web3.service
 const erc1594_artifacts = require('../../../../../build/contracts/ERC1594.json');
 const emptyBytes = Web3.utils.fromAscii("");
 

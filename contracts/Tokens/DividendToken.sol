@@ -120,7 +120,7 @@ contract DividendToken is ERC1594 {
     * @param _owner The address of a token holder.
     * @return The amount of dividend in wei that `_owner` has withdrawn.
     */
-    function withdrawnDividendOf(address _owner) public view returns(uint) {
+    function withdrawnDividendOf(address _owner) public view returns(uint) { //TODO maybe internal
         return withdrawnDividends[_owner];
     }
 
