@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import {Component, OnInit} from '@angular/core';
 import {ActivatedRoute} from "@angular/router";
 import {Web3Service} from "../../util/web3.service";
 import {MatChipInputEvent, MatSnackBar} from "@angular/material";
@@ -7,11 +7,13 @@ import {COMMA, ENTER} from '@angular/cdk/keycodes';
 
 const abi = require('ethereumjs-abi');
 const Web3 = require('web3');
+//const { BN } = require('openzeppelin-test-helpers'); //TODO
+
 
 declare let require: any; //declares that require in code is defined by external component, in this case web3.service
 const dividendToken_artifacts = require('../../../../../build/contracts/VotingToken.json');
 
-type UserData = { username: string, points: number };
+type Ballot = { name: string, endDate: Date, optionNames: string[], optionVoteCounts: number[] };
 
 @Component({
   selector: 'app-voting',
@@ -31,6 +33,8 @@ export class VotingComponent implements OnInit {
   account: string;
   /*  name: string;*/
   optionNames: string[] = [];
+
+  ballots: Ballot[] = [];
 
   status = '';
 
@@ -87,13 +91,15 @@ export class VotingComponent implements OnInit {
     console.log("form:");
 
     try {
-      console.log("Trying to create " + ballotName + " Ballot with endtime "+(endTime.getTime()/1000) );
-      let bytes32OptionNames =[];
-      this.optionNames.forEach( name => {
+      console.log("Trying to create " + ballotName + " Ballot with endtime " + endTime.getTime() / 1000); //endTime.getTime()/1000
+      let bytes32OptionNames = [];
+      this.optionNames.forEach(name => {
         bytes32OptionNames.push(Web3.utils.fromAscii(name));
       });
 
-      const transaction = await this.deployed.createBallot(Web3.utils.fromAscii(ballotName),bytes32OptionNames,endTime.getTime()/1000,{from: this.account });
+      const transaction = await this.deployed.createBallot(Web3.utils.fromAscii(ballotName), bytes32OptionNames, (endTime.getTime() / 1000), {from: this.account});
+      console.log("transaction:");
+      console.log(transaction);
       if (!transaction) {
         this.setStatusFailure('Creating Failed.');
       } else {
@@ -103,6 +109,34 @@ export class VotingComponent implements OnInit {
       this.showError(e);
     }
     this.updateBallots();
+  }
+
+  async updateBallots() {
+    console.log("Updating Ballots..");
+
+    const deployed = this.deployed;
+    /*let ballot = await deployed.ballots.call(10, {from: this.account});
+    let optionNames = await deployed.getOptionNames.call(0, {from: this.account});
+    let optionVoteCounts = await deployed.getOptionVoteCounts.call(0, {from: this.account});*/
+
+    this.ballots = [];
+    for (var i = 0; ; i++) {
+      try {
+        let ballot = (await deployed.ballots.call(i, {from: this.account}));
+        let optionNames = (await deployed.getOptionNames.call(0, {from: this.account})).map(Web3.utils.toUtf8);
+        let optionVoteCounts = await deployed.getOptionVoteCounts.call(0, {from: this.account});
+        let ballotname = Web3.utils.toUtf8(ballot.name)
+        console.log(ballotname);
+        console.log(new Date(ballot.endDate.toNumber()));
+        console.log(optionNames);
+        console.log(optionVoteCounts);
+        this.ballots.push({name: ballotname, endDate: new Date(ballot.endDate.toNumber()), optionNames: optionNames, optionVoteCounts: optionVoteCounts});
+      } catch (e) {
+        break;
+      }
+    }
+
+
   }
 
 
@@ -118,12 +152,12 @@ export class VotingComponent implements OnInit {
     let optionName = voteForm.value.optionName;
 
     try {
-      console.log("Trying to send vote for "+optionName + " in " + ballotName);
+      console.log("Trying to send vote for " + optionName + " in " + ballotName);
       const transaction = await this.deployed.vote(Web3.utils.fromAscii(ballotName), Web3.utils.fromAscii(optionName), {from: this.account});
       if (!transaction) {
         this.setStatusFailure('Voting Failed.');
       } else {
-        this.setStatusSuccess('Voting for ' + optionName+ ' successful.');
+        this.setStatusSuccess('Voting for ' + optionName + ' successful.');
       }
     } catch (e) {
       this.showError(e);
@@ -146,7 +180,7 @@ export class VotingComponent implements OnInit {
       const result = await this.deployed.currentlyWinningOption.call(Web3.utils.fromAscii(ballotName), {from: this.account});
       if (!result) {
         this.setStatusFailure('Checking Failed.');
-      } else if(result[1]<=0){
+      } else if (result[1] <= 0) {
         this.setStatusFailure(Web3.utils.toUtf8(result[0]));
       } else {
         this.setStatus('Option ' + Web3.utils.toUtf8(result[0]) + ' is currently winning with ' + result[1] + ' votes.');
@@ -154,25 +188,6 @@ export class VotingComponent implements OnInit {
     } catch (e) {
       this.showError(e);
     }
-  }
-
-  async updateBallots() {
-    console.log("Updating Ballots..");
-
-    const deployed = this.deployed;
-    let ballot = await deployed.ballots.call(0,{from: this.account});
-    let optionNames = await deployed.getOptionNames.call(0,{from: this.account});
-    let optionVoteCounts = await deployed.getOptionVoteCounts.call(0,{from: this.account});
-
-    /*for (let id of await deployed.getProxyIdList.call({from: this.account})) {
-      let asciiid = Web3.utils.toUtf8(id);
-      let address = await deployed.proxies.call(id);
-      this.proxyList.push({id: asciiid, address: address});
-    }*/
-    console.log(ballot);
-    console.log(optionNames);
-    console.log(optionVoteCounts);
-
   }
 
 
@@ -196,7 +211,6 @@ export class VotingComponent implements OnInit {
       this.optionNames.splice(index, 1);
     }
   }
-
 
 
   showError(e) {
@@ -227,35 +241,17 @@ export class VotingComponent implements OnInit {
       this.checkRole();
     });
   }
-  /*
 
-   updateRolesAndBalance() {
-     this.checkRole();
-     this.refreshBalance();
-   }
-
-   async refreshBalance() {
-     console.log('Refreshing balance');
-     try {
-       const balance = await this.deployed.balanceOf.call(this.account);
-       console.log('Found balance: ' + balance);
-       this.balance = balance;
-     } catch (e) {
-       console.log(e);
-       this.setStatusFailure('Error getting balance; see log.');
-     }
-   }
- */
-   checkRole() {
-     console.log("CheckingRole..");
-     if (this.account) {
-       this.deployed.isIssuer.call(this.account, {from: this.account}).then((is) => {
-         console.log("Is Issuer:");
-         console.log(is);
-         this.isIssuer = is;
-       });
-     }
-   }
+  checkRole() {
+    console.log("CheckingRole..");
+    if (this.account) {
+      this.deployed.isIssuer.call(this.account, {from: this.account}).then((is) => {
+        console.log("Is Issuer:");
+        console.log(is);
+        this.isIssuer = is;
+      });
+    }
+  }
 
   ngOnDestroy() {
     this.sub.unsubscribe();

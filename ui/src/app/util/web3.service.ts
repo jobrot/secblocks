@@ -80,7 +80,7 @@ export class Web3Service {
     return new Promise((resolve) => {
       this.web3.eth.getAccounts((err, accs) => {
         let emptyAccs: string[];
-        console.log('Getting accounts');
+        //console.log('Getting accounts');
         if (err != null) {
           console.warn('There was an error fetching your accounts.');
           resolve(['']);
@@ -91,7 +91,7 @@ export class Web3Service {
           console.warn('Couldn\'t get any accounts! Make sure your Ethereum client is configured correctly.');
           resolve(['']);
         }
-        console.log(accs);
+        //console.log(accs);
         resolve(accs);
       });
     });

@@ -163,8 +163,8 @@ contract('VotingToken', function ([deployer, initialHolder, recipient, issuer, a
             });
         });
 
-        describe('when the enddate has passed', function () {
-            it('reverts', async function () {
+        describe('when the enddate is in the future', function () {
+            it('votes, reverts on voting again', async function () {
 
                 await this.token.issue(initialHolder, 100, abi.rawEncode(['bytes'],['']));
                 await advanceBlock();

@@ -164,11 +164,11 @@ contract VotingToken is DividendToken {
         uint senderBalance = this.balanceOfAt(msg.sender, ballot.cutoffBlockNumber);
         require(senderBalance > 0, "Sender held no tokens at cutoff");
 
-        emit Test(ballot.endDate, "create");
-        emit Test(now, "create");
+        emit Test(ballot.endDate, "enddate");
+        emit Test(now, "now");
 
         //check if endDate has not passed
-        //require(ballot.endDate < now, "Vote has ended."); TODO
+        require(ballot.endDate > now, "Vote has ended."); //TODO
 
         //check if User already voted
         require(ballot.voted[msg.sender] == false, "Sender already voted");
@@ -194,7 +194,7 @@ contract VotingToken is DividendToken {
      * @param ballotName ballot to be queried
     * @return name of the winning option and resp. vote count, if it can be calculated, else returns error message and 0
     */
-    /*function currentlyWinningOption(bytes32 ballotName) public view returns (bytes32 winningOptionName, uint winningOptionVoteCount){
+    function currentlyWinningOption(bytes32 ballotName) public view returns (bytes32 winningOptionName, uint winningOptionVoteCount){
 
         Ballot memory ballot;
         //Search through all Ballots backwards, so that the recent ones are found first
@@ -205,7 +205,7 @@ contract VotingToken is DividendToken {
         }
         //require(ballot.name.length > 0, "Ballot not found!");
         //This is because some clients apparently can not deal with requires on view functions
-        if (ballot.name.length < 0) {
+        if (ballot.name.length <= 0) {
             return (bytes32("Ballot not found!"), 0);
         }
         uint winningVoteCount = 0;
@@ -223,7 +223,7 @@ contract VotingToken is DividendToken {
 
         winningOptionName = ballot.optionNames[SafeMathInt.toUintSafe(winningOptionIndex)];
         winningOptionVoteCount = ballot.optionVoteCounts[SafeMathInt.toUintSafe(winningOptionIndex)];
-    }*/
+    }
 
 
     /**
