@@ -22,6 +22,7 @@ import {KycModule} from "./kyc/kyc.module";
 import {TokenModule} from "./token/token.module";
 import {ControllerModule} from "./controller/controller.module";
 import {InsiderListModule} from "./insiderlist/insiderList.module";
+import {PepListModule} from "./peplist/pepList.module";
 
 @NgModule({
   declarations: [
@@ -46,6 +47,7 @@ import {InsiderListModule} from "./insiderlist/insiderList.module";
     RegistryModule,
     KycModule,
     InsiderListModule,
+    PepListModule,
     TokenModule,
     ControllerModule,
     MatMenuModule,

@@ -11,6 +11,7 @@ import {DividendComponent} from "../token/dividend/dividend.component";
 import {VotingComponent} from "../token/voting/voting.component";
 import {ControllerComponent} from "../controller/controller/controller.component";
 import {InsiderListComponent} from "../insiderlist/insiderList/insiderList.component";
+import {PepListComponent} from "../peplist/pepList/pepList.component";
 
 const routes: Routes = [
   {
@@ -28,6 +29,10 @@ const routes: Routes = [
   {
     path: 'ins/:address',
     component: InsiderListComponent
+  },
+  {
+    path: 'pep/:address',
+    component: PepListComponent
   },
   {
     path: 'erc1594/:address',
