@@ -8,18 +8,18 @@ const abi = require('ethereumjs-abi');
 const Web3 = require('web3');
 
 declare let require: any; //declares that require is defined by external component, in this case web3.service
-const kyc_artifacts = require('../../../../../build/contracts/KYCVerifier.json');
+const insiderList_artifacts = require('../../../../../build/contracts/InsiderListVerifier.json');
 
 @Component({
-  selector: 'app-kyc',
-  templateUrl: './kyc.component.html',
-  styleUrls: ['./kyc.component.css']
+  selector: 'app-insiderList',
+  templateUrl: './insiderList.component.html',
+  styleUrls: ['./insiderList.component.css']
 })
-export class KycComponent implements OnInit, OnDestroy {
+export class InsiderListComponent implements OnInit, OnDestroy {
   address: string;
   sub: any;
 
-  kyc: any;
+  insiderList: any;
   deployed: any;
   isListManager: boolean;
   account: string;
@@ -38,11 +38,11 @@ export class KycComponent implements OnInit, OnDestroy {
 
 
   ngOnInit() {
-    this.web3Service.artifactsToContract(kyc_artifacts)
-      .then((KYCAbstraction) => {
-        this.kyc = KYCAbstraction;
+    this.web3Service.artifactsToContract(insiderList_artifacts)
+      .then((InsiderListAbstraction) => {
+        this.insiderList = InsiderListAbstraction;
 
-        this.kyc.at(Web3.utils.toChecksumAddress(this.address)).then(deployed => {
+        this.insiderList.at(Web3.utils.toChecksumAddress(this.address)).then(deployed => {
           console.log(deployed);
           this.deployed = deployed;
 
@@ -61,20 +61,20 @@ export class KycComponent implements OnInit, OnDestroy {
     if (!addForm.valid) {
       this.setStatusFailure('Form invalid');
     }
-    if (!this.kyc) {
-      this.setStatusFailure('kyc is not loaded, unable to add Address');
+    if (!this.insiderList) {
+      this.setStatusFailure('insiderList is not loaded, unable to add Address');
       return;
     }
     let address = addForm.value.address;
 
-    console.log('Adding ' + address + ' to whitelist.');
+    console.log('Adding ' + address + ' to blacklist.');
     try {
 
-      const transaction = await this.deployed.addAddressToWhitelist.sendTransaction(Web3.utils.toChecksumAddress(address), {from: this.account});
+      const transaction = await this.deployed.addAddressToBlacklist.sendTransaction(Web3.utils.toChecksumAddress(address), {from: this.account});
       if (!transaction) {
-        this.setStatusFailure('Whitelist Adding Failed.');
+        this.setStatusFailure('Blacklist Adding Failed.');
       } else {
-        this.setStatusSuccess('Address ' + address + ' added to whitelist');
+        this.setStatusSuccess('Address ' + address + ' added to blacklist');
       }
     } catch (e) {
       this.showError(e);
@@ -86,20 +86,20 @@ export class KycComponent implements OnInit, OnDestroy {
     if (!removeForm.valid) {
       this.setStatusFailure('Form invalid');
     }
-    if (!this.kyc) {
-      this.setStatusFailure('kyc is not loaded, unable to remove Address');
+    if (!this.insiderList) {
+      this.setStatusFailure('insiderList is not loaded, unable to remove Address');
       return;
     }
     let address = removeForm.value.address;
 
-    console.log('Removing ' + address + ' from whitelist.');
+    console.log('Removing ' + address + ' from blacklist.');
     try {
 
-      const transaction = await this.deployed.removeAddressFromWhitelist.sendTransaction(Web3.utils.toChecksumAddress(address), {from: this.account});
+      const transaction = await this.deployed.removeAddressFromBlacklist.sendTransaction(Web3.utils.toChecksumAddress(address), {from: this.account});
       if (!transaction) {
-        this.setStatusFailure('Whitelist Removing Failed.');
+        this.setStatusFailure('Blacklist Removing Failed.');
       } else {
-        this.setStatusSuccess('Address ' + address + ' removed from whitelist');
+        this.setStatusSuccess('Address ' + address + ' removed from blacklist');
       }
     } catch (e) {
       this.showError(e);
@@ -110,19 +110,19 @@ export class KycComponent implements OnInit, OnDestroy {
     if (!checkForm.valid) {
       this.setStatusFailure('Form invalid');
     }
-    if (!this.kyc) {
-      this.setStatusFailure('kyc is not loaded, unable to check Address');
+    if (!this.insiderList) {
+      this.setStatusFailure('insiderList is not loaded, unable to check Address');
       return;
     }
     let address = checkForm.value.address;
 
-    console.log('Checking ' + address + ' on whitelist.');
+    console.log('Checking ' + address + ' on blacklist.');
 
-    const onWhitelist = await this.deployed._onWhitelist.call(Web3.utils.toChecksumAddress(address), {from: this.account});
-    if (!onWhitelist) {
-      this.setStatusFailure(address + ' is not on Whitelist');
+    const onBlacklist = await this.deployed._onBlacklist.call(Web3.utils.toChecksumAddress(address), {from: this.account});
+    if (!onBlacklist) {
+      this.setStatusSuccess(address + ' is not on Blacklist');
     } else {
-      this.setStatusSuccess(address + ' is on Whitelist');
+      this.setStatusFailure(address + ' is on Blacklist');
     }
 
   }
@@ -151,7 +151,7 @@ export class KycComponent implements OnInit, OnDestroy {
   checkRole() {
     console.log("CheckingRole..");
     if(this.account) {
-      this.deployed.isKYCListManager.call(this.account, {from: this.account}).then((is) => {
+      this.deployed.isInsiderListManager.call(this.account, {from: this.account}).then((is) => {
         console.log("Is ListManager:");
         console.log(is);
         this.isListManager = is;

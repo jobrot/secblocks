@@ -76,6 +76,12 @@ export class RegistryComponent implements OnInit {
     if(id.startsWith("KYC")){
       this.router.navigate(['kyc/'+address]);
     }
+    else if(id.startsWith("InsiderList")){
+      this.router.navigate(['ins/'+address]);
+    }
+    else if(id.startsWith("PEPList")){
+      this.router.navigate(['pep/'+address]);
+    }
     else if(id.startsWith("ERC1495")){
       this.router.navigate(['erc1594/'+address]);
     }

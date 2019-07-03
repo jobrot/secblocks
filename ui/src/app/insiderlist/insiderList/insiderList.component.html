@@ -1,0 +1,51 @@
+<mat-card >
+  <mat-card-header>
+    <mat-card-title>
+      <mat-icon mat-card-avatar>check_circle_outline</mat-icon>
+      Check if address is blacklisted
+    </mat-card-title>
+  </mat-card-header>
+  <mat-card-content>
+    <form #checkForm="ngForm" (ngSubmit)="checkAddress(checkForm)">
+      <mat-form-field class="address-field" hintLabel="Address to check">
+        <input matInput type="text" [maxLength]="42" ngModel name="address" placeholder="Address" required>
+      </mat-form-field>
+      <button mat-button type="submit">Check</button>
+    </form>
+  </mat-card-content>
+</mat-card>
+
+
+<mat-card *ngIf="isListManager" >
+  <mat-card-header>
+    <mat-card-title>
+      <mat-icon mat-card-avatar>add</mat-icon>
+      Add address to Blacklist
+    </mat-card-title>
+  </mat-card-header>
+  <mat-card-content>
+    <form #addForm="ngForm"  (ngSubmit)="addAddress(addForm)">
+      <mat-form-field  class="address-field" hintLabel="Address to blacklist">
+        <input matInput type="text" [maxLength]="42" ngModel name="address" placeholder="Address" required>
+      </mat-form-field>
+      <button mat-button type="submit">Add</button>
+    </form>
+  </mat-card-content>
+</mat-card>
+
+<mat-card *ngIf="isListManager" >
+  <mat-card-header>
+    <mat-card-title>
+      <mat-icon mat-card-avatar>remove</mat-icon>
+      Remove address from Blacklist
+    </mat-card-title>
+  </mat-card-header>
+  <mat-card-content>
+    <form #removeForm="ngForm" (ngSubmit)="removeAddress(removeForm)">
+      <mat-form-field class="address-field" hintLabel="Address to de-blacklist">
+        <input matInput type="text" [maxLength]="42" ngModel name="address" placeholder="Address" required>
+      </mat-form-field>
+      <button mat-button type="submit">Remove</button>
+    </form>
+  </mat-card-content>
+</mat-card>

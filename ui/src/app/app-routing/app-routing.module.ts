@@ -10,6 +10,7 @@ import {Erc1594Component} from "../token/erc1594/erc1594.component";
 import {DividendComponent} from "../token/dividend/dividend.component";
 import {VotingComponent} from "../token/voting/voting.component";
 import {ControllerComponent} from "../controller/controller/controller.component";
+import {InsiderListComponent} from "../insiderlist/insiderList/insiderList.component";
 
 const routes: Routes = [
   {
@@ -23,6 +24,10 @@ const routes: Routes = [
   {
     path: 'kyc/:address',
     component: KycComponent
+  },
+  {
+    path: 'ins/:address',
+    component: InsiderListComponent
   },
   {
     path: 'erc1594/:address',

@@ -21,6 +21,7 @@ import {RouterModule} from "@angular/router";
 import {KycModule} from "./kyc/kyc.module";
 import {TokenModule} from "./token/token.module";
 import {ControllerModule} from "./controller/controller.module";
+import {InsiderListModule} from "./insiderlist/insiderList.module";
 
 @NgModule({
   declarations: [
@@ -44,6 +45,7 @@ import {ControllerModule} from "./controller/controller.module";
     MetaModule,
     RegistryModule,
     KycModule,
+    InsiderListModule,
     TokenModule,
     ControllerModule,
     MatMenuModule,
