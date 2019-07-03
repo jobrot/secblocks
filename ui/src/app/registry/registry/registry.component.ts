@@ -85,6 +85,9 @@ export class RegistryComponent implements OnInit {
     else if(id.startsWith("VotingToken")){
       this.router.navigate(['votingToken/'+address]);
     }
+    else if(id.startsWith("Controller")){
+      this.router.navigate(['controller/'+address]);
+    }
     else {
       this.setStatusFailure("Could not Recognize this kind of Proxy. Please rename it according to the conventions in Registry.sol.")
     }
@@ -93,10 +96,10 @@ export class RegistryComponent implements OnInit {
 
   async createProxy(createForm: NgForm) {
     if(!createForm.valid){
-      this.setStatus('Form invalid');
+      this.setStatusFailure('Form invalid');
     }
     if (!this.registry) {
-      this.setStatus('registry is not loaded, unable to create Proxy');
+      this.setStatusFailure('registry is not loaded, unable to create Proxy');
       return;
     }
     let proxyId = createForm.value.proxyId;
@@ -106,24 +109,24 @@ export class RegistryComponent implements OnInit {
 
       const transaction = await this.deployed.createProxy.sendTransaction(Web3.utils.fromAscii(proxyId), {from: this.account});
       if (!transaction) {
-        this.setStatus('Proxy Creation Failed.');
+        this.setStatusFailure('Proxy Creation Failed.');
       } else {
-        this.setStatus('Proxy' + proxyId + ' created at '+ transaction.logs[0].args.proxyAddress);
+        this.setStatusSuccess('Proxy' + proxyId + ' created at '+ transaction.logs[0].args.proxyAddress);
         this.updateProxies()
       }
     } catch (e) {
       console.log(e);
-      this.setStatus('Error creating proxy; see log.');
+      this.setStatusFailure('Error creating proxy; see log.');
     }
   }
 
 
   async addProxy(addForm: NgForm) {
     if(!addForm.valid){
-      this.setStatus('Form invalid');
+      this.setStatusFailure('Form invalid');
     }
     if (!this.registry) {
-      this.setStatus('registry is not loaded, unable to add Proxy');
+      this.setStatusFailure('registry is not loaded, unable to add Proxy');
       return;
     }
     let proxyId = addForm.value.proxyId;
@@ -134,24 +137,24 @@ export class RegistryComponent implements OnInit {
 
       const transaction = await this.deployed.addProxy.sendTransaction(Web3.utils.fromAscii(proxyId),Web3.utils.toChecksumAddress(address), {from: this.account});
       if (!transaction) {
-        this.setStatus('Proxy Adding Failed.');
+        this.setStatusFailure('Proxy Adding Failed.');
       } else {
-        this.setStatus('Proxy' + proxyId + ' added at '+ transaction.logs[0].args.proxyAddress);
+        this.setStatusSuccess('Proxy' + proxyId + ' added at '+ transaction.logs[0].args.proxyAddress);
         this.updateProxies()
       }
     } catch (e) {
       console.log(e);
-      this.setStatus('Error adding proxy; see log.');
+      this.setStatusFailure('Error adding proxy; see log.');
     }
   }
 
 
   async updateProxy(updateForm: NgForm) {
     if(!updateForm.valid){
-      this.setStatus('Form invalid');
+      this.setStatusFailure('Form invalid');
     }
     if (!this.registry) {
-      this.setStatus('registry is not loaded, unable to update Proxy');
+      this.setStatusFailure('registry is not loaded, unable to update Proxy');
       return;
     }
     let proxyId = updateForm.value.proxyId;
@@ -164,14 +167,14 @@ export class RegistryComponent implements OnInit {
       // console.log("t");
       // console.log(transaction);
       if (!transaction) {
-        this.setStatus('Proxy Updating Failed.');
+        this.setStatusFailure('Proxy Updating Failed.');
       } else {
-        this.setStatus('Proxy' + proxyId + ' updated at '+ transaction.logs[0].args.proxyAddress);
+        this.setStatusSuccess('Proxy' + proxyId + ' updated at '+ transaction.logs[0].args.proxyAddress);
         this.updateProxies()
       }
     } catch (e) {
       console.log(e);
-      this.setStatus('Error updating proxy; see log.');
+      this.setStatusFailure('Error updating proxy; see log.');
     }
   }
 
@@ -182,6 +185,10 @@ export class RegistryComponent implements OnInit {
 
   setStatusFailure(status) {
     this.matSnackBar.open(status, null, {duration: 3000, panelClass: ['style-failure'],});
+  }
+
+  setStatusSuccess(status) {
+    this.matSnackBar.open(status, null, {duration: 3000, panelClass: ['style-success'],});
   }
 
   watchAccount() {

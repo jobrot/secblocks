@@ -11,7 +11,6 @@
       <mat-list-item *ngFor="let proxy of proxyList">
         <a matLine (click)="route(proxy.id,proxy.address.proxyAddress)" >{{ proxy.id }}  <span
           style=" float:right; font-size:0.75em ">{{proxy.address.proxyAddress}}</span></a>
-<!--href="/kyc/{{ proxy.address.proxyAddress}}"-->
 
       </mat-list-item>
     </mat-nav-list>
@@ -48,8 +47,8 @@
       <mat-form-field hintLabel="ContracttypeCompanyName, max 32 chars">
         <input matInput type="text" [maxLength]="32" ngModel name="proxyId" placeholder="ProxyID" required>
       </mat-form-field>
-      <mat-form-field hintLabel="Deployed address of proxy">
-        <input matInput class="address-field" type="text" [maxLength]="42" ngModel name="address" placeholder="Address" required>
+      <mat-form-field class="address-field" hintLabel="Deployed address of proxy">
+        <input matInput type="text" [maxLength]="42" ngModel name="address" placeholder="Address" required>
       </mat-form-field>
       <button mat-button type="submit">Add</button>
     </form>
@@ -69,8 +68,8 @@
       <mat-form-field hintLabel="ContracttypeCompanyName, max 32 chars">
         <input matInput type="text" [maxLength]="32" ngModel name="proxyId" placeholder="ProxyID" required>
       </mat-form-field>
-      <mat-form-field hintLabel="Deployed address of proxy">
-        <input matInput type="text" class="address-field" [maxLength]="42" ngModel name="address" placeholder="Address" required>
+      <mat-form-field class="address-field" hintLabel="Deployed address of proxy">
+        <input matInput type="text"  [maxLength]="42" ngModel name="address" placeholder="Address" required>
       </mat-form-field>
       <button mat-button type="submit">Update</button>
     </form>

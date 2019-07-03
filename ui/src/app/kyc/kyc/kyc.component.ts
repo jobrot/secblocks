@@ -59,10 +59,10 @@ export class KycComponent implements OnInit, OnDestroy {
 
   async addAddress(addForm: NgForm) {
     if (!addForm.valid) {
-      this.setStatus('Form invalid');
+      this.setStatusFailure('Form invalid');
     }
     if (!this.kyc) {
-      this.setStatus('kyc is not loaded, unable to add Address');
+      this.setStatusFailure('kyc is not loaded, unable to add Address');
       return;
     }
     let address = addForm.value.address;
@@ -72,23 +72,23 @@ export class KycComponent implements OnInit, OnDestroy {
 
       const transaction = await this.deployed.addAddressToWhitelist.sendTransaction(Web3.utils.toChecksumAddress(address), {from: this.account});
       if (!transaction) {
-        this.setStatus('Whitelist Adding Failed.');
+        this.setStatusFailure('Whitelist Adding Failed.');
       } else {
-        this.setStatus('Address ' + address + ' added to whitelist');
+        this.setStatusSuccess('Address ' + address + ' added to whitelist');
       }
     } catch (e) {
       console.log(e);
-      this.setStatus('Error adding to whitelist; see log.');
+      this.setStatusFailure('Error adding to whitelist; see log.');
     }
   }
 
 
   async removeAddress(removeForm: NgForm) {
     if (!removeForm.valid) {
-      this.setStatus('Form invalid');
+      this.setStatusFailure('Form invalid');
     }
     if (!this.kyc) {
-      this.setStatus('kyc is not loaded, unable to remove Address');
+      this.setStatusFailure('kyc is not loaded, unable to remove Address');
       return;
     }
     let address = removeForm.value.address;
@@ -98,22 +98,22 @@ export class KycComponent implements OnInit, OnDestroy {
 
       const transaction = await this.deployed.removeAddressFromWhitelist.sendTransaction(Web3.utils.toChecksumAddress(address), {from: this.account});
       if (!transaction) {
-        this.setStatus('Whitelist Removing Failed.');
+        this.setStatusFailure('Whitelist Removing Failed.');
       } else {
-        this.setStatus('Address ' + address + ' removed from whitelist');
+        this.setStatusSuccess('Address ' + address + ' removed from whitelist');
       }
     } catch (e) {
       console.log(e);
-      this.setStatus('Error removing from whitelist; see log.');
+      this.setStatusFailure('Error removing from whitelist; see log.');
     }
   }
 
   async checkAddress(checkForm: NgForm) {
     if (!checkForm.valid) {
-      this.setStatus('Form invalid');
+      this.setStatusFailure('Form invalid');
     }
     if (!this.kyc) {
-      this.setStatus('kyc is not loaded, unable to check Address');
+      this.setStatusFailure('kyc is not loaded, unable to check Address');
       return;
     }
     let address = checkForm.value.address;

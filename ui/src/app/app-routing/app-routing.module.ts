@@ -9,6 +9,7 @@ import {KycComponent} from "../kyc/kyc/kyc.component";
 import {Erc1594Component} from "../token/erc1594/erc1594.component";
 import {DividendComponent} from "../token/dividend/dividend.component";
 import {VotingComponent} from "../token/voting/voting.component";
+import {ControllerComponent} from "../controller/controller/controller.component";
 
 const routes: Routes = [
   {
@@ -34,7 +35,11 @@ const routes: Routes = [
   {
     path: 'votingToken/:address',
     component: VotingComponent
-  }
+  },
+  {
+    path: 'controller/:address',
+    component: ControllerComponent
+  },
 ];
 
 @NgModule({

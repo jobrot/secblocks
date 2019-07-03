@@ -1,0 +1,103 @@
+<mat-card>
+  <mat-card-header>
+    <mat-card-title>
+      <mat-icon mat-card-avatar>view_list</mat-icon>
+      Registered verifiers in Controller
+    </mat-card-title>
+
+  </mat-card-header>
+  <mat-card-content>
+    <mat-nav-list>
+      <mat-list-item>
+        <a matLine href="/kyc/{{ kycVerifier }}">KYCVerifier <span
+          style=" float:right; font-size:0.75em ">{{ kycVerifier }}</span></a>
+      </mat-list-item>
+      <mat-list-item>
+        <a matLine href="/ins/{{ insiderListVerifier }}">InsiderListVerifier <span
+          style=" float:right; font-size:0.75em ">{{ insiderListVerifier }}</span></a>
+      </mat-list-item>
+      <mat-list-item>
+        <a matLine href="/pep/{{ pepListVerifier }}">PEPListVerifier <span
+          style=" float:right; font-size:0.75em ">{{ pepListVerifier }}</span></a>
+      </mat-list-item>
+      <mat-list-item *ngFor="let verifier of generalVerifiers">
+        <p matLine>General Verifier <span
+          style=" float:right; font-size:0.75em ">{{verifier}}</span></p>
+          <button *ngIf="isOrchestrator" mat-icon-button aria-label="Remove this Verifier" (click)="removeGeneralVerifier(verifier)">
+            <mat-icon>delete</mat-icon>
+          </button>
+      </mat-list-item>
+    </mat-nav-list>
+  </mat-card-content>
+</mat-card>
+
+
+<mat-card *ngIf="isOrchestrator">
+  <mat-card-header>
+    <mat-card-title>
+      <mat-icon mat-card-avatar>add</mat-icon>
+      Set KYC Verifier
+    </mat-card-title>
+  </mat-card-header>
+  <mat-card-content>
+    <form #kycForm="ngForm" (ngSubmit)="setKYC(kycForm)">
+      <mat-form-field class="address-field" hintLabel="Deployed address of KYCVerifier">
+        <input matInput type="text" [maxLength]="42" ngModel name="address" placeholder="Address" required>
+      </mat-form-field>
+      <button mat-button>Set</button>
+    </form>
+  </mat-card-content>
+</mat-card>
+
+
+<mat-card *ngIf="isOrchestrator">
+  <mat-card-header>
+    <mat-card-title>
+      <mat-icon mat-card-avatar>add</mat-icon>
+      Set PEPList Verifier
+    </mat-card-title>
+  </mat-card-header>
+  <mat-card-content>
+    <form #pepForm="ngForm" (ngSubmit)="setPEP(pepForm)">
+      <mat-form-field class="address-field" hintLabel="Deployed address of PEPListVerifier">
+        <input matInput type="text" [maxLength]="42" ngModel name="address" placeholder="Address" required>
+      </mat-form-field>
+      <button mat-button>Set</button>
+    </form>
+  </mat-card-content>
+</mat-card>
+
+<mat-card *ngIf="isOrchestrator">
+  <mat-card-header>
+    <mat-card-title>
+      <mat-icon mat-card-avatar>add</mat-icon>
+      Set InsiderList Verifier
+    </mat-card-title>
+  </mat-card-header>
+  <mat-card-content>
+    <form #insiderForm="ngForm" (ngSubmit)="setInsiderList(insiderForm)">
+      <mat-form-field class="address-field" hintLabel="Deployed address of InsiderListVerifier">
+        <input matInput type="text" [maxLength]="42" ngModel name="address" placeholder="Address" required>
+      </mat-form-field>
+      <button mat-button>Set</button>
+    </form>
+  </mat-card-content>
+</mat-card>
+
+
+<mat-card *ngIf="isOrchestrator">
+  <mat-card-header>
+    <mat-card-title>
+      <mat-icon mat-card-avatar>add</mat-icon>
+      Add General Verifier
+    </mat-card-title>
+  </mat-card-header>
+  <mat-card-content>
+    <form #veriferForm="ngForm" (ngSubmit)="addGeneralVerifier(veriferForm)">
+      <mat-form-field class="address-field" hintLabel="Deployed address of a general Verifier">
+        <input matInput type="text" [maxLength]="42" ngModel name="address" placeholder="Address" required>
+      </mat-form-field>
+      <button mat-button>Add</button>
+    </form>
+  </mat-card-content>
+</mat-card>

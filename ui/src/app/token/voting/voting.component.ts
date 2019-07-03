@@ -115,9 +115,6 @@ export class VotingComponent implements OnInit {
     console.log("Updating Ballots..");
 
     const deployed = this.deployed;
-    /*let ballot = await deployed.ballots.call(10, {from: this.account});
-    let optionNames = await deployed.getOptionNames.call(0, {from: this.account});
-    let optionVoteCounts = await deployed.getOptionVoteCounts.call(0, {from: this.account});*/
 
     this.ballots = [];
     for (var i = 0; ; i++) {
@@ -126,10 +123,10 @@ export class VotingComponent implements OnInit {
         let optionNames = (await deployed.getOptionNames.call(0, {from: this.account})).map(Web3.utils.toUtf8);
         let optionVoteCounts = await deployed.getOptionVoteCounts.call(0, {from: this.account});
         let ballotname = Web3.utils.toUtf8(ballot.name)
-        console.log(ballotname);
+        /*console.log(ballotname);
         console.log(new Date(ballot.endDate.toNumber()));
         console.log(optionNames);
-        console.log(optionVoteCounts);
+        console.log(optionVoteCounts);*/
         this.ballots.push({name: ballotname, endDate: new Date(ballot.endDate.toNumber()), optionNames: optionNames, optionVoteCounts: optionVoteCounts});
       } catch (e) {
         break;

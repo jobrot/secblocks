@@ -18,9 +18,9 @@ import { HeaderComponent } from './header/header.component';
 import {AppRoutingModule} from "./app-routing/app-routing.module";
 import {RegistryModule} from "./registry/registry.module";
 import {RouterModule} from "@angular/router";
-import {NgbModule} from "@ng-bootstrap/ng-bootstrap";
 import {KycModule} from "./kyc/kyc.module";
 import {TokenModule} from "./token/token.module";
+import {ControllerModule} from "./controller/controller.module";
 
 @NgModule({
   declarations: [
@@ -45,6 +45,7 @@ import {TokenModule} from "./token/token.module";
     RegistryModule,
     KycModule,
     TokenModule,
+    ControllerModule,
     MatMenuModule,
     MatIconModule,
     MatExpansionModule,
