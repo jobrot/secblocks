@@ -1,6 +1,6 @@
 <app-dividend></app-dividend>
 
-<mat-expansion-panel>
+<mat-expansion-panel> <!--style="text-align: left;"-->
   <mat-expansion-panel-header>
     <mat-panel-title>
       Voting Functions
@@ -20,7 +20,7 @@
           <input matInput type="datetime-local" name="endTime" placeholder="End of the Ballot" ngModel>
         </mat-form-field>
 
-        <mat-form-field>
+        <mat-form-field style="width: 500px;">
           <mat-chip-list #chipList aria-label="Ballot Options">
             <mat-chip *ngFor="let option of optionNames" [selectable]=true
                       [removable]=true (removed)="removeChip(option)">
@@ -67,15 +67,23 @@
   <mat-card>
     <mat-card-header>List of Ballots</mat-card-header>
     <mat-card-content>
-      <mat-nav-list>
+      <mat-list>
         <mat-list-item *ngFor="let ballot of ballots">
           <h3 matLine> {{ballot.name}} </h3>
           <p matLine> End Date: {{ballot.endDate}} </p>
-          <p matLine> Options: <span *ngFor="let optionName of ballot.optionNames"> {{optionName}}</span> </p>
-          <p matLine> Options: <span *ngFor="let optionCount of ballot.optionVoteCounts"> {{optionCount}}</span> </p>
 
+          <table matLine align = "center" style=" margin: 0 auto; ">
+            <tr>
+              <th >Options</th>
+              <th style="padding-left:10px" *ngFor="let optionName of ballot.optionNames"> {{optionName}} </th>
+            </tr>
+            <tr>
+              <td>Votes</td>
+              <td  style="padding-left:10px" *ngFor="let optionCount of ballot.optionVoteCounts">  {{optionCount}} </td>
+            </tr>
+          </table>
         </mat-list-item>
-      </mat-nav-list>
+      </mat-list>
     </mat-card-content>
   </mat-card>
 </mat-expansion-panel>

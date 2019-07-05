@@ -120,8 +120,8 @@ export class VotingComponent implements OnInit {
     for (var i = 0; ; i++) {
       try {
         let ballot = (await deployed.ballots.call(i, {from: this.account}));
-        let optionNames = (await deployed.getOptionNames.call(0, {from: this.account})).map(Web3.utils.toUtf8);
-        let optionVoteCounts = await deployed.getOptionVoteCounts.call(0, {from: this.account});
+        let optionNames = (await deployed.getOptionNames.call(i, {from: this.account})).map(Web3.utils.toUtf8);
+        let optionVoteCounts = await deployed.getOptionVoteCounts.call(i, {from: this.account});
         let ballotname = Web3.utils.toUtf8(ballot.name)
         /*console.log(ballotname);
         console.log(new Date(ballot.endDate.toNumber()));
@@ -159,6 +159,7 @@ export class VotingComponent implements OnInit {
     } catch (e) {
       this.showError(e);
     }
+    this.updateBallots();
   }
 
   async currentlyWinningOption(form: NgForm) {
