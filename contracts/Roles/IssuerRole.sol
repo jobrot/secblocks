@@ -1,4 +1,4 @@
-pragma solidity ^0.5.0;
+pragma solidity ^0.5.4;
 
 //import "openzeppelin-solidity/contracts/access/Roles.sol";
 import "../Openzeppelin/Roles.sol";
@@ -26,11 +26,11 @@ contract IssuerRole {
         return _issuers.has(account);
     }
 
-    function addIssuer(address account) public onlyIssuer {
+    function addIssuer(address account) external onlyIssuer {
         _addIssuer(account);
     }
 
-    function renounceIssuer() public {
+    function renounceIssuer() external {
         _removeIssuer(msg.sender);
     }
 

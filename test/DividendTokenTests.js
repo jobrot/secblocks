@@ -37,7 +37,7 @@ contract('DividendToken', function ([deployer, initialHolder, distributer, recip
 
 
         //create SUT
-        this.transferQueues = await TransferQueues.new(); //TODO if bored, maybe proxy transferqueues in tests
+        this.transferQueues = await TransferQueues.new();
         this.controller = await Controller.new(); //this.kycMock.address, this.insiderListMock.address, this.pepListMock.address
 
         //not via mocked Token and initial supply, because erc20 functionality tests are not required anymore here, and

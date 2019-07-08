@@ -9,8 +9,6 @@ import "../Roles/InsiderListManagerRole.sol";
 // This contract in combination with the stored customer information from the decentralized data storage of customers
 // constitutes an insider list according to https://eur-lex.europa.eu/legal-content/DE/TXT/PDF/?uri=CELEX:32016R0347&from=DE
 contract InsiderListVerifier is IVerifier, InsiderListManagerRole {
-    byte internal constant STATUS_SUCCESS = 0x51; // Uses status codes from ERC-1066
-    byte internal constant STATUS_FAIL = 0x50;
 
     event AddedToBlacklist(address added);
     event RemovedFromBlacklist(address added);

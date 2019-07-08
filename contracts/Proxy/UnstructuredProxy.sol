@@ -1,4 +1,4 @@
-pragma solidity ^0.5.0;
+pragma solidity ^0.5.4;
 
 contract UnstructuredProxy {
     bytes32 private constant ownerPosition = keccak256("secblocks.proxy.owner");
@@ -18,7 +18,7 @@ contract UnstructuredProxy {
     * and follow the same storage layout (no switching of variables etc.)
     * Contract must be Initializable
    */
-    function upgradeToInit(address newImplementation) public onlyProxyOwner {
+    function upgradeToInit(address newImplementation) external onlyProxyOwner {
         address currentImplementation = implementation();
         require(currentImplementation != newImplementation, "Upgrading address identical to current Address");
         setImplementation(newImplementation);
@@ -35,7 +35,7 @@ contract UnstructuredProxy {
     * Attention! Upgraded contract must extend the original implementation
     * and follow the same storage layout (no switching of variables etc.)
     */
-    function upgradeTo(address newImplementation) public onlyProxyOwner {
+    function upgradeTo(address newImplementation) external onlyProxyOwner {
         address currentImplementation = implementation();
         require(currentImplementation != newImplementation, "Upgrading address identical to current Address");
         setImplementation(newImplementation);
@@ -60,7 +60,7 @@ contract UnstructuredProxy {
     /**
     * @dev sets new Proxy owner. ATTENTION! Removes the owner rights of the executing address!
     */
-    function setProxyOwner(address newProxyOwner) public onlyProxyOwner {
+    function setProxyOwner(address newProxyOwner) external onlyProxyOwner {
         require(newProxyOwner != address(0));
         _setProxyOwner(newProxyOwner);
     }

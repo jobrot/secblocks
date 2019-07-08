@@ -1,4 +1,4 @@
-pragma solidity ^0.5.0;
+pragma solidity ^0.5.4;
 
 //import "openzeppelin-solidity/contracts/access/Roles.sol";
 import "../Openzeppelin/Roles.sol";
@@ -32,11 +32,11 @@ contract KYCListManagerRole is Initializable {
         return _kYCListManagers.has(account);
     }
 
-    function addKYCListManager(address account) public onlyKYCListManager {
+    function addKYCListManager(address account) external onlyKYCListManager {
         _addKYCListManager(account);
     }
 
-    function renounceKYCListManager() public {
+    function renounceKYCListManager() external {
         _removeKYCListManager(msg.sender);
     }
 

@@ -1,4 +1,4 @@
-pragma solidity ^0.5.0;
+pragma solidity ^0.5.4;
 
 library UIntConverterLib {
     function toIntSafe(uint256 a) internal pure returns (int256) {

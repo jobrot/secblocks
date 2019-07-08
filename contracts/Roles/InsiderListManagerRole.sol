@@ -1,4 +1,4 @@
-pragma solidity ^0.5.0;
+pragma solidity ^0.5.4;
 
 //import "openzeppelin-solidity/contracts/access/Roles.sol";
 import "../Openzeppelin/Roles.sol";
@@ -32,11 +32,11 @@ contract InsiderListManagerRole is Initializable {
         return _insiderListManagers.has(account);
     }
 
-    function addInsiderListManager(address account) public onlyInsiderListManager {
+    function addInsiderListManager(address account) external onlyInsiderListManager {
         _addInsiderListManager(account);
     }
 
-    function renounceInsiderListManager() public {
+    function renounceInsiderListManager() external {
         _removeInsiderListManager(msg.sender);
     }
 

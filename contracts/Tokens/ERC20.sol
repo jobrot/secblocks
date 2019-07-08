@@ -1,4 +1,4 @@
-pragma solidity ^0.5.0;
+pragma solidity ^0.5.4;
 
 import "../Openzeppelin/SafeMath.sol";
 import "../Openzeppelin/IERC20.sol";
@@ -9,7 +9,7 @@ import "../Openzeppelin/IERC20.sol";
 contract ERC20 is IERC20 {
     using SafeMath for uint256;
 
-                                        //TODO consistent underscore convention
+
     mapping(address => uint256) private _balances;
 
     mapping(address => mapping(address => uint256)) internal _allowed;

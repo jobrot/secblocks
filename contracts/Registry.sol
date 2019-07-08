@@ -1,4 +1,4 @@
-pragma solidity ^0.5.0;
+pragma solidity ^0.5.4;
 
 import "./Roles/OrchestratorRole.sol";
 import "./Proxy/UnstructuredProxy.sol";
@@ -48,19 +48,19 @@ contract Registry is OrchestratorRole {
         return proxies[proxyId].exists;
     }
 
-    function getProxyCount() public view returns (uint) {
+    function getProxyCount() external view returns (uint) {
         return proxyIdList.length;
     }
 
 
-    function getProxyIdList() public view returns( bytes32 [] memory){
+    function getProxyIdList() external view returns( bytes32[] memory){
         return proxyIdList;
     }
 
     /**
         @notice create a new Proxy with the id @param proxyId, for the exact form of the Id see above notice
       */
-    function createProxy(bytes32 proxyId) public onlyOrchestrator returns (address proxyAddress){
+    function createProxy(bytes32 proxyId) external onlyOrchestrator returns (address proxyAddress){
         require(!exists(proxyId), "Proxy ID is already present in Registry");
         proxyAddress = address(new UnstructuredProxy(msg.sender));
         proxyIdList.push(proxyId);
@@ -74,7 +74,7 @@ contract Registry is OrchestratorRole {
         @notice add a preexisting proxy with the id @param proxyId to the registry by passing
         the address of the deployed proxy @param proxyAddress
       */
-    function addProxy(bytes32 proxyId, address proxyAddress) public onlyOrchestrator returns (address){
+    function addProxy(bytes32 proxyId, address proxyAddress) external onlyOrchestrator returns (address){
         require(!exists(proxyId), "Proxy ID is already present in Registry");
         proxies[proxyId].proxyAddress = proxyAddress;
         proxies[proxyId].exists = true;
@@ -85,7 +85,7 @@ contract Registry is OrchestratorRole {
         @dev this option should not really be needed in real world use, but as the registry is intended to
         last, it is prudent to have the possibility of upgrading
       */
-    function updateProxy(bytes32 proxyId, address proxyAddress) public onlyOrchestrator {
+    function updateProxy(bytes32 proxyId, address proxyAddress) external onlyOrchestrator {
         require(exists(proxyId), "Proxy ID does not exist in Registry");
         proxies[proxyId].proxyAddress = proxyAddress;
         emit ProxyUpdated(proxyId,proxyAddress);

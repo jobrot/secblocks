@@ -1,4 +1,4 @@
-pragma solidity ^0.5.0;
+pragma solidity ^0.5.4;
 
 import "../Interfaces/IERC1594.sol";
 import "./ERC20.sol";
@@ -11,7 +11,7 @@ import "../Controlling/Controller.sol";
  * @title AML aware implementation of ERC1594 (Subset of ERC1400 https://github.com/ethereum/EIPs/issues/1411)
  * adapted from the standard implementation of the spec: https://github.com/SecurityTokenStandard/EIP-Spec
  */
-contract ERC1594 is IERC1594, ERC20, IssuerRole, OrchestratorRole { //TODO comments in this file
+contract ERC1594 is IERC1594, ERC20, IssuerRole, OrchestratorRole {
     // Variable which tells whether issuance is ON or OFF forever
     bool internal issuanceClosed = false;
     bool internal nameSet=false;
@@ -41,57 +41,49 @@ contract ERC1594 is IERC1594, ERC20, IssuerRole, OrchestratorRole { //TODO comme
     /**
      * @dev these three functions are the replacement for the constructor setters in proxy setups
      */
-    function setTransferQueues(TransferQueues _queues) public onlyOrchestrator{
+    function setTransferQueues(TransferQueues _queues) external onlyOrchestrator{
         queues = _queues;
     }
-    function setController(Controller _controller) public onlyOrchestrator{
+    function setController(Controller _controller) external onlyOrchestrator{
         controller = _controller;
     }
-    function addIssuerOrchestrator(address issuer) public onlyOrchestrator{
+    function addIssuerOrchestrator(address issuer) external onlyOrchestrator{
         _addIssuer(issuer);
     }
-    function setName(bytes32 _name) public onlyOrchestrator{
+    function setName(bytes32 _name) external onlyOrchestrator{
         require(!nameSet);
         name = _name;
         nameSet = true;
     }
 
     /**
-     * @notice Transfer restrictions can take many forms and typically involve on-chain rules or whitelists.
-     * However for many types of approved transfers, maintaining an on-chain list of approved transfers can be
-     * cumbersome and expensive. An alternative is the co-signing approach, where in addition to the token holder
-     * approving a token transfer, and authorised entity provides signed data which further validates the transfer.
+     * @notice Transfers tokens if allowed by AML constraints and controller
      * @param _to address The address which you want to transfer to
      * @param _value uint256 the amount of tokens to be transferred
      * @param _data The `bytes _data` allows arbitrary data to be submitted alongside the transfer.
-     * for the token contract to interpret or record. This could be signed data authorising the transfer
-     * (e.g. a dynamic whitelist) but is flexible enough to accomadate other use-cases.
      */
     function transferWithData(address _to, uint256 _value, bytes memory  _data) public {
+        super.transferWithData(_to, _value,_data);
+
         controller.verifyAllTransfer(msg.sender, _to, _value, _data);
         _checkAMLConstraints(msg.sender,_value);
-        super.transferWithData(_to, _value,_data);
     }
 
 
 
     /**
-     * @notice Transfer restrictions can take many forms and typically involve on-chain rules or whitelists.
-     * However for many types of approved transfers, maintaining an on-chain list of approved transfers can be
-     * cumbersome and expensive. An alternative is the co-signing approach, where in addition to the token holder
-     * approving a token transfer, and authorised entity provides signed data which further validates the transfer.
-     * @dev `msg.sender` MUST have a sufficient `allowance` set and this `allowance` must be debited by the `_value`.
+     * @notice Transfers tokens if allowed by AML constraints and controller, but not from the
+     * sender itself, but from the _from address. The sender must have sufficient allowance (see ERC20 standard)
      * @param _from address The address which you want to send tokens from
      * @param _to address The address which you want to transfer to
      * @param _value uint256 the amount of tokens to be transferred
      * @param _data The `bytes _data` allows arbitrary data to be submitted alongside the transfer.
-     * for the token contract to interpret or record. This could be signed data authorising the transfer
-     * (e.g. a dynamic whitelist) but is flexible enough to accomadate other use-cases.
      */
     function transferFromWithData(address _from, address _to, uint256 _value, bytes memory  _data) public {
+        super.transferFromWithData(_from, _to, _value,_data);
+
         controller.verifyAllTransferFrom(msg.sender, _from, _to, _value, _data);
         _checkAMLConstraints(_from,_value);
-        super.transferFromWithData(_from, _to, _value,_data);
     }
 
 
@@ -102,27 +94,26 @@ contract ERC1594 is IERC1594, ERC20, IssuerRole, OrchestratorRole { //TODO comme
      * (i.e. no new tokens can be minted or issued).
      * @dev If a token returns FALSE for `isIssuable()` then it MUST always return FALSE in the future.
      * If a token returns FALSE for `isIssuable()` then it MUST never allow additional tokens to be issued.
-     * @return bool `true` signifies the minting is allowed. While `false` denotes the end of minting
+     * @return bool `true` signifies the minting is allowed. ´false` denotes the end of minting
      */
     function isIssuable() external view returns (bool) {
         return !issuanceClosed;
     }
 
     /**
-     * @notice This function must be called to increase the total supply (Corresponds to mint function of ERC20).
-     * @dev It only be called by the token issuer or the operator defined by the issuer. ERC1594 doesn't have
-     * have the any logic related to operator but its superset ERC1400 have the operator logic and this function
-     * is allowed to call by the operator.
+     * @notice Increases the total token supply by adding tokens to _tokenHolder. Can only be called by the Issuer, and
+     * if the Issuance of the token is not closed. Checks with the controller, and emits an Issued event.
      * @param _tokenHolder The account that will receive the created tokens (account should be whitelisted or KYCed).
      * @param _value The amount of tokens need to be issued
      * @param _data The `bytes _data` allows arbitrary data to be submitted alongside the transfer.
      */
     function issue(address _tokenHolder, uint256 _value, bytes memory _data) public onlyIssuer {
+        _mint(_tokenHolder, _value);
 
         //There is no need to override the mint function here, as it is never accessed in the ERC20 contract and an internal function
         require(!issuanceClosed, "Issuance is closed");
         controller.verifyAllIssue(_tokenHolder,_value,_data);
-        _mint(_tokenHolder, _value);
+
         //Future work: additional checks on issuing, but will most likely be primarily offchain, as there are no good
         //one size fits all issuing checks
         emit Issued(msg.sender, _tokenHolder, _value, _data);
@@ -132,22 +123,22 @@ contract ERC1594 is IERC1594, ERC20, IssuerRole, OrchestratorRole { //TODO comme
 
 
     /**
-     * @notice Closes the issuance forever, forbidding any more tokens to be minted as per ERC1594
+     * @notice Closes the issuance forever, forbidding any more tokens to be minted as per ERC1594 definition.
      */
-    function closeIssuance() public onlyIssuer {
+    function closeIssuance() external onlyIssuer {
         issuanceClosed = true;
     }
     /**
-     * @notice This function redeems an amount of the token of a msg.sender. For doing so msg.sender may incentivize
-     * using different ways that could be implemented with in the `redeem` function definition. But those implementations
-     * are out of the scope of the ERC1594.
+     * @notice Redeems (i.e. burns) tokens of the sender. Emits an Redeemed event which can be listened for, in order
+     * to give some off chain reward or reimbursement to the redeemer, if so defined by the token issuer
      * @param _value The amount of tokens to be redeemed
      * @param _data The `bytes _data` it can be used in the token contract to authenticate the redemption.
      */
-    function redeem(uint256 _value, bytes memory  _data) public { //public instead of external so that subcontracts can call TODO maybe not necessary
+    function redeem(uint256 _value, bytes memory  _data) public { //public instead of external so that subcontracts can call
+        _burn(msg.sender, _value);
+
         //There is no need to override the burn function here, as it is never accessed in the ERC20 contract and an internal function
         controller.verifyAllRedeem(msg.sender,_value,_data);
-        _burn(msg.sender, _value);
         emit Redeemed(address(0), msg.sender, _value, _data);
     }
 
@@ -155,25 +146,23 @@ contract ERC1594 is IERC1594, ERC20, IssuerRole, OrchestratorRole { //TODO comme
 
 
     /**
-     * @notice This function redeems an amount of the token of a msg.sender. For doing so msg.sender may incentivize
-     * using different ways that could be implemented with in the `redeem` function definition. But those implementations
-     * are out of the scope of the ERC1594.
+     * @notice Redeems (see notice above) tokens of the allowance of _tokenholder.
      * @dev analogous to `transferFrom`
      * @param _tokenHolder The account whose tokens gets redeemed.
      * @param _value The amount of tokens to be redeemed
      * @param _data The `bytes _data` it can be used in the token contract to authenticate the redemption.
      */
     function redeemFrom(address _tokenHolder, uint256 _value, bytes memory  _data) public {
+        _burnFrom(_tokenHolder, _value);
+
         //There is no need to override the burn function here, as it is never accessed in the ERC20 contract and an internal function
         controller.verifyAllRedeem(msg.sender,_value,_data);
-        _burnFrom(_tokenHolder, _value);
         emit Redeemed(msg.sender, _tokenHolder, _value, _data);
     }
 
     /**
-     * @notice Transfers of securities may fail for a number of reasons. So this function will used to understand the
-     * cause of failure by getting the byte value. Which will be the ESC that follows the EIP 1066. ESC can be mapped
-     * with a reason string to understand the failure cause, table of Ethereum status code will always reside off-chain
+     * @notice Checks if a transfer can be executed. May be called by clients prior to executing a transaction, in order
+     * to prevent losses.
      * Does not take AML into account, as this depends on timing of the transaction
      * @param _to address The address which you want to transfer to
      * @param _value uint256 the amount of tokens to be transferred
@@ -187,16 +176,13 @@ contract ERC1594 is IERC1594, ERC20, IssuerRole, OrchestratorRole { //TODO comme
         bytes32 reason;
         (can, reason)=controller.checkAllTransfer(msg.sender,  _to,  _value,  _data);
         if (balanceOf(msg.sender) < _value) return (false, 0x54, bytes32(0));
-        /*else if (_to == address(0)) return (false, 0x57, bytes32(0));*/
-        /*else if (!_checkAdd(balanceOf(_to), _value)) return (false, 0x50, bytes32(0));*/
         else if (!can) return (false, 0x59, reason);
         return (true, 0x51, bytes32(0));
     }
 
     /**
-     * @notice Transfers of securities may fail for a number of reasons. So this function will used to understand the
-     * cause of failure by getting the byte value. Which will be the ESC that follows the EIP 1066. ESC can be mapped
-     * with a reason string to understand the failure cause, table of Ethereum status code will always reside off-chain
+     * @notice Checks if a transferFrom can be executed. May be called by clients prior to executing a transaction, in order
+     * to prevent losses.
      * Does not take AML into account, as this depends on timing of the transaction
      * @param _from address The address which you want to send tokens from
      * @param _to address The address which you want to transfer to
@@ -212,41 +198,24 @@ contract ERC1594 is IERC1594, ERC20, IssuerRole, OrchestratorRole { //TODO comme
         (can, reason)=controller.checkAllTransfer(msg.sender,  _to,  _value,  _data);
         if (_value > _allowed[_from][msg.sender]) return (false, 0x53, bytes32(0));
         else if (balanceOf(_from) < _value) return (false, 0x54, bytes32(0));
-        /*else if (_to == address(0)) return (false, 0x57, bytes32(0));*/
-        /*else if (!_checkAdd(balanceOf(_to), _value)) return (false, 0x50, bytes32(0));*/
         else if (!can) return (false, 0x59, reason);
         return (true, 0x51, bytes32(0));
     }
 
     /**
-   * @dev Adds two numbers, return false on overflow.
-   */
-/*
-    function _checkAdd(uint256 _a, uint256 _b) private pure returns (bool) {
-        uint256 c = _a + _b;
-        if (c < _a) return false;
-        else return true;
-    }
-*/
-
-
+     * @notice checks if the Anti Money Laundering constraints are satisfied, i.e. all outgoing transactions by _from
+     * within a timespan of TRANSFER_RETENTION_TIME do not exceed SPEND_CEILING.
+     */
     function _checkAMLConstraints(address from, uint value) private{
-        //actually, according to the aml law, for transactions over the limit the senders have to be authenticated
-        //in our case, is always the case... so what is it? just implement a flagging service?
-        //if anything is done, it surely must also be stored, (alle ausgänge innerhalb einer woche oder so)
-        //kein ausgang x anderer, sondern generell ausgang, einfach zweite map
+        //actually, according to the aml law, for transactions over the limit the senders only have to be authenticated,
+        //which would anyway be the case with the KYCVerifier
         require(_updateTransferListAndCalculateSum(from,value) < SPEND_CEILING,"ERC1594: The transfer exceeds the allowed quota within the retention period."); //TODO Future work: enable cosigning via data
     }
 
     /**
-   * @dev Adds two numbers, return false on overflow, keeps transfer list ordered
-   */
+    * @dev Adds two numbers, return false on overflow, keeps transfer list ordered
+    */
     function _updateTransferListAndCalculateSum(address _from, uint256 _value) private returns(uint sum) {
-
-        //TransferQueue senderTransfers = lastTransfers[_from];
-
-        // TimestampedTransfer[] storage senderTransfers = lastTransfers[_from]; //Storage pointer, not actual new storage allocated
-
         uint sumOfTransfers=0;
         uint timestamp;
 

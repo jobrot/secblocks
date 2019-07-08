@@ -7,8 +7,6 @@ import "../Roles/PEPListManagerRole.sol";
 //Is to be combined with the KYC information for the full PEP list (Address, Full name, Occupation) as mandated
 // by EU law
 contract PEPListVerifier is IVerifier, PEPListManagerRole {
-    byte internal constant STATUS_SUCCESS = 0x51; // Uses status codes from ERC-1066
-    byte internal constant STATUS_FAIL = 0x50;
 
     event AddedToBlacklist(address added); 
     event RemovedFromBlacklist(address added);

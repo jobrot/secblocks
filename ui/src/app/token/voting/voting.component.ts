@@ -7,7 +7,6 @@ import {COMMA, ENTER} from '@angular/cdk/keycodes';
 
 const abi = require('ethereumjs-abi');
 const Web3 = require('web3');
-//const { BN } = require('openzeppelin-test-helpers'); //TODO
 
 
 declare let require: any; //declares that require in code is defined by external component, in this case web3.service

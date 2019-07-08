@@ -1,4 +1,4 @@
-pragma solidity ^0.5.0;
+pragma solidity ^0.5.4;
 
 //import "openzeppelin-solidity/contracts/access/Roles.sol";
 import "../Openzeppelin/Roles.sol";
@@ -31,11 +31,11 @@ contract OrchestratorRole is Initializable {
         return _orchestrators.has(account);
     }
 
-    function addOrchestrator(address account) public onlyOrchestrator {
+    function addOrchestrator(address account) external onlyOrchestrator {
         _addOrchestrator(account);
     }
 
-    function renounceOrchestrator() public {
+    function renounceOrchestrator() external {
         _removeOrchestrator(msg.sender);
     }
 

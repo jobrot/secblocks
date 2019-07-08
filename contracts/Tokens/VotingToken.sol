@@ -1,4 +1,4 @@
-pragma solidity ^0.5.0;
+pragma solidity ^0.5.4;
 
 import "./DividendToken.sol";
 
@@ -20,8 +20,6 @@ contract VotingToken is DividendToken {
         uint128 value;
     }
 
-    event Test(uint timestamp, string msg); //TODO
-
     /*
      * @notice a ballot is a structure that corresponds to a single decision that can be
      * voted upon by token holders, each with a weight corresponding to their
@@ -42,8 +40,9 @@ contract VotingToken is DividendToken {
     /**
       * @dev tracks the balance of each address over time via timestamped Checkpoints
       * including the blocknumber
+      * intentionally
     */
-    mapping(address => Checkpoint[]) private _balances;
+    mapping(address => Checkpoint[]) private _historizedBalances;
 
 
     // Tracks the history of the `totalSupply` of the token
@@ -95,11 +94,11 @@ contract VotingToken is DividendToken {
 
 
         // update the balance array with the new value for the sender
-        updateValueAtNow(_balances[_from], previousBalanceSender.sub(_amount));
+        updateValueAtNow(_historizedBalances[_from], previousBalanceSender.sub(_amount));
 
         // update the balance array with the new value for the receiver
         uint previousBalanceTo = balanceOfAt(_to, block.number);
-        updateValueAtNow(_balances[_to], previousBalanceTo.add(_amount));
+        updateValueAtNow(_historizedBalances[_to], previousBalanceTo.add(_amount));
 
         emit Transfer(_from, _to, _amount);
     }
@@ -120,8 +119,7 @@ contract VotingToken is DividendToken {
      * @param ballotName The name of the ballot resp. the asked Question
      * @param optionNames List of possible choices / answers to the question
     */
-    function createBallot(bytes32 ballotName, bytes32[] memory optionNames, uint endDate) public onlyIssuer {
-        emit Test(endDate, "create");
+    function createBallot(bytes32 ballotName, bytes32[] calldata optionNames, uint endDate) external onlyIssuer {
         //Check the arguments for validity
         require(ballotName[0] != 0, "BallotName must not be empty!");
         require(optionNames.length > 0, "OptionNames must not be empty!");
@@ -144,10 +142,8 @@ contract VotingToken is DividendToken {
       * @param optionName option to vote for
       * @dev rolls back on unfound ballot or option, if sender already voted, or does not own tokens at cutoff
     */
-    function vote(bytes32 ballotName, bytes32 optionName) public {
+    function vote(bytes32 ballotName, bytes32 optionName) external {
         //Search through all Ballots backwards, so that the recent ones are found first
-
-
         int found = - 1;
 
         for (int i = UIntConverterLib.toIntSafe(ballots.length); i > 0; i--) {//could still be optimized for gas
@@ -161,14 +157,11 @@ contract VotingToken is DividendToken {
         Ballot storage ballot = ballots[SafeMathInt.toUintSafe(found)];
 
         //check if User had tokens at the time of the ballot start == right to vote
-        uint senderBalance = this.balanceOfAt(msg.sender, ballot.cutoffBlockNumber);
+        uint senderBalance = balanceOfAt(msg.sender, ballot.cutoffBlockNumber);
         require(senderBalance > 0, "Sender held no tokens at cutoff");
 
-        emit Test(ballot.endDate, "enddate");
-        emit Test(now, "now");
-
         //check if endDate has not passed
-        require(ballot.endDate > now, "Vote has ended."); //TODO
+        require(ballot.endDate > now, "Vote has ended.");
 
         //check if User already voted
         require(ballot.voted[msg.sender] == false, "Sender already voted");
@@ -194,7 +187,7 @@ contract VotingToken is DividendToken {
      * @param ballotName ballot to be queried
     * @return name of the winning option and resp. vote count, if it can be calculated, else returns error message and 0
     */
-    function currentlyWinningOption(bytes32 ballotName) public view returns (bytes32 winningOptionName, uint winningOptionVoteCount){
+    function currentlyWinningOption(bytes32 ballotName) external view returns (bytes32 winningOptionName, uint winningOptionVoteCount){
 
         Ballot memory ballot;
         //Search through all Ballots backwards, so that the recent ones are found first
@@ -235,7 +228,7 @@ contract VotingToken is DividendToken {
     function balanceOfAt(address _owner, uint _blockNumber) public view
     returns (uint) {
 
-        return getValueAt(_balances[_owner], _blockNumber);
+        return getValueAt(_historizedBalances[_owner], _blockNumber);
 
     }
     /**
@@ -259,7 +252,7 @@ contract VotingToken is DividendToken {
         uint curTotalSupply = totalSupply();
         uint previousBalanceTo = balanceOf(_account);
         updateValueAtNow(totalSupplyHistory, curTotalSupply.add(_value));
-        updateValueAtNow(_balances[_account], previousBalanceTo.add(_value));
+        updateValueAtNow(_historizedBalances[_account], previousBalanceTo.add(_value));
         emit Transfer(address(0), _account, _value);
     }
 
@@ -279,7 +272,7 @@ contract VotingToken is DividendToken {
         uint previousBalanceFrom = balanceOf(_account);
         require(previousBalanceFrom >= _value);
         updateValueAtNow(totalSupplyHistory, curTotalSupply.sub(_value));
-        updateValueAtNow(_balances[_account], previousBalanceFrom.sub(_value));
+        updateValueAtNow(_historizedBalances[_account], previousBalanceFrom.sub(_value));
         emit Transfer(_account, address(0), _value);
     }
 

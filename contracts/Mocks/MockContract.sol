@@ -1,4 +1,4 @@
-pragma solidity ^0.5.0;
+pragma solidity ^0.5.4;
 //Source: Gnosis Mock contract framework: https://github.com/gnosis/mock-contract
 interface MockInterface {
     /**

@@ -30,39 +30,39 @@ contract(['KYCVerifier', 'KYCListManagerRole'], (accounts) => {
     });
 
     it('deployer should be a verifier', async () => {
-        const result = await sut.isKYCVerifier(deployer);
+        const result = await sut.isKYCListManager(deployer);
         assert.equal(result, true);
     });
 
     it('unrelated accounts should not be able to add new verifiers', async () => {
         //await expectThrow(this.moderator.addModerator(moderatorRole, { from: unrelatedAccount }));
-        await tryExpectCatch(sut.addKYCVerifier(verifier, {from: unrelatedAccount}), 'KYCListManagerRole: caller does not have the KYCVerifier role');
+        await tryExpectCatch(sut.addKYCListManager(verifier, {from: unrelatedAccount}), 'KYCListManagerRole: caller does not have the KYCListManager role');
         await truffleAssert.reverts(
-            sut.addKYCVerifier(verifier, {from: unrelatedAccount}), 'KYCListManagerRole: caller does not have the KYCVerifier role');
+            sut.addKYCListManager(verifier, {from: unrelatedAccount}), 'KYCListManagerRole: caller does not have the KYCListManager role');
 
 
-        const result = await sut.isKYCVerifier(verifier);
+        const result = await sut.isKYCListManager(verifier);
         assert.equal(result, false);
     });
 
     it('verifiers should be able to add new verifiers', async () => {
-        const result1 = await sut.addKYCVerifier(verifier, {from: deployer});
+        const result1 = await sut.addKYCListManager(verifier, {from: deployer});
 
         truffleAssert.eventEmitted(result1, 'KYCListManagerAdded', (ev) => {
             return ev.account === verifier;
         });
 
-        const status1 = await sut.isKYCVerifier(verifier);
+        const status1 = await sut.isKYCListManager(verifier);
         assert.equal(status1, true);
 
 
-        const result2 = await sut.addKYCVerifier(otherAccount, {from: verifier});
+        const result2 = await sut.addKYCListManager(otherAccount, {from: verifier});
 
         truffleAssert.eventEmitted(result2, 'KYCListManagerAdded', (ev) => {
             return ev.account === otherAccount;
         });
 
-        const status2 = await sut.isKYCVerifier(otherAccount);
+        const status2 = await sut.isKYCListManager(otherAccount);
         assert.equal(status2, true);
     });
 

@@ -59,7 +59,7 @@ contract Controller is OrchestratorRole {
     }
 
 
-    function getVerifierCount() public view returns (uint) {
+    function getVerifierCount() external view returns (uint) {
         return verifiers.length;
     }
 
@@ -122,7 +122,7 @@ contract Controller is OrchestratorRole {
     }
 
 
-    function verifyAllTransfer(address _from, address _to, uint _value, bytes memory _data) public {
+    function verifyAllTransfer(address _from, address _to, uint _value, bytes calldata _data) external {
         bool verified;
         verified = kycVerifier.verifyTransfer(_from, _to, _value, _data);
         require(verified, "The transfer is not allowed by the KYCVerifier!");
@@ -140,7 +140,7 @@ contract Controller is OrchestratorRole {
     }
 
 
-    function verifyAllTransferFrom(address spender, address _from, address _to, uint _value, bytes memory _data) public {
+    function verifyAllTransferFrom(address spender, address _from, address _to, uint _value, bytes calldata _data) external {
         bool verified;
         verified = kycVerifier.verifyTransferFrom(_from, _to, spender, _value, _data);
         require(verified, "The transfer is not allowed by the KYCVerifier!");
@@ -158,7 +158,7 @@ contract Controller is OrchestratorRole {
     }
 
 
-    function verifyAllRedeem(address _sender, uint _value, bytes memory _data) public {
+    function verifyAllRedeem(address _sender, uint _value, bytes calldata _data) external {
         bool verified;
         verified = kycVerifier.verifyRedeem(_sender, _value, _data);
         require(verified, "The redeem is not allowed by the KYCVerifier!");
@@ -176,7 +176,7 @@ contract Controller is OrchestratorRole {
     }
 
 
-    function verifyAllRedeemFrom(address _sender, address _tokenholder, uint _value, bytes memory _data) public {
+    function verifyAllRedeemFrom(address _sender, address _tokenholder, uint _value, bytes calldata _data) external {
         bool verified;
         verified = kycVerifier.verifyRedeemFrom(_sender, _tokenholder, _value, _data);
         require(verified, "The redeem is not allowed by the KYCVerifier!");
@@ -194,7 +194,7 @@ contract Controller is OrchestratorRole {
     }
 
 
-    function verifyAllIssue( address _tokenholder, uint _value, bytes memory _data) public {
+    function verifyAllIssue( address _tokenholder, uint _value, bytes calldata _data) external {
         bool verified;
         verified = kycVerifier.verifyIssue(_tokenholder, _value, _data);
         require(verified, "The issue is not allowed by the KYCVerifier!");
@@ -212,7 +212,7 @@ contract Controller is OrchestratorRole {
     }
 
 
-    function checkAllTransfer(address _from, address _to, uint _value, bytes memory _data) public view returns(bool, bytes32) {
+    function checkAllTransfer(address _from, address _to, uint _value, bytes calldata _data) external view returns(bool, bytes32) {
         bool verified;
         verified = kycVerifier.verifyTransfer(_from, _to, _value, _data);
         if(!verified) return (verified, bytes32("Not allowed by KYCVerifier!"));
@@ -231,7 +231,7 @@ contract Controller is OrchestratorRole {
     }
 
 
-    function checkAllTransferFrom(address spender, address _from, address _to, uint _value, bytes memory _data) public view returns(bool, bytes32) {
+    function checkAllTransferFrom(address spender, address _from, address _to, uint _value, bytes calldata _data) external view returns(bool, bytes32) {
         bool verified;
         verified = kycVerifier.verifyTransferFrom(_from, _to, spender, _value, _data);
         if(!verified) return (verified, bytes32("Not allowed by KYCVerifier!"));

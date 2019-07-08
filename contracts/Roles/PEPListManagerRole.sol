@@ -1,4 +1,4 @@
-pragma solidity ^0.5.0;
+pragma solidity ^0.5.4;
 
 //import "openzeppelin-solidity/contracts/access/Roles.sol";
 import "../Openzeppelin/Roles.sol";
@@ -32,11 +32,11 @@ contract PEPListManagerRole is Initializable {
         return _pepListManagers.has(account);
     }
 
-    function addPEPListManager(address account) public onlyPEPListManager {
+    function addPEPListManager(address account) external onlyPEPListManager {
         _addPEPListManager(account);
     }
 
-    function renouncePEPListManager() public {
+    function renouncePEPListManager() external {
         _removePEPListManager(msg.sender);
     }
 

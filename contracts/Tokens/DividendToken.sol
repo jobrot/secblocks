@@ -1,4 +1,4 @@
-pragma solidity ^0.5.0;
+pragma solidity ^0.5.4;
 
 import "../Openzeppelin/SafeMath.sol";
 import "./ERC1594.sol";
@@ -58,7 +58,7 @@ contract DividendToken is ERC1594 {
 
     /// @dev Distributes dividends whenever ether is paid to this contract.
     function() external payable {
-        distributeDividends(); //TODO maybe remove
+        distributeDividends();
     }
     /**
      * @notice Distributes ether to token holders as dividends.
@@ -89,7 +89,7 @@ contract DividendToken is ERC1594 {
      * @notice Withdraws the ether distributed to the sender.
      * @dev It emits a `DividendWithdrawn` event if the amount of withdrawn ether is greater than 0.
     */
-    function withdrawDividend() public {
+    function withdrawDividend() external {
         uint _withdrawableDividend = withdrawableDividendOf(msg.sender);
         if (_withdrawableDividend > 0) {
             withdrawnDividends[msg.sender] = withdrawnDividends[msg.sender].add(_withdrawableDividend);
@@ -102,7 +102,7 @@ contract DividendToken is ERC1594 {
     * @param _owner The address of a token holder.
     * @return The amount of dividend in wei that `_owner` can withdraw.
     */
-    function dividendOf(address _owner) public view returns(uint) {
+    function dividendOf(address _owner) external view returns(uint) {
         return withdrawableDividendOf(_owner);
     }
 
@@ -120,7 +120,7 @@ contract DividendToken is ERC1594 {
     * @param _owner The address of a token holder.
     * @return The amount of dividend in wei that `_owner` has withdrawn.
     */
-    function withdrawnDividendOf(address _owner) public view returns(uint) { //TODO maybe internal
+    function withdrawnDividendOf(address _owner) external view returns(uint) {
         return withdrawnDividends[_owner];
     }
 
@@ -143,12 +143,11 @@ contract DividendToken is ERC1594 {
      * @param _data The `bytes _data` allows arbitrary data to be submitted alongside the transfer.
      */
     function transferWithData(address _to, uint256 _value, bytes memory _data) public {
-
-        super.transferWithData( _to, _value, _data);
-
         int magCorrection = magnifiedDividendPerShare.mul(_value).toIntSafe();
         magnifiedDividendCorrections[msg.sender] = magnifiedDividendCorrections[msg.sender].add(magCorrection);
         magnifiedDividendCorrections[_to] = magnifiedDividendCorrections[_to].sub(magCorrection);
+
+        super.transferWithData( _to, _value, _data);
     }
 
     /**
@@ -160,11 +159,11 @@ contract DividendToken is ERC1594 {
      * @param _data The `bytes _data` allows arbitrary data to be submitted alongside the transfer.
      */
     function transferFromWithData(address _from, address _to, uint _value, bytes memory _data) public {
-        super.transferFromWithData(_from, _to, _value, _data);
-
         int magCorrection = magnifiedDividendPerShare.mul(_value).toIntSafe();
         magnifiedDividendCorrections[_from] = magnifiedDividendCorrections[_from].add(magCorrection);
         magnifiedDividendCorrections[_to] = magnifiedDividendCorrections[_to].sub(magCorrection);
+
+        super.transferFromWithData(_from, _to, _value, _data);
     }
 
     /**
@@ -175,15 +174,11 @@ contract DividendToken is ERC1594 {
      * @param _data The `bytes _data` allows arbitrary data to be submitted alongside the transfer.
      */
     function issue(address _tokenHolder, uint _value, bytes memory _data) public onlyIssuer {
-        super.issue(_tokenHolder, _value, _data);
-
         magnifiedDividendCorrections[_tokenHolder] = magnifiedDividendCorrections[_tokenHolder]
         .sub( (magnifiedDividendPerShare.mul(_value)).toIntSafe() );
+
+        super.issue(_tokenHolder, _value, _data);
     }
-
-
-
-
 
     /**
      * @notice This function redeems an amount of the token of a msg.sender.
@@ -192,9 +187,10 @@ contract DividendToken is ERC1594 {
      * @param _data The `bytes _data` it can be used in the token contract to authenticate the redemption.
      */
     function redeem(uint _value, bytes memory _data) public {
-        super.redeem(_value, _data);
         magnifiedDividendCorrections[msg.sender] = magnifiedDividendCorrections[msg.sender]
         .add( (magnifiedDividendPerShare.mul(_value)).toIntSafe() );
+
+        super.redeem(_value, _data);
     }
 
     /**
@@ -206,18 +202,10 @@ contract DividendToken is ERC1594 {
      * @param _data The `bytes _data` that can be used in the super token contract to authenticate the redemption.
      */
     function redeemFrom(address _tokenHolder, uint _value, bytes memory _data) public {
-        super.redeemFrom(_tokenHolder, _value, _data);
-
         magnifiedDividendCorrections[_tokenHolder] = magnifiedDividendCorrections[_tokenHolder]
         .add( (magnifiedDividendPerShare.mul(_value)).toIntSafe() );
 
+        super.redeemFrom(_tokenHolder, _value, _data);
     }
-
-    //@dev internal function to convert uints to ints safely
-/*    function toIntSafe(uint256 a) internal pure returns (int256) {
-        int256 b = int256(a);
-        require(b >= 0);
-        return b;
-    }*/
 
 }

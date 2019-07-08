@@ -1,4 +1,4 @@
-pragma solidity ^0.5.0;
+pragma solidity ^0.5.4;
 
 library SafeMathInt {
     function sub(int256 a, int256 b) internal pure returns (int256) {
