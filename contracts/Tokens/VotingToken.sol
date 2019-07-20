@@ -89,10 +89,6 @@ contract VotingToken is DividendToken {
 
         uint previousBalanceSender = balanceOfAt(_from, block.number);
 
-        // Check if amount exceeds funds
-        //require(previousBalanceSender >= _amount, "VotingToken: Transferred amount exceeds available funds.");
-
-
         // update the balance array with the new value for the sender
         updateValueAtNow(_historizedBalances[_from], previousBalanceSender.sub(_amount));
 
@@ -183,7 +179,7 @@ contract VotingToken is DividendToken {
      * @dev does not change state or close the voting intentionally, is public so that everybody
      * can look at the current winner, and to allow for maximum flexibility (company can decide
      * a time when to decide the winners, as the time may change due to not all voters being on chain
-     * ATTENTION: does not deal with votes where two options are equal, this must be decided by the user via getBallot(bytes32 ballotName)
+     * ATTENTION: does not deal with votes where two options are equal, this must be decided by the user via getBallot(bytes32 ballotName) TODO potentially add this functionality
      * @param ballotName ballot to be queried
     * @return name of the winning option and resp. vote count, if it can be calculated, else returns error message and 0
     */
@@ -202,13 +198,21 @@ contract VotingToken is DividendToken {
             return (bytes32("Ballot not found!"), 0);
         }
         uint winningVoteCount = 0;
+        //bool invalid = false;
         int winningOptionIndex = - 1;
         for (uint p = 0; p < ballot.optionVoteCounts.length; p++) {
             if (ballot.optionVoteCounts[p] > winningVoteCount) {
+                //invalid = false;
                 winningVoteCount = ballot.optionVoteCounts[p];
                 winningOptionIndex = UIntConverterLib.toIntSafe(p);
             }
+            /*if (ballot.optionVoteCounts[p] == winningVoteCount){
+                invalid =true;
+            }*/
         }
+
+        //return (bytes32("At least two votes are tied!"), winningVoteCount);
+
         //require(winningOptionIndex != - 1,"No votes yet!");
         if (winningOptionIndex == - 1) {
             return (bytes32("No votes yet!"), 0);
@@ -292,7 +296,7 @@ contract VotingToken is DividendToken {
     ) view internal returns (uint) {
         if (checkpoints.length == 0) return 0;
 
-        // Shortcut for the actual value
+        // Shortcut for the current value
         if (_block >= checkpoints[checkpoints.length - 1].fromBlock)
             return checkpoints[checkpoints.length - 1].value;
         if (_block < checkpoints[0].fromBlock) return 0;

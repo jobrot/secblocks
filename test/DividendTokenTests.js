@@ -73,10 +73,8 @@ contract('DividendToken', function ([deployer, initialHolder, distributer, recip
                 );
             });
         });
-
-
-
     });
+
     describe('distributing and withdrawing', function () {
         describe('when only one token holder exists', function () {
             it('transfers all dividends to the holder (check actual transfer)', async function () {

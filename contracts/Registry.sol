@@ -42,7 +42,7 @@ contract Registry is OrchestratorRole {
        above. As the proxys themselves are never upgraded, version names are unnecessary.
     */
     mapping(bytes32 => ProxyStruct) public proxies;
-    bytes32[] public proxyIdList;
+    bytes32[] public proxyIdList; //TODO could actually be renamed to contracts, as they must not neccessarily be proxies
 
     function exists(bytes32 proxyId) public view returns (bool) {
         return proxies[proxyId].exists;

@@ -1,5 +1,6 @@
 pragma solidity ^0.5.4;
 
+//Based on work by ZeppelinOS Team at https://github.com/zeppelinos/labs/tree/master/upgradeability_using_unstructured_storage
 contract UnstructuredProxy {
     bytes32 private constant ownerPosition = keccak256("secblocks.proxy.owner");
     bytes32 private constant implementationPosition = keccak256("secblocks.proxy.implementation");
@@ -77,14 +78,14 @@ contract UnstructuredProxy {
     /**
      * @dev Fallback function allowing to perform a delegatecall to the given implementation.
     * This function will return whatever the implementation call returns
-    * Is marked external, as it will be called mostly externally (only on upgrade internal call), to save gas.
+    * Is marked external, to save gas.
     */
     function() payable external {
         address _impl = implementation();
         require(_impl != address(0));
 
         assembly {
-            let ptr := mload(0x40)
+            let ptr := mload(0x40) //always the next free pointer
             calldatacopy(ptr, 0, calldatasize)
             let result := delegatecall(gas, _impl, ptr, calldatasize, 0, 0)
             let size := returndatasize

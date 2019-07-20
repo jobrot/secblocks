@@ -5,7 +5,6 @@ import "./ERC20.sol";
 import "../Roles/IssuerRole.sol";
 import "../AML/TransferQueues.sol";
 import "../Controlling/Controller.sol";
-//import "openzeppelin-solidity/contracts/ownership/Ownable.sol";
 
 /**
  * @title AML aware implementation of ERC1594 (Subset of ERC1400 https://github.com/ethereum/EIPs/issues/1411)
