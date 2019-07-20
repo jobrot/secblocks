@@ -10,7 +10,7 @@ import {
   MatButtonModule,
   MatCardModule, MatChipsModule, MatExpansionModule,
   MatFormFieldModule, MatIconModule,
-  MatInputModule, MatMenuModule,
+  MatInputModule, MatMenuModule, MatSnackBar, MatSnackBarModule,
   MatToolbarModule
 } from '@angular/material';
 import { HeaderComponent } from './header/header.component';
@@ -22,6 +22,7 @@ import {TokenModule} from "./token/token.module";
 import {ControllerModule} from "./controller/controller.module";
 import {InsiderListModule} from "./insiderlist/insiderList.module";
 import {PepListModule} from "./peplist/pepList.module";
+import {Web3Service} from "./util/web3.service";
 
 @NgModule({
   declarations: [
@@ -51,9 +52,11 @@ import {PepListModule} from "./peplist/pepList.module";
     MatMenuModule,
     MatIconModule,
     MatExpansionModule,
-    MatChipsModule
+    MatChipsModule,
+    MatSnackBarModule
+
   ],
-  providers: [],
+  providers: [Web3Service],
   bootstrap: [AppComponent]
 })
 export class AppModule { }
