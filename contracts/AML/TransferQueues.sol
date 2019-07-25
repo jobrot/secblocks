@@ -36,7 +36,7 @@ contract TransferQueues is Ownable {
         queues[user].first += 1;
     }
 
-    function peek(address user) external returns (uint timestamp, uint amount) {
+    function peek(address user) external view returns (uint timestamp, uint amount) {
         require(queues[user].last >= queues[user].first, "TransferQueue: peek called on empty Queue");  // non-empty queue
 
         timestamp = queues[user].timestampQueue[queues[user].first];
