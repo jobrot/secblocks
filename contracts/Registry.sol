@@ -59,6 +59,7 @@ contract Registry is OrchestratorRole {
 
     /**
         @notice create a new Proxy with the id @param proxyId, for the exact form of the Id see above notice
+        @param proxyAddress returns the address of the created Proxy
       */
     function createProxy(bytes32 proxyId) external onlyOrchestrator returns (address proxyAddress){
         require(!exists(proxyId), "Proxy ID is already present in Registry");
@@ -72,7 +73,7 @@ contract Registry is OrchestratorRole {
     }
     /**
         @notice add a preexisting proxy with the id @param proxyId to the registry by passing
-        the address of the deployed proxy @param proxyAddress
+        the address @param proxyAddress of the deployed proxy
       */
     function addProxy(bytes32 proxyId, address proxyAddress) external onlyOrchestrator returns (address){
         require(!exists(proxyId), "Proxy ID is already present in Registry");
