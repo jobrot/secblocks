@@ -66,4 +66,4 @@ Please make sure to update tests as appropriate.
 ## License
 [MIT](https://choosealicense.com/licenses/mit/)
 
-This work is released as a supplement for my Master's Thesis, which will be linked here as soon as it is published.
+This work is released as a supplement for my Master's Thesis, which can be viewed [here](https://repositum.tuwien.at/retrieve/13070)
